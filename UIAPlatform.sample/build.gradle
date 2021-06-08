@@ -1,0 +1,39 @@
+
+plugins {
+    id "application"
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(":UIAPlatform")
+    testImplementation("junit:junit:4.13")
+}
+
+// TODO determine ext dir & lib via task outputs
+
+ext.defaultExtDir = "C:\\Users\\Christoph\\Tools\\jdk\\zulu8.54.0.21-ca-fx-jdk8.0.292-win_x64\\jre\\lib\\ext"
+ext.uiaPlatformDir = project.file("../UIAPlatform/build/libs")
+ext.uiaPlatformLib = project.file("../UIAPlatform.native/build/lib/main/debug/UIAPlatform.dll")
+
+application {
+    mainClass = "uia.sample.Simple"
+    applicationDefaultJvmArgs = [
+        "-Djava.ext.dirs=${defaultExtDir};${uiaPlatformDir}",
+        "-Duia.dll=${uiaPlatformLib}",
+        '-Dglass.platform=UIA',
+        '-Dglass.accessible.force=true'
+    ]
+}
+
+task fun {
+    doLast {
+        println project.file("../UIAPlatform/build/libs/UIAPlatform.jar")
+        println project.file("../UIAPlatform.native/build/libs/UIAPlatform.dll")
+    }
+}

@@ -1,0 +1,4 @@
+rootProject.name = "openfx-uia"
+include "UIAPlatform"
+include "UIAPlatform.native"
+include "UIAPlatform.sample"

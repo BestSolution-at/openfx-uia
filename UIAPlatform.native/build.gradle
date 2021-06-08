@@ -1,0 +1,43 @@
+plugins {
+    id "cpp-library"
+}
+
+library {
+    linkage = [ Linkage.SHARED ]
+    targetMachines = [ machines.windows.x86_64 ]
+
+    privateHeaders {
+        from file("src/main/headers")
+        from file(getJNIPlatformIncludeDir())
+        from file(getJNIIncludeDir())
+        from file('src/main/public')
+    }
+}
+
+tasks.withType(CppCompile).configureEach {
+    macros.put("BUILDING_DLL", null)
+    compilerArgs.add '-std=c++11'
+}
+
+tasks.withType(LinkSharedLibrary).configureEach {
+    linkerArgs.add 'UIAutomationCore.lib'
+}
+
+import org.apache.tools.ant.taskdefs.condition.Os
+import org.gradle.nativeplatform.platform.OperatingSystem
+import org.gradle.internal.jvm.Jvm
+def getJNIPlatformDir() {
+  if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+    'win32'
+  } else if (Os.isFamily(Os.FAMILY_MAC)) {
+    'darwin'
+  } else if (Os.isFamily(Os.FAMILY_UNIX)) {
+    'linux'
+  }
+}
+def getJNIIncludeDir() {
+        Jvm.current().javaHome.toPath().resolve('include')
+}
+def getJNIPlatformIncludeDir() {
+        getJNIIncludeDir().resolve(getJNIPlatformDir())
+}
