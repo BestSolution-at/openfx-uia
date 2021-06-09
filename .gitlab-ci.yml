@@ -1,7 +1,8 @@
 
 build:
   script:
-    - dir C:\
+    - dir "C:\Program Files"
+    - dir "C:\Program Files\Java"
     - java -version
     - ./gradlew assemble
   tags:
