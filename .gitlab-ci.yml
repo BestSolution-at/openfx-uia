@@ -1,6 +1,8 @@
 
 build:
   script:
+     - Invoke-WebRequest -Verbose -Uri http://ipv4.download.thinkbroadband.com/5MB.zip -OutFile test.zip
+     - rm test.zip
 #    - Invoke-WebRequest -Uri https://cdn.azul.com/zulu/bin/zulu11.48.21-ca-jre11.0.11-win_x64.zip -OutFile jre11.zip
 #    - Expand-Archive jre11.zip -DestinationPath java
 #    - $env:JAVA_HOME = "$pwd\java\zulu11.48.21-ca-jre11.0.11-win_x64"    
