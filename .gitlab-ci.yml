@@ -1,6 +1,8 @@
 
 build:
   script:
+    dir C:\Programme
+    - java -version
     - ./gradlew assemble
   tags:
     - win64
