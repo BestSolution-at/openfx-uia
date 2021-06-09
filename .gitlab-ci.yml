@@ -1,6 +1,6 @@
 
 build:
   script:
-    - echo "Hello Runner"
+    - ./gradlew assemble
   tags:
     - win64
