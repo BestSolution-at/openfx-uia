@@ -1,0 +1,7 @@
+
+
+build:
+  script:
+    - echo "Hello Runner"
+  tags:
+    - win64
