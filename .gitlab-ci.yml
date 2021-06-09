@@ -1,9 +1,15 @@
 
 build:
   script:
-    - dir "C:\Program Files"
-    - dir "C:\Program Files\Java"
-    - java -version
+#    - Invoke-WebRequest -Uri https://cdn.azul.com/zulu/bin/zulu11.48.21-ca-jre11.0.11-win_x64.zip -OutFile jre11.zip
+#    - Expand-Archive jre11.zip -DestinationPath java
+#    - $env:JAVA_HOME = "$pwd\java\zulu11.48.21-ca-jre11.0.11-win_x64"    
+    - |
+      if (-not (Test-Path "$pwd\java\zulu8.54.0.21-ca-fx-jdk8.0.292-win_x64")) {
+        Invoke-WebRequest -Uri https://cdn.azul.com/zulu/bin/zulu8.54.0.21-ca-fx-jdk8.0.292-win_x64.zip -OutFile jdk8fx.zip
+        Expand-Archive jdk8fx.zip -DestinationPath java
+      }
+      $env:JAVA_HOME = "$pwd\java\zulu8.54.0.21-ca-fx-jdk8.0.292-win_x64"
     - ./gradlew assemble
   tags:
     - win64
