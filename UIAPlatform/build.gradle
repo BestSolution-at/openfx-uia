@@ -33,5 +33,6 @@ dependencies {
 }
 
 jar {
+    dependsOn configurations.debugDll
     from configurations.debugDll.files
 }
