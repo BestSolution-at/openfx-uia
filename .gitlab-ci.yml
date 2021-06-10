@@ -9,10 +9,9 @@ build:
     - |
       if (-not (Test-Path "$pwd\java\zulu8.54.0.21-ca-fx-jdk8.0.292-win_x64")) {
         echo "Downloading Java 8 JDK+FX"
-        Invoke-WebRequest -Verbose -Uri https://cdn.azul.com/zulu/bin/zulu8.54.0.21-ca-fx-jdk8.0.292-win_x64.zip -OutFile jdk8fx.zip
+        Invoke-WebRequest -Verbose -Uri https://p2.ci.bestsolution.at/jdks/win64/zulu8.54.0.21-ca-fx-jdk8.0.292-win_x64.zip -OutFile jdk8fx.zip
         echo "Extracting..."
         Expand-Archive jdk8fx.zip -DestinationPath java
-        dir java
       }
       $env:JAVA_HOME = "$pwd\java\zulu8.54.0.21-ca-fx-jdk8.0.292-win_x64"
     - ./gradlew assemble
