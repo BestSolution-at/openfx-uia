@@ -7,7 +7,7 @@ build
 bin
 
 hs_err_pid*.log
-
+java_pid*.hprof
 
 .classpath
 .project

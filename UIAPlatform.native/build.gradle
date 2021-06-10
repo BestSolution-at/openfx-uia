@@ -23,6 +23,10 @@ tasks.withType(LinkSharedLibrary).configureEach {
     linkerArgs.add 'UIAutomationCore.lib'
 }
 
+
+
+
+
 import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.nativeplatform.platform.OperatingSystem
 import org.gradle.internal.jvm.Jvm

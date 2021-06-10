@@ -1,6 +1,15 @@
 
 plugins {
     id "java-library"
+    id "org.sonarqube" version "3.2.0"
+}
+
+sonarqube {
+    properties {
+        property "sonar.projectName", "JavaFX Glass Platfrom with full UIA support"
+        property "sonar.projectKey", "openfx-uia"
+        property "sonar.excludes", "src/main/java/com/sun/glass/ui/uia/glass/**"
+    }
 }
 
 sourceCompatibility = 1.8
@@ -10,9 +19,19 @@ repositories {
     mavenCentral()
 }
 
+java {
+    withSourcesJar()
+}
+
+configurations {
+    debugDll
+}
+
 dependencies {
-    //implementation project(":UIAPlatform.native")
+    debugDll project(path: ":UIAPlatform.native", configuration: "debugRuntimeElements")
     testImplementation("junit:junit:4.13")
 }
 
-
+jar {
+    from configurations.debugDll.files
+}

@@ -1,9 +1,39 @@
+/*
+ * -----------------------------------------------------------------
+ * Copyright (c) 2021 BestSolution.at EDV Systemhaus GmbH
+ * All Rights Reserved.
+ *
+ * BestSolution.at MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE
+ * SUITABILITY OF THE SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE  OR NON - INFRINGEMENT.
+ * BestSolution.at SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY
+ * LICENSEE AS A RESULT OF USING, MODIFYING OR DISTRIBUTING THIS
+ * SOFTWARE OR ITS DERIVATIVES.
+ *
+ * This software is released under the terms of the
+ *
+ *                  "GNU General Public License, Version 2 
+ *                         with classpath exception"
+ *
+ * and may only be distributed and used under the terms of the
+ * mentioned license. You should have received a copy of the license
+ * along with this software product, if not you can download it from
+ * http://www.gnu.org/licenses/gpl.html
+ * ----------------------------------------------------------------
+ */
 package com.sun.glass.ui.uia;
 
 import java.lang.reflect.Method;
 
 // a generic reflection utility
 public class Reflect {
+
+	public static final class ReflectException extends RuntimeException {
+		public ReflectException(Exception e) {
+			super(e);
+		}
+	}
 
 	private final Object target;
 	
@@ -19,7 +49,7 @@ public class Reflect {
 			method.invoke(target);
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new RuntimeException(e);
+			throw new ReflectException(e);
 		}
 	}
 	
@@ -30,7 +60,7 @@ public class Reflect {
 			method.invoke(target, arg);
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new RuntimeException(e);
+			throw new ReflectException(e);
 		}
 	}
 	
@@ -41,7 +71,7 @@ public class Reflect {
 			return method.invoke(target);
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new RuntimeException(e);
+			throw new ReflectException(e);
 		}
 	}
 	
@@ -52,7 +82,7 @@ public class Reflect {
 			return method.invoke(target, arg);
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new RuntimeException(e);
+			throw new ReflectException(e);
 		}
 	}
 	
@@ -63,7 +93,7 @@ public class Reflect {
 			return method.invoke(target, arg1, arg2);
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new RuntimeException(e);
+			throw new ReflectException(e);
 		}
 	}
 	
@@ -76,7 +106,7 @@ public class Reflect {
 			return method.invoke(target, arg1, arg2, arg3);
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new RuntimeException(e);
+			throw new ReflectException(e);
 		}
 	}
 	
@@ -89,7 +119,7 @@ public class Reflect {
 			return method.invoke(target, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
 		} catch (Exception e) {
 			e.printStackTrace();
-			throw new RuntimeException(e);
+			throw new ReflectException(e);
 		}
 	}
 

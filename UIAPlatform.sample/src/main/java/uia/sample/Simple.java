@@ -19,6 +19,7 @@ public class Simple extends Application {
     public void start(Stage primaryStage) throws Exception {
 
         BorderPane root = new BorderPane() {
+            @Override
             public Object queryAccessibleAttribute(AccessibleAttribute attribute, Object... arguments) {
                 
                 if (UIA.isProviderQuery(IWindowProvider.class, attribute, arguments)) {
