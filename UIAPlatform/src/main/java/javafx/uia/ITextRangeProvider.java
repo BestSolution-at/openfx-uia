@@ -88,15 +88,15 @@ This parameter is passed uninitialized.
 
     /**
      * Retrieves a collection of all elements that are both contained (either partially or completely) within the specified text range, and are child elements of the enclosing element for the specified text range.
-     * @return An array of pointers to the IRawElementProviderSimple interfaces for all child elements that are enclosed by the text range (sorted by the Start endpoint of their ranges).
+     * @return An array of pointers to the IUIAElement interfaces for all child elements that are enclosed by the text range (sorted by the Start endpoint of their ranges).
 
 If the text range does not include any child elements, an empty collection is returned.
 
 This parameter is passed uninitialized.
      */
-    IRawElementProviderSimple[] GetChildren();
+    IUIAElement[] GetChildren();
 
-    IRawElementProviderSimple GetEnclosingElement();
+    IUIAElement GetEnclosingElement();
 
     String GetText(int maxLength);
 
