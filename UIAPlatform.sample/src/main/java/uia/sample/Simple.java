@@ -50,8 +50,6 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import javafx.uia.ControlType;
-import javafx.uia.IRawElementProviderSimple;
-import javafx.uia.ISimpleProvider;
 import javafx.uia.ITextAttributeId;
 import javafx.uia.ITextProvider;
 import javafx.uia.ITextRangeProvider;
@@ -62,7 +60,6 @@ import javafx.uia.TextPatternRangeEndpoint;
 import javafx.uia.TextUnit;
 import javafx.uia.ToggleState;
 import javafx.uia.UIA;
-import javafx.uia.UIANode;
 import javafx.uia.Variant;
 
 public class Simple extends Application {
@@ -192,7 +189,7 @@ public class Simple extends Application {
 
         IUIAElement uiaCanvas;
 
-        class MyRect implements IUIAElement, ISimpleProvider {
+        class MyRect implements IUIAElement {
             int x;
             int y;
             int width;
@@ -227,7 +224,7 @@ public class Simple extends Application {
             public Bounds getBounds() {
                 return new BoundingBox(x, y, width, height);
             }
-
+/*
             @Override
             public boolean isContentElement() {
                 return false;
@@ -237,7 +234,7 @@ public class Simple extends Application {
             public boolean isControlElement() {
                 return false;
             }
-
+*/
             @Override
             public List<IUIAElement> getChildren() {
                 return Collections.emptyList();
@@ -395,12 +392,12 @@ public class Simple extends Application {
             }
 
             @Override
-            public IRawElementProviderSimple[] GetChildren() {
+            public IUIAElement[] GetChildren() {
                 return null;
             }
 
             @Override
-            public IRawElementProviderSimple GetEnclosingElement() {
+            public IUIAElement GetEnclosingElement() {
                 return null;
             }
 
@@ -438,7 +435,7 @@ public class Simple extends Application {
             }
             
         }
-        class Third extends UIANode implements ITextProvider {
+        class Third implements IUIAElement, ITextProvider {
 
             @Override
             public ITextRangeProvider get_DocumentRange() {
@@ -461,14 +458,42 @@ public class Simple extends Application {
             }
 
             @Override
-            public ITextRangeProvider RangeFromChild(IRawElementProviderSimple childElement) {
+            public ITextRangeProvider RangeFromChild(IUIAElement childElement) {
                 
                 return null;
+            }
+
+            @Override
+            public IUIAElement getParent() {
+                return null;
+            }
+
+            @Override
+            public List<IUIAElement> getChildren() {
+                return null;
+            }
+
+            @Override
+            public ControlType getControlType() {
+                return ControlType.UIA_PaneControlTypeId;
+            }
+
+            @Override
+            public Bounds getBounds() {
+                return null;
+            }
+
+            @Override
+            public void SetFocus() {
+            }
+
+            @Override
+            public void initialize(IUIAElementEvents events) {
             }
             
         }
 
-        UIANode vChild3 = new Third() {
+        IUIAElement vChild3 = new Third() {
             @Override
             public String toString() {
                 return "vChild3";
