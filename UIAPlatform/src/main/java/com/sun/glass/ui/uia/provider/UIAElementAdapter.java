@@ -34,6 +34,7 @@ import com.sun.glass.ui.uia.glass.WinVariant;
 
 import javafx.geometry.Bounds;
 import javafx.uia.ControlType;
+import javafx.uia.IInvokeProvider;
 import javafx.uia.IToggleProvider;
 import javafx.uia.IUIAElement;
 import javafx.uia.IWindowProvider;
@@ -71,6 +72,10 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
         if (provider.isProviderAvailable(IToggleProvider.class)) {
             IToggleProvider toggleProvider = provider.getProvider(IToggleProvider.class);
             nativeProviders.put(NativeIToggleProvider.class, new ToggleProviderAdapter(accessible, toggleProvider));
+        }
+        if (provider.isProviderAvailable(IInvokeProvider.class)) {
+            IInvokeProvider javaProvider = provider.getProvider(IInvokeProvider.class);
+            nativeProviders.put(NativeIInvokeProvider.class, new InvokeProviderAdapter(accessible, javaProvider));
         }
     }
 
@@ -241,6 +246,10 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
 
         if (StandardPatternIds.UIA_WindowPatternId.getNativeValue() == patternId) {
             return getNativeProvider(NativeIWindowProvider.class) != null ? accessible.getNativeAccessible() : 0L;
+        }
+
+        if (StandardPatternIds.UIA_InvokePatternId.getNativeValue() == patternId) {
+            return getNativeProvider(NativeIInvokeProvider.class) != null ? accessible.getNativeAccessible() : 0L;
         }
 
         // fall back to glass
