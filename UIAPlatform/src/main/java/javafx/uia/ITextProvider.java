@@ -30,5 +30,5 @@ public interface ITextProvider {
     SupportedTextSelection get_SupportedTextSelection();
     ITextRangeProvider[] GetSelection();
     ITextRangeProvider[] GetVisibleRanges();
-    ITextRangeProvider RangeFromChild(IRawElementProviderSimple childElement);
+    ITextRangeProvider RangeFromChild(IUIAElement childElement);
 }
