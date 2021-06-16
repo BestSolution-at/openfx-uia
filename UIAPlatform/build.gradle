@@ -20,6 +20,11 @@ repositories {
 
 java {
     withSourcesJar()
+    withJavadocJar();
+}
+
+javadoc {
+    exclude 'com/sun/glass/ui/uia/**'
 }
 
 configurations {
