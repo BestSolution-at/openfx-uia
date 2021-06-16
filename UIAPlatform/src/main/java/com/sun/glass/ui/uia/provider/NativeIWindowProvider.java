@@ -22,34 +22,16 @@
  * http://www.gnu.org/licenses/gpl.html
  * ----------------------------------------------------------------
  */
-package javafx.uia;
+package com.sun.glass.ui.uia.provider;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javafx.scene.AccessibleAttribute;
-
-public class UIA {
-
-	static class Defaults {
-		private static int nextId = 1;
-		private static Map<Integer, Integer> idMap = new HashMap<>();
-
-		public static String getAutomationId(IUIAElement element) {
-			return "openfx-uia-" + System.identityHashCode(element);
-		}
-
-		public static int getId(IUIAElement element) {
-			int hash = System.identityHashCode(element);
-			return idMap.computeIfAbsent(hash, h -> nextId++);
-		}
-	}
-
-	public static boolean isUIAQuery(AccessibleAttribute attribute, Object... parameters) {
-		return (attribute == AccessibleAttribute.TEXT 
-				&& parameters.length == 2 
-				&& "getProvider".equals(parameters[0])
-				&& IUIAElement.class == parameters[1]);
-	}
-
+public interface NativeIWindowProvider {
+    void Close();
+	boolean get_CanMaximize();
+	boolean get_CanMinimize();
+	boolean get_IsModal();
+	boolean get_IsTopmost();
+	int get_WindowInteractionState();
+	int get_WindowVisualState();
+	void SetVisualState(int state);
+	boolean WaitForInputIdle(int milliseconds);
 }

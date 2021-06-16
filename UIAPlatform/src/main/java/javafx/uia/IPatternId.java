@@ -24,32 +24,30 @@
  */
 package javafx.uia;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.stream.Stream;
 
-import javafx.scene.AccessibleAttribute;
-
-public class UIA {
-
-	static class Defaults {
-		private static int nextId = 1;
-		private static Map<Integer, Integer> idMap = new HashMap<>();
-
-		public static String getAutomationId(IUIAElement element) {
-			return "openfx-uia-" + System.identityHashCode(element);
-		}
-
-		public static int getId(IUIAElement element) {
-			int hash = System.identityHashCode(element);
-			return idMap.computeIfAbsent(hash, h -> nextId++);
-		}
+/**
+ * represents a uia pattern id
+ */
+public interface IPatternId {
+    
+    /**
+     * the native value
+     * @return native value
+     */
+    int getNativeValue();
+    
+    /**
+     * a lookup in standard pattern ids
+     * @param nativeValue the native value
+     * @return the standard pattern id or a simple wrapped native value
+     */
+    public static IPatternId fromNativeValue(int nativeValue) {
+        return Stream.of(StandardPatternIds.values()).filter(value -> value.getNativeValue() == nativeValue).map(v -> (IPatternId)v).findFirst().orElse(new IPatternId() {
+            @Override
+            public int getNativeValue() {
+                return nativeValue;
+            }
+        });
 	}
-
-	public static boolean isUIAQuery(AccessibleAttribute attribute, Object... parameters) {
-		return (attribute == AccessibleAttribute.TEXT 
-				&& parameters.length == 2 
-				&& "getProvider".equals(parameters[0])
-				&& IUIAElement.class == parameters[1]);
-	}
-
 }

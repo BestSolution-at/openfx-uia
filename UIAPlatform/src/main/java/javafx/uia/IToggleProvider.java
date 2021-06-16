@@ -24,32 +24,34 @@
  */
 package javafx.uia;
 
-import java.util.HashMap;
-import java.util.Map;
+/**
+ * Provides access to controls that can cycle through a set of states and maintain a state after it is set.
+ */
+public interface IToggleProvider {
 
-import javafx.scene.AccessibleAttribute;
-
-public class UIA {
-
-	static class Defaults {
-		private static int nextId = 1;
-		private static Map<Integer, Integer> idMap = new HashMap<>();
-
-		public static String getAutomationId(IUIAElement element) {
-			return "openfx-uia-" + System.identityHashCode(element);
-		}
-
-		public static int getId(IUIAElement element) {
-			int hash = System.identityHashCode(element);
-			return idMap.computeIfAbsent(hash, h -> nextId++);
-		}
+	/** Event support for IToggleProvider */
+	interface IToggleProviderEvents {
+		/** notifies UIA that the toggle state has changed */
+		void notifyToggleStateChanged(ToggleState oldValue, ToggleState newValue);
 	}
+	
+	/**
+	 * Cycles through the toggle states of a control.
+	 * <p>A control must cycle through its ToggleState in this order: ToggleState_On, ToggleState_Off and, if supported, ToggleState_Indeterminate.</p>
+	 */
+	void Toggle();
 
-	public static boolean isUIAQuery(AccessibleAttribute attribute, Object... parameters) {
-		return (attribute == AccessibleAttribute.TEXT 
-				&& parameters.length == 2 
-				&& "getProvider".equals(parameters[0])
-				&& IUIAElement.class == parameters[1]);
-	}
+	/**
+	 * Specifies the toggle state of the control.
+	 * <p>A control must cycle through its ToggleState in this order: ToggleState_On, ToggleState_Off and, if supported, ToggleState_Indeterminate.</p>
+	 * @return the toggle state
+	 */
+	ToggleState get_ToggleState();
 
+	/**
+	 * initializes the event support
+	 * <p>clients must implement this and store the events object to be able to dispatch events</p>
+	 * @param events the event support
+	 */
+	void initialize(IToggleProviderEvents events);
 }

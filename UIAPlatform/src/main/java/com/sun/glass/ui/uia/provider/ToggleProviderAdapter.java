@@ -22,34 +22,37 @@
  * http://www.gnu.org/licenses/gpl.html
  * ----------------------------------------------------------------
  */
-package javafx.uia;
+package com.sun.glass.ui.uia.provider;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.sun.glass.ui.uia.ProxyAccessible;
 
-import javafx.scene.AccessibleAttribute;
+import javafx.uia.IToggleProvider;
+import javafx.uia.IToggleProvider.IToggleProviderEvents;
+import javafx.uia.StandardPropertyIds;
+import javafx.uia.ToggleState;
 
-public class UIA {
+public class ToggleProviderAdapter extends BaseAdapter<IToggleProvider> implements NativeIToggleProvider {
+    
+    private final IToggleProvider.IToggleProviderEvents events = new IToggleProviderEvents() {
+        @Override
+        public void notifyToggleStateChanged(ToggleState oldValue, ToggleState newValue) {
+            UiaRaiseAutomationPropertyChangedEvent(StandardPropertyIds.UIA_ToggleToggleStatePropertyId, oldValue, newValue);
+        }
+    };
 
-	static class Defaults {
-		private static int nextId = 1;
-		private static Map<Integer, Integer> idMap = new HashMap<>();
+    public ToggleProviderAdapter(ProxyAccessible accessible, IToggleProvider provider) {
+        super(accessible, provider);
+        provider.initialize(events);
+    }
 
-		public static String getAutomationId(IUIAElement element) {
-			return "openfx-uia-" + System.identityHashCode(element);
-		}
+    @Override
+    public void Toggle() {
+        provider.Toggle();
+    }
 
-		public static int getId(IUIAElement element) {
-			int hash = System.identityHashCode(element);
-			return idMap.computeIfAbsent(hash, h -> nextId++);
-		}
-	}
-
-	public static boolean isUIAQuery(AccessibleAttribute attribute, Object... parameters) {
-		return (attribute == AccessibleAttribute.TEXT 
-				&& parameters.length == 2 
-				&& "getProvider".equals(parameters[0])
-				&& IUIAElement.class == parameters[1]);
-	}
+    @Override
+    public int get_ToggleState() {
+        return provider.get_ToggleState().getNativeValue();
+    }
 
 }

@@ -1,0 +1,30 @@
+= Sample: First adoc
+Christoph Caks <ccaks@bestsolution.at>
+
+This should be a simple text paragraph.
+With a second line.
+But how to access it in asciidoctor?
+My name is {firstname}. Spaces sometimes seem to be too small...
+
+variable resolution does not seem to work if you use the getLines() api.
+
+== A very long subtitle that should not fit within the provided space of 460 units
+
+== Subtitle
+Lorem ipsum dolor sit amet.
+Foo Bar baz.
+
+== Formatting
+*This* should be bold.
+
+_This_ should be cursiv.
+
+`This` should be mono.
+
+== Overkill
+
+*a very very long and bold line that won't fit into the space the application provides, at least it won't after i add some more words*
+
+_a very very long and italic line that won't fit into the space the application provides, at least it won't after i add some more words_
+
+`a very very long and mono line that won't fit into the space the application provides, at least it won't after i add some more words`

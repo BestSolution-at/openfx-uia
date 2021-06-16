@@ -1,4 +1,3 @@
-
 plugins {
     id "application"
 }
@@ -15,10 +14,12 @@ configurations {
 }
 
 dependencies {
-    compileOnly project(":UIAPlatform")
+    implementation project(":UIAPlatform")
     testImplementation("junit:junit:4.13")
 
     platformLib project(":UIAPlatform") // used to determine the ext dir where the UIAPlatform.jar is located
+
+    implementation "org.asciidoctor:asciidoctorj:2.5.1"
 }
 
 import org.gradle.internal.jvm.Jvm
