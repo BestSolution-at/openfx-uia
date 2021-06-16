@@ -31,7 +31,10 @@ public interface IToggleProvider {
 
 	/** Event support for IToggleProvider */
 	interface IToggleProviderEvents {
-		/** notifies UIA that the toggle state has changed */
+		/** notifies UIA that the toggle state has changed 
+		 * @param oldValue the old value
+		 * @param newValue the new value
+		*/
 		void notifyToggleStateChanged(ToggleState oldValue, ToggleState newValue);
 	}
 	

@@ -73,7 +73,7 @@ import com.sun.javafx.scene.SceneHelper;
  // * the getAccessible methods translate the proxy accessible to the WinAccessible
  // this should make it easy to merge openjfx changes
 
- @SuppressWarnings("restriction")
+ @SuppressWarnings({"restriction", "javadoc"})
 public final class WinAccessible extends Accessible {
 
 //    private native static void _initIDs();
@@ -602,9 +602,9 @@ public final class WinAccessible extends Accessible {
         }
     }
 
-    /***********************************************/
+    /* **********************************************/
     /*        IRawElementProviderSimple            */
-    /***********************************************/
+    /* **********************************************/
     public long GetPatternProvider(int patternId) {
         if (isDisposed()) return 0;
         AccessibleRole role = (AccessibleRole)getAttribute(ROLE);
@@ -919,9 +919,9 @@ public final class WinAccessible extends Accessible {
         return variant;
     }
 
-    /***********************************************/
+    /* **********************************************/
     /*       IRawElementProviderFragment           */
-    /***********************************************/
+    /* **********************************************/
     public float[] get_BoundingRectangle() {
         if (isDisposed()) return null;
         /* No needs to answer for the root */
@@ -1117,9 +1117,9 @@ public final class WinAccessible extends Accessible {
         executeAction(AccessibleAction.REQUEST_FOCUS);
     }
 
-    /***********************************************/
+    /* **********************************************/
     /*     IRawElementProviderFragmentRoot         */
-    /***********************************************/
+    /* **********************************************/
     public long ElementProviderFromPoint(double x, double y) {
         if (isDisposed()) return 0;
         Node node = (Node)getAttribute(NODE_AT_POINT, new Point2D(x, y));
@@ -1135,9 +1135,9 @@ public final class WinAccessible extends Accessible {
         return getNativeAccessible(node);
     }
 
-    /***********************************************/
+    /* **********************************************/
     /*     IRawElementProviderAdviseEvents         */
-    /***********************************************/
+    /* **********************************************/
     public void AdviseEventAdded(int eventId, long propertyIDs) {
         /* Implementing IRawElementProviderAdviseEvents ensures
          * that the window is announced by Narrator when it first
@@ -1149,17 +1149,17 @@ public final class WinAccessible extends Accessible {
         /* See AdviseEventAdded() */
     }
 
-    /***********************************************/
+    /* **********************************************/
     /*             IInvokeProvider                 */
-    /***********************************************/
+    /* **********************************************/
     public void Invoke() {
         if (isDisposed()) return;
         executeAction(AccessibleAction.FIRE);
     }
 
-    /***********************************************/
+    /* **********************************************/
     /*           ISelectionProvider                */
-    /***********************************************/
+    /* **********************************************/
     public long[] GetSelection() {
         if (isDisposed()) return null;
 
@@ -1240,9 +1240,9 @@ public final class WinAccessible extends Accessible {
         return true;
     }
 
-    /***********************************************/
+    /* **********************************************/
     /*           IRangeValueProvider               */
-    /***********************************************/
+    /* **********************************************/
     public void SetValue(double val) {
         if (isDisposed()) return;
         AccessibleRole role = (AccessibleRole)getAttribute(ROLE);
@@ -1305,9 +1305,9 @@ public final class WinAccessible extends Accessible {
         return 3;//TODO
     }
 
-    /***********************************************/
+    /* **********************************************/
     /*             IValueProvider                  */
-    /***********************************************/
+    /* **********************************************/
     public void SetValueString(String val) {
         if (isDisposed()) return;
         AccessibleRole role = (AccessibleRole)getAttribute(ROLE);
@@ -1378,9 +1378,9 @@ public final class WinAccessible extends Accessible {
         return acc != null ? acc.getNativeAccessible() : 0L;
     }
 
-    /***********************************************/
+    /* **********************************************/
     /*              ITextProvider                  */
-    /***********************************************/
+    /* **********************************************/
     public long[] GetVisibleRanges() {
         if (isDisposed()) return null;
         return new long[] {get_DocumentRange()};
@@ -1422,9 +1422,9 @@ public final class WinAccessible extends Accessible {
         return SupportedTextSelection_Single;
     }
 
-    /***********************************************/
+    /* **********************************************/
     /*             IGridProvider                   */
-    /***********************************************/
+    /* **********************************************/
     public int get_ColumnCount() {
         if (isDisposed()) return 0;
         Integer count = (Integer)getAttribute(COLUMN_COUNT);
@@ -1448,9 +1448,9 @@ public final class WinAccessible extends Accessible {
         return getNativeAccessible(node);
     }
 
-    /***********************************************/
+    /* **********************************************/
     /*             IGridItemProvider               */
-    /***********************************************/
+    /* **********************************************/
     public int get_Column() {
         if (isDisposed()) return 0;
         Integer result = (Integer)getAttribute(COLUMN_INDEX);
@@ -1490,9 +1490,9 @@ public final class WinAccessible extends Accessible {
         return 1;
     }
 
-    /***********************************************/
+    /* **********************************************/
     /*               ITableProvider                */
-    /***********************************************/
+    /* **********************************************/
     public long[] GetColumnHeaders() {
         if (isDisposed()) return null;
        /* No support in JFX to return all columns with a single call */
@@ -1510,9 +1510,9 @@ public final class WinAccessible extends Accessible {
         return RowOrColumnMajor_RowMajor;
     }
 
-    /***********************************************/
+    /* **********************************************/
     /*             ITableItemProvider              */
-    /***********************************************/
+    /* **********************************************/
     public long[] GetColumnHeaderItems() {
         if (isDisposed()) return null;
        Integer columnIndex = (Integer)getAttribute(COLUMN_INDEX);
@@ -1623,9 +1623,9 @@ public final class WinAccessible extends Accessible {
         return isExpanded ? ExpandCollapseState_Expanded : ExpandCollapseState_Collapsed;
     }
 
-    /***********************************************/
+    /* **********************************************/
     /*             ITransformProvider              */
-    /***********************************************/
+    /* **********************************************/
     public boolean get_CanMove() {
         return false;
     }
@@ -1647,9 +1647,9 @@ public final class WinAccessible extends Accessible {
     public void Rotate(double degrees) {
     }
 
-    /***********************************************/
+    /* **********************************************/
     /*             IScrollProvider                 */
-    /***********************************************/
+    /* **********************************************/
     public void Scroll(int horizontalAmount, int verticalAmount) {
         if (isDisposed()) return;
 
