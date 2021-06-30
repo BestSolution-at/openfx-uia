@@ -1,0 +1,38 @@
+.sample-list-item {
+    -fx-padding: 1em 2em 2em 2em;
+}
+
+.sample-list-item:hover {
+    -fx-background-color: rgba(95, 196, 243, 0.199);
+}
+
+.sample-list-item > .title {
+    -fx-font-size: 2em;
+}
+
+.sample-list-item > .content-area {
+    -fx-background-color: white;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.301), 10, 0.5, 2, 2);
+}
+
+
+
+.sample-list-item > .detail-area {
+    -fx-min-width: 500px;
+    -fx-pref-width: 500px;
+    -fx-max-width: 500px;
+    -fx-padding: 0 0 0 2em;
+    -fx-spacing: 1em;
+}
+
+.sample-list-item > .detail-area > .control-area {
+    -fx-padding: 1em;
+    -fx-border-color: rgba(40, 40, 40, .2);
+    -fx-border-width: 1px;
+    -fx-border-radius: 4px;
+}
+
+.sample-list-item > .detail-area > .control-area VBox,
+.sample-list-item > .detail-area > .control-area HBox {
+    -fx-spacing: 1em;
+}
