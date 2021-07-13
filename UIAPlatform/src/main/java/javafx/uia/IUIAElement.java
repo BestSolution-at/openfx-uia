@@ -24,6 +24,8 @@
  */
 package javafx.uia;
 
+import java.util.function.Consumer;
+
 import javafx.geometry.Bounds;
 
 /**
@@ -41,6 +43,26 @@ import javafx.geometry.Bounds;
  * </p>
  */
 public interface IUIAElement extends IInitable {
+
+	/**
+	 * context object for IUIAElement.
+	 * <p>
+	 * The context object encapsulates the functionality to fire property changes and events.
+	 * </p>
+	 */
+	class UIAElementContext {
+        //public IProperty<Integer> Id;
+        public final IProperty<String> AutomationId;
+        public final IProperty<ControlType> ControlType;
+        public final IProperty<Bounds> BoundingRectangle;
+
+		public UIAElementContext(IInitContext init, IUIAElement element) {
+            //Id = init.addProperty(StandardPropertyIds.UIA_RuntimeIdPropertyId)
+            AutomationId = init.addAutomationIdProperty(element::getAutomationId);
+            ControlType = init.addControlTypeProperty(element::getControlType);
+            BoundingRectangle = init.addBoundingRectangleProperty(element::getBounds);
+		}
+	}
 
     /**
      * the id
@@ -62,7 +84,10 @@ public interface IUIAElement extends IInitable {
      * the controltype of the element
      * @return the control type
      */
-    ControlType getControlType();
+    default ControlType getControlType() {
+        // we default to the custom control type
+        return ControlType.UIA_CustomControlTypeId;
+    }
 
     /** 
      * The bounds of the element, in screen space 
@@ -77,6 +102,10 @@ public interface IUIAElement extends IInitable {
      * <p>this method is from the IRawElementProviderFragment</p>
      */
     void SetFocus();
+
+    default <C> void withContext(Class<C> contextType, Consumer<C> run) {
+        UIA.Defaults.runWithContext(contextType, this, run);
+    }
 
     default boolean isProviderAvailable(Class<?> providerType) {
         return providerType.isAssignableFrom(getClass());

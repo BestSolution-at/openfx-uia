@@ -92,11 +92,16 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
         return providerRegistry;
     }
 
+    private final IUIAElement.UIAElementContext ctx;
+
     public UIAElementAdapter(ProxyAccessible accessible, IUIAElement element) {
         super(accessible, element);
 
         // element init
         element.initialize(init);
+
+        ctx = new IUIAElement.UIAElementContext(init, element);
+
 
         // pattern provider init
         for (ProviderDescriptor<?, ?> descriptor : ProviderDescriptor.Registry.getAvailable()) {
@@ -104,6 +109,10 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
                 providerRegistry.register(descriptor.createInstance(init, accessible, element));
             }
         }
+    }
+
+    public IUIAElement.UIAElementContext getContext() {
+        return ctx;
     }
 
 

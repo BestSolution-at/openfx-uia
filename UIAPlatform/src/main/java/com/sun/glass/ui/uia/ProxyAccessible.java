@@ -108,7 +108,11 @@ public class ProxyAccessible extends Accessible {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public <T> T getContext(Class<T> type) {
+        if (type == IUIAElement.UIAElementContext.class) {
+            return (T) uiaElementAdapter.getContext();
+        }
         return uiaElementAdapter.getProviderRegistry().getContext(type);
     }
 

@@ -36,7 +36,7 @@ public interface IToggleProvider extends IInitable {
 	 * </p>
 	 */
 	class ToggleProviderContext {
-		public IProperty<ToggleState> ToggleState;
+		public final IProperty<ToggleState> ToggleState;
 
 		public ToggleProviderContext(IInitContext init, IToggleProvider toggleProvider) {
 			ToggleState = init.addProperty(StandardPropertyIds.UIA_ToggleToggleStatePropertyId, toggleProvider::get_ToggleState, StandardVariantConverters.I4_INativeEnum());
@@ -56,7 +56,4 @@ public interface IToggleProvider extends IInitable {
 	 */
 	ToggleState get_ToggleState();
 
-	default ToggleProviderContext getToggleProviderContext() {
-		return UIA.Defaults.getContext(ToggleProviderContext.class, this);
-	}
 }

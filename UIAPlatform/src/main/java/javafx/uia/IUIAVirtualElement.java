@@ -46,4 +46,10 @@ public interface IUIAVirtualElement extends IUIAElement {
      */
     List<IUIAElement> getChildren();
 
+    @Override
+    default void SetFocus() {
+        // a virtual element is not focusable
+        // JavaFX allows only real nodes to acquire the focus
+    }
+
 }

@@ -35,11 +35,6 @@ package javafx.uia;
  */
 public interface IInvokeProvider {
 
-	/** Event support for IInvokeProvider */
-	interface IInvokeProviderEvents {
-		// no events
-	}
-	
 	/**
 	 * Sends a request to activate a control and initiate its single, unambiguous action.
 	 * <p>
@@ -63,10 +58,4 @@ public interface IInvokeProvider {
 	 */
 	void Invoke();
 
-	/**
-	 * initializes the event support
-	 * <p>clients must implement this and store the events object to be able to dispatch events</p>
-	 * @param events the event support
-	 */
-	void initialize(IInvokeProviderEvents events);
 }

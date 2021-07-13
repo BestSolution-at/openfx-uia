@@ -25,71 +25,28 @@
 package uia.sample.samples;
 
 import javafx.geometry.Bounds;
-import javafx.geometry.Point2D;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.scene.input.MouseEvent;
-import javafx.uia.ControlType;
-import javafx.uia.IInitContext;
-import javafx.uia.IProperty;
 import javafx.uia.IUIAElement;
 import javafx.uia.UIA;
 import uia.sample.Sample;
 
 public class SimpleUIAElement implements Sample {
 
-
-    class MyLabelElement implements IUIAElement {
-
-        public IProperty<Point2D> clickable;
-        public IProperty<Bounds> bounds;
-        public IProperty<String> name;
-
-        String getName() {
-            return "myLabel";
-        }
-
-        @Override
-        public void initialize(IInitContext props) {
-            name = props.addNameProperty(this::getName);
-            clickable = props.addClickablePointProperty(this::getClickablePoint);
-            bounds = props.addBoundingRectangleProperty(this::getBounds);
-        }
-
-        public Point2D getClickablePoint() {
-            Bounds b = getBounds();
-            return new Point2D(b.getMinX() + b.getWidth() / 2, b.getMinY() + b.getHeight() / 2);
-        }
-
-        @Override
-        public ControlType getControlType() {
-            return ControlType.UIA_TextControlTypeId;
-        }
-
-        @Override
-        public Bounds getBounds() {
-            return content.localToScreen(content.getBoundsInLocal());
-        }
-
-        @Override
-        public void SetFocus() {
-        }
- 
-    }
-
     class MyLabel extends Label {
+        IUIAElement uia = new IUIAElement() {
 
-        MyLabelElement uia = new MyLabelElement();
-
-        MyLabel(String text) {
-            super(text);
-
-            addEventHandler(MouseEvent.MOUSE_CLICKED, evt -> {
-                System.err.println("FIRE!");
-                uia.bounds.fireChanged(uia.getBounds(), uia.getBounds());
-            });
-        }
+            @Override
+            public Bounds getBounds() {
+                return content.localToScreen(content.getBoundsInLocal());
+            }
+    
+            @Override
+            public void SetFocus() {
+            }
+     
+        };
 
         @Override
         public Object queryAccessibleAttribute(AccessibleAttribute attribute, Object... parameters) {
@@ -98,7 +55,6 @@ public class SimpleUIAElement implements Sample {
             }
             return super.queryAccessibleAttribute(attribute, parameters);
         }
-
     }
 
     Label desc;
@@ -107,7 +63,9 @@ public class SimpleUIAElement implements Sample {
     public SimpleUIAElement() {
         desc = new Label("the basic usage of IUIAElement. A Label which a11y calls are handled by openfx-uia instead of vanilla glass a11y. Since no providers are registered there is less functionality than with glass a11y");
         desc.setWrapText(true);
-        content = new MyLabel("Hello UIA");
+
+        content = new MyLabel();
+        content.setText("Hello UIA");
     }
 
     @Override

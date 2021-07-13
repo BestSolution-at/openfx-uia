@@ -171,7 +171,7 @@ public class CanvasWithVirtualChildren implements Sample {
 
         ToggleRect(double x, double y, double w, double h) {
             super(Color.RED, x, y, w, h);
-            on.addListener((obs, ol, ne) -> getToggleProviderContext().ToggleState.fireChanged(ol ? ToggleState.On : ToggleState.Off, ne ? ToggleState.On : ToggleState.Off));
+            on.addListener((obs, ol, ne) -> withContext(IToggleProvider.ToggleProviderContext.class, context -> context.ToggleState.fireChanged(ol ? ToggleState.On : ToggleState.Off, ne ? ToggleState.On : ToggleState.Off)));
             on.addListener((obs, ol, ne) -> {
                 color = ne ? Color.GREEN : Color.RED;
             });

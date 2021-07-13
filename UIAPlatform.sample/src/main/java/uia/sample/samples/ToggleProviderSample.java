@@ -51,7 +51,7 @@ public class ToggleProviderSample implements Sample {
 
             MyElement() {
                 MyLabel.this.toggleState.addListener((obs, ol, ne) -> {
-                    getToggleProviderContext().ToggleState.fireChanged(ol ? ToggleState.On : ToggleState.Off, ne ? ToggleState.On : ToggleState.Off);
+                    uia.withContext(IToggleProvider.ToggleProviderContext.class, context -> context.ToggleState.fireChanged(ol ? ToggleState.On : ToggleState.Off, ne ? ToggleState.On : ToggleState.Off));
                 });
             }
 

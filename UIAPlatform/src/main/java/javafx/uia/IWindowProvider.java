@@ -67,8 +67,4 @@ public interface IWindowProvider extends IInitable {
 	void SetVisualState(WindowVisualState state);
 	boolean WaitForInputIdle(int milliseconds);
 
-	default WindowProviderContext getWindowProviderContext() {
-		return UIA.Defaults.getContext(WindowProviderContext.class, this);
-	}
-
 }

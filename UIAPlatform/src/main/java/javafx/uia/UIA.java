@@ -26,6 +26,7 @@ package javafx.uia;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 
 import com.sun.glass.ui.uia.ProxyAccessible;
 import com.sun.glass.ui.uia.ProxyAccessibleRegistry;
@@ -55,7 +56,14 @@ public class UIA {
 					return instance.getContext(type);
 				}
 			}
-			throw new RuntimeException("Context not available " + type + " for " + provider);
+			return null;
+		}
+
+		public static <C> void runWithContext(Class<C> contextType, Object provider, Consumer<C> run) {
+			C context = getContext(contextType, provider);
+			if (context != null) {
+				run.accept(context);
+			}
 		}
 	}
 

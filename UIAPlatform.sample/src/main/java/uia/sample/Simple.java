@@ -38,6 +38,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import uia.sample.samples.CanvasWithVirtualChildren;
 import uia.sample.samples.SimpleUIAElement;
+import uia.sample.samples.SimpleUIAElementWithProperties;
 import uia.sample.samples.ToggleProviderSample;
 
 public class Simple extends Application {
@@ -52,6 +53,7 @@ public class Simple extends Application {
 
         List<Sample> samples = Arrays.asList(
             new SimpleUIAElement(), 
+            new SimpleUIAElementWithProperties(),
             new ToggleProviderSample(), 
             new CanvasWithVirtualChildren());
 
