@@ -30,6 +30,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
@@ -41,9 +43,11 @@ import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.uia.ControlType;
+import javafx.uia.IToggleProvider;
 import javafx.uia.IUIAElement;
 import javafx.uia.IUIAVirtualElement;
 import javafx.uia.IUIAVirtualRootElement;
+import javafx.uia.ToggleState;
 import javafx.uia.UIA;
 import uia.sample.Sample;
 
@@ -118,8 +122,8 @@ public class CanvasWithVirtualChildren implements Sample {
 
     private class MyRectangle implements IUIAVirtualElement {
 
-        private IUIAElement parent;
-        private List<IUIAElement> children = new ArrayList<>();
+        IUIAElement parent;
+        List<IUIAElement> children = new ArrayList<>();
 
         Paint color;
         double x;
@@ -161,9 +165,33 @@ public class CanvasWithVirtualChildren implements Sample {
         }
     }
 
+    private class ToggleRect extends MyRectangle implements IToggleProvider {
+
+        public BooleanProperty on = new SimpleBooleanProperty();
+
+        ToggleRect(double x, double y, double w, double h) {
+            super(Color.RED, x, y, w, h);
+            on.addListener((obs, ol, ne) -> getToggleProviderContext().ToggleState.fireChanged(ol ? ToggleState.On : ToggleState.Off, ne ? ToggleState.On : ToggleState.Off));
+            on.addListener((obs, ol, ne) -> {
+                color = ne ? Color.GREEN : Color.RED;
+            });
+        }
+
+        @Override
+        public void Toggle() {
+            on.set(!on.get());
+        }
+
+        @Override
+        public ToggleState get_ToggleState() {
+            return on.get() ? ToggleState.On : ToggleState.Off;
+        }
+
+    }
+
     public CanvasWithVirtualChildren() {
 
-        Label desc = new Label("A canvas with with basic virtual UIA Elements as children");
+        Label desc = new Label("A canvas with with basic virtual UIA Elements as children. The first rectangle also implements an IToggleProvider, which can be toggled via various UIA clients");
         desc.setWrapText(true);
         description = desc;
 
@@ -172,7 +200,7 @@ public class CanvasWithVirtualChildren implements Sample {
         sample.setHeight(50);
 
         MyRectangle parent1 = new MyRectangle(new Color(1.0, 0, 0, 0.4), 70, 10, 125, 30);
-        MyRectangle red = new MyRectangle(Color.RED, 10, 10, 50, 30);
+        ToggleRect red = new ToggleRect(10, 10, 50, 30);
         MyRectangle green = new MyRectangle(Color.GREEN, 75, 15, 50, 20);
         MyRectangle blue = new MyRectangle(Color.BLUE, 140, 15, 50, 20);
 
@@ -198,6 +226,10 @@ public class CanvasWithVirtualChildren implements Sample {
         };
 
         render.accept(sample.uia);
+
+        red.on.addListener((obs, ol, ne) -> {
+            red.render(ctx);
+        });
     }
 
     @Override
