@@ -49,6 +49,9 @@ public final class WinVariant {
     public double[] pDblVal;
     public long punkVal;
 
+    // this is not really correct, pDblVal and pFltVal are not intended to be mapped to safearray, but we follow here the javafx way of handling R8|ARRAY via pDblVal
+    public float[] pFltVal;
+
 
     @Override
     public String toString() {

@@ -3,10 +3,6 @@ package javafx.uia;
 import java.util.Optional;
 import java.util.stream.Stream;
 
-import javafx.scene.Node;
-
-import static javafx.uia.Variant.*;
-
 /**
  * UI Automation Property Ids 
  * The descriptions are copied from above documentation. 
@@ -26,24 +22,24 @@ The format of RuntimeId can change. The returned identifier should be treated as
 Variant type: VT_I4 | VT_ARRAY
 Default value: VT_EMPTY
 	 */
-	UIA_RuntimeIdPropertyId(30000, Variant.VT_I4 | Variant.VT_ARRAY, int[].class),
+	UIA_RuntimeIdPropertyId(30000),
 	/** Identifies the BoundingRectangle property, which specifies the coordinates of the rectangle that completely encloses the automation element. The rectangle is expressed in physical screen coordinates. It can contain points that are not clickable if the shape or clickable region of the UI item is irregular, or if the item is obscured by other UI elements.
 Variant type: VT_R8 | VT_ARRAY
 Default value: [0,0,0,0]
 [!Note]
 This property is NULL if the item is not currently displaying a UI. */
-	UIA_BoundingRectanglePropertyId(30001, Variant.VT_R8 | Variant.VT_ARRAY, float[].class),
+	UIA_BoundingRectanglePropertyId(30001),
 	/** Identifies the ProcessId property, which is an integer representing the process identifier (ID) of the automation element.
 The process identifier (ID) is assigned by the operating system. It can be seen in the PID column of the Processes tab in Task Manager.
 Variant type: VT_I4
 Default value: 0 */
-	UIA_ProcessIdPropertyId(30002, Variant.VT_I4, int.class),
+	UIA_ProcessIdPropertyId(30002),
 	/** Identifies the ControlType property, which is a class that identifies the type of the automation element. ControlType defines characteristics of the UI elements by well known UI control primitives such as button or check box.
 Variant type: VT_I4
 Default value: UIA_CustomControlTypeId
 [!Note]
 Use the default value only if the automation element represents a completely new type of control. */
-	UIA_ControlTypePropertyId(30003, Variant.VT_I4, int.class),
+	UIA_ControlTypePropertyId(30003),
 
 	/** Identifies the LocalizedControlType property, which is a text string describing the type of control that the automation element represents. The string should contain only lowercase characters:
 Correct: "button"
@@ -53,7 +49,7 @@ When LocalizedControlType is not specified by the element provider, the default 
 When a custom value is supplied, the string must match the application UI language or the operating system default UI language.
 Variant type: VT_BSTR
 Default value: empty string */
-	UIA_LocalizedControlTypePropertyId(30004, Variant.VT_BSTR, String.class),
+	UIA_LocalizedControlTypePropertyId(30004),
 	/** Identifies the Name property, which is a string that holds the name of the automation element.
 The Name property should be the same as the label text on screen. For example, Name should be "Browse" for a button element with the label "Browse". The Name property must not include the mnemonic character for the access keys (that is, "&amp;"), which is underlined in the UI text presentation. Also, the Name property should not be an extended or modified version of the on-screen label because the inconsistency between the name and the label can cause confusion among client applications and users.
 When the corresponding label text is not visible on screen, or when it is replaced by graphics, alternative text should be chosen. The alternative text should be concise, intuitive, and localized to the application UI language, or to the operating system default UI language. The alternative text should not be a detailed description of the visual details, but a concise description of the UI function or feature as if it were labeled by simple text. For example, the Windows Start menu button is named "Start" (button) instead of "Windows Logo on blue round sphere graphics" (button). For more information, see Creating Text Equivalents for Images.
@@ -63,388 +59,388 @@ The Name property cannot be used as a unique identifier among siblings. However,
 Text controls do not always have to have the Name property be identical to the text that is displayed within the control, so long as the Text pattern is also supported.
 Variant type: VT_BSTR
 Default value: empty string */
-	UIA_NamePropertyId(30005, Variant.VT_BSTR, String.class),
+	UIA_NamePropertyId(30005),
 	/** Identifies the AcceleratorKey property, which is a string containing the accelerator key (also called shortcut key) combinations for the automation element.
 Shortcut key combinations invoke an action. For example, CTRL+O is often used to invoke the Open file common dialog box. An automation element that has the AcceleratorKey property can implement the Invoke control pattern for the action that is equivalent to the shortcut command.
 Variant type: VT_BSTR
 Default value: empty string */
-	UIA_AcceleratorKeyPropertyId(30006, Variant.VT_BSTR, String.class),
+	UIA_AcceleratorKeyPropertyId(30006),
 	/** Identifies the AccessKey property, which is a string containing the access key character for the automation element.
 An access key (sometimes called a mnemonic) is a character in the text of a menu, menu item, or label of a control such as a button, that activates the associated menu function. For example, to open the File menu, for which the access key is typically F, the user would press ALT+F.
 Variant type: VT_BSTR
 Default value: empty string */
-	UIA_AccessKeyPropertyId(30007, Variant.VT_BSTR, String.class),
+	UIA_AccessKeyPropertyId(30007),
 	/** Identifies the HasKeyboardFocus property, which is a Boolean value that indicates whether the automation element has keyboard focus.
 Variant type: VT_BOOL
 Default value: FALSE */
-	UIA_HasKeyboardFocusPropertyId(30008, Variant.VT_BOOL, boolean.class),
+	UIA_HasKeyboardFocusPropertyId(30008),
 	/** Identifies the IsKeyboardFocusable property, which is a Boolean value that indicates whether the automation element can accept keyboard focus.
 Variant type: VT_BOOL
 Default value: FALSE */
-	UIA_IsKeyboardFocusablePropertyId(30009, Variant.VT_BOOL, boolean.class),
+	UIA_IsKeyboardFocusablePropertyId(30009),
 	/** Identifies the IsEnabled property, which is a Boolean value that indicates whether the UI item referenced by the automation element is enabled and can be interacted with.
 When the enabled state of a control is FALSE, it is assumed that child controls are also not enabled. Clients should not expect property-changed events from child elements when the state of the parent control changes.
 Variant type: VT_BOOL
 Default value: FALSE */
-	UIA_IsEnabledPropertyId(30010, Variant.VT_BOOL, boolean.class),
+	UIA_IsEnabledPropertyId(30010),
 	/** Identifies the AutomationId property, which is a string containing the UI Automation identifier (ID) for the automation element.
 When it is available, the AutomationId of an element must be the same in any instance of the application, regardless of the local language. The value should be unique among sibling elements, but not necessarily unique across the entire desktop. For example, multiple instances of an application, or multiple folder views in Microsoft Windows Explorer, can contain elements with the same AutomationId property, such as "SystemMenuBar".
 Although support for AutomationId is always recommended for better automated testing support, this property is not mandatory. Where it is supported, AutomationId is useful for creating a test automation script that runs regardless of the UI language. Clients should make no assumptions regarding the AutomationId values exposed by other applications. AutomationId is not guaranteed to be stable across different releases or builds of an application.
 Variant type: VT_BSTR
 Default value: empty string */
-	UIA_AutomationIdPropertyId(30011, Variant.VT_BSTR, String.class),
+	UIA_AutomationIdPropertyId(30011),
 	/** Identifies the ClassName property, which is a string containing the class name for the automation element as assigned by the control developer.
 The class name depends on the implementation of the UI Automation provider and therefore is not always in a standard format. However, if the class name is known, it can be used to verify that an application is working with the expected automation element.
 Variant type: VT_BSTR
 Default value: empty string */
-	UIA_ClassNamePropertyId(30012, Variant.VT_BSTR, String.class),
+	UIA_ClassNamePropertyId(30012),
 	/** Identifies the HelpText property, which is a help text string associated with the automation element.
 The HelpText property can be supported with placeholder text appearing in edit or list controls. For example, "Type text here for search" is a good candidate the HelpText property for an edit control that places the text prior to the user's actual input. However, it is not adequate for the name property of the edit control.
 When HelpText is supported, the string must match the application UI language or the operating system default UI language.
 Variant type: VT_BSTR
 Default value: empty string */
-	UIA_HelpTextPropertyId(30013, Variant.VT_BSTR, String.class),
+	UIA_HelpTextPropertyId(30013),
 	/** Identifies the ClickablePoint property, which is a point on the automation element that can be clicked. An element cannot be clicked if it is completely or partially obscured by another window.
 Variant type: VT_R8 | VT_ARRAY
 Default value: VT_EMPTY */
-	UIA_ClickablePointPropertyId(30014, Variant.VT_R8 | Variant.VT_ARRAY, float[].class),
+	UIA_ClickablePointPropertyId(30014),
 	/** Identifies the <strong>Culture</strong> property, which contains a locale identifier for the automation element (for example, <code>0x0409</code> for "en-US" or English (United States)). Each locale has a unique identifier, a 32-bit value that consists of a language identifier and a sort order identifier. The locale identifier is a standard international numeric abbreviation and has the components necessary to uniquely identify one of the installed operating system-defined locales. For more information, see Language Identifier Constants and Strings. This property may exist on a per-control basis, but typically is only available on an application level. Variant type: <strong>VT_I4</strong> Default value: 0 */
-	UIA_CulturePropertyId(30015, Variant.VT_I4, int.class),
+	UIA_CulturePropertyId(30015),
 	/** Identifies the <strong>IsControlElement</strong> property, which is a Boolean value that specifies whether the element appears in the control view of the automation element tree. For more information, see UI Automation Tree Overview. Variant type: <strong>VT_BOOL</strong> Default value: <strong>TRUE</strong> */
-	UIA_IsControlElementPropertyId(30016, Variant.VT_BOOL, boolean.class),
+	UIA_IsControlElementPropertyId(30016),
 	/** Identifies the <strong>IsContentElement</strong> property, which is a Boolean value that specifies whether the element appears in the content view of the automation element tree. For more information, see UI Automation Tree Overview.
 <blockquote>
 [!Note]
 For an element to appear in the content view, both the <strong>IsContentElement</strong> property and the <strong>IsControlElement</strong> property must be <strong>TRUE</strong>.
 </blockquote>
   Variant type: <strong>VT_BOOL</strong> Default value: <strong>TRUE</strong> */
-	UIA_IsContentElementPropertyId(30017, Variant.VT_BOOL, boolean.class),
+	UIA_IsContentElementPropertyId(30017),
 	/** Identifies the <strong>LabeledBy</strong> property, which is an automation element that contains the text label for this element. This property can be used to retrieve, for example, the static text label for a combo box. Variant type: <strong>VT_UNKNOWN</strong> Default value: <strong>NULL</strong> */
-	UIA_LabeledByPropertyId(30018, Variant.VT_UNKNOWN, Node.class),
+	UIA_LabeledByPropertyId(30018),
 	/** Identifies the <strong>IsPassword</strong> property, which is a Boolean value that indicates whether the automation element contains protected content or a password. When the <strong>IsPassword</strong> property is <strong>TRUE</strong> and the element has the keyboard focus, a client application should disable keyboard echoing or keyboard input feedback that may expose the user's protected information. Attempting to access the <strong>Value</strong> property of the protected element (edit control) may cause an error to occur. Variant type: <strong>VT_BOOL</strong> Default value: <strong>FALSE</strong> */
-	UIA_IsPasswordPropertyId(30019, Variant.VT_BOOL, boolean.class),
+	UIA_IsPasswordPropertyId(30019),
 	/** Identifies the <strong>NativeWindowHandle</strong> property, which is an integer that represents the handle (<strong>HWND</strong>) of the automation element window, if it exists; otherwise, this property is 0. Variant type: <strong>VT_I4</strong> Default value: 0 */
-	UIA_NativeWindowHandlePropertyId(30020, Variant.VT_I4, int.class),
+	UIA_NativeWindowHandlePropertyId(30020),
 	/** Identifies the <strong>ItemType</strong> property, which is a text string describing the type of the automation element. <strong>ItemType</strong> is used to obtain information about items in a list, tree view, or data grid. For example, an item in a file directory view might be a "Document File" or a "Folder". When <strong>ItemType</strong> is supported, the string must match the application UI language or the operating system default UI language. Variant type: <strong>VT_BSTR</strong> Default value: empty string */
-	UIA_ItemTypePropertyId(30021, Variant.VT_BSTR, String.class),
+	UIA_ItemTypePropertyId(30021),
 	/** Identifies the <strong>IsOffscreen</strong> property, which is a Boolean value that indicates whether the automation element is entirely scrolled out of view (for example, an item in a list box that is outside the viewport of the container object) or collapsed out of view (for example, an item in a tree view or menu, or in a minimized window). If the element has a clickable point that can cause it to receive the focus, the element is considered to be on-screen while a portion of the element is off-screen. The value of the property is not affected by occlusion by other windows, or by whether the element is visible on a specific monitor. If the <strong>IsOffscreen</strong> property is <strong>TRUE</strong>, the UI element is scrolled off-screen or collapsed. The element is temporarily hidden, yet it remains in the end-user's perception and continues to be included in the UI model. The object can be brought back into view by scrolling, clicking a drop-down, and so on. Objects that the end-user does not perceive at all, or that are "programmatically hidden" (for example, a dialog box that has been dismissed, but the underlying object is still cached by the application) should not be in the automation element tree in the first place (instead of setting the state of <strong>IsOffscreen</strong> to <strong>TRUE</strong>). Variant type: <strong>VT_BOOL</strong> Default value: <strong>FALSE</strong> */
-	UIA_IsOffscreenPropertyId(30022, VT_BOOL, boolean.class),
+	UIA_IsOffscreenPropertyId(30022),
 	/** Identifies the <strong>Orientation</strong> property, which indicates the orientation of the control represented by the automation element. The property is expressed as a value from the <strong>OrientationType_None</strong>) */
-	UIA_OrientationPropertyId(30023, VT_I4, OrientationType.class),
+	UIA_OrientationPropertyId(30023),
 	/** Identifies the <strong>FrameworkId</strong> property, which is a string containing the name of the underlying UI framework that the automation element belongs to. The <strong>FrameworkId</strong> enables client applications to process automation elements differently depending on the particular UI framework. Examples of property values include "Win32", "WinForm", and "DirectUI". Variant type: <strong>VT_BSTR</strong> Default value: empty string */
-	UIA_FrameworkIdPropertyId(30024, VT_BSTR, String.class),
+	UIA_FrameworkIdPropertyId(30024),
 	/** Identifies the <strong>IsRequiredForForm</strong> property, which is a Boolean value that indicates whether the automation element is required to be filled out on a form. Variant type: <strong>VT_BOOL</strong> Default value: <strong>FALSE</strong> */
-	UIA_IsRequiredForFormPropertyId(30025, VT_BOOL, boolean.class),
+	UIA_IsRequiredForFormPropertyId(30025),
 	/** Identifies the <strong>ItemStatus</strong> property, which is a text string describing the status of an item of the automation element. <strong>ItemStatus</strong> enables a client to ascertain whether an element is conveying status about an item as well as what the status is. For example, an item associated with a contact in a messaging application might be "Busy" or "Connected". When <strong>ItemStatus</strong> is supported, the string must match the application UI language or the operating system default UI language. Variant type: <strong>VT_BSTR</strong> Default value: empty string */
-	UIA_ItemStatusPropertyId(30026, VT_BSTR, String.class),
+	UIA_ItemStatusPropertyId(30026),
 	
 	
 	// Pattern available property ids (https://docs.microsoft.com/en-us/windows/win32/winauto/uiauto-control-pattern-availability-propids)
 	
 	/** Identifies the <strong>IsDockPatternAvailable</strong> property, which indicates whether the <strong>IUIAutomationDockPattern</strong> interface from the element. */
-	UIA_IsDockPatternAvailablePropertyId(30027, VT_BOOL, boolean.class),
+	UIA_IsDockPatternAvailablePropertyId(30027),
 	/** Identifies the <strong>IsExpandCollapsePatternAvailable</strong> property, which indicates whether the <strong>IUIAutomationExpandCollapsePattern</strong> interface from the element. */
-	UIA_IsExpandCollapsePatternAvailablePropertyId(30028, VT_BOOL, boolean.class),
+	UIA_IsExpandCollapsePatternAvailablePropertyId(30028),
 	/** Identifies the <strong>IsGridItemPatternAvailable</strong> property, which indicates whether the <strong>IUIAutomationGridItemPattern</strong> interface from the element. */
-	UIA_IsGridItemPatternAvailablePropertyId(30029, VT_BOOL, boolean.class),
+	UIA_IsGridItemPatternAvailablePropertyId(30029),
 	/** Identifies the <strong>IsGridPatternAvailable</strong> property, which indicates whether the <strong>IUIAutomationGridPattern</strong> interface from the element. */
-	UIA_IsGridPatternAvailablePropertyId(30030, VT_BOOL, boolean.class),
+	UIA_IsGridPatternAvailablePropertyId(30030),
 	/** Identifies the <strong>IsInvokePatternAvailable</strong> property, which indicates whether the <strong>IUIAutomationInvokePattern</strong> interface from the element. */
-	UIA_IsInvokePatternAvailablePropertyId(30031, VT_BOOL, boolean.class),
+	UIA_IsInvokePatternAvailablePropertyId(30031),
 	/** Identifies the <strong>IsMultipleViewPatternAvailable</strong> property, which indicates whether the <strong>IUIAutomationMultipleViewPattern</strong> interface from the element. */
-	UIA_IsMultipleViewPatternAvailablePropertyId(30032, VT_BOOL, boolean.class),
+	UIA_IsMultipleViewPatternAvailablePropertyId(30032),
 	/** Identifies the <strong>IsRangeValuePatternAvailable</strong> property, which indicates whether the <strong>IUIAutomationRangeValuePattern</strong> interface from the element. */
-	UIA_IsRangeValuePatternAvailablePropertyId(30033, VT_BOOL, boolean.class),
+	UIA_IsRangeValuePatternAvailablePropertyId(30033),
 	/** Identifies the <strong>IsScrollPatternAvailable</strong> property, which indicates whether the <strong>IUIAutomationScrollPattern</strong> interface from the element. */
-	UIA_IsScrollPatternAvailablePropertyId(30034, VT_BOOL, boolean.class),
+	UIA_IsScrollPatternAvailablePropertyId(30034),
 	/** Identifies the <strong>IsScrollItemPatternAvailable</strong> property, which indicates whether the <strong>IUIAutomationScrollItemPattern</strong> interface from the element. */
-	UIA_IsScrollItemPatternAvailablePropertyId(30035, VT_BOOL, boolean.class),
+	UIA_IsScrollItemPatternAvailablePropertyId(30035),
 	/** Identifies the <strong>IsSelectionItemPatternAvailable</strong> property, which indicates whether the <strong>IUIAutomationSelectionItemPattern</strong> interface from the element. */
-	UIA_IsSelectionItemPatternAvailablePropertyId(30036, VT_BOOL, boolean.class),
+	UIA_IsSelectionItemPatternAvailablePropertyId(30036),
 	/** Identifies the <strong>IsSelectionPatternAvailable</strong> property, which indicates whether the <strong>IUIAutomationSelectionPattern</strong> interface from the element. */
-	UIA_IsSelectionPatternAvailablePropertyId(30037, VT_BOOL, boolean.class),
+	UIA_IsSelectionPatternAvailablePropertyId(30037),
 	/** Identifies the <strong>IsTablePatternAvailable</strong> property, which indicates whether the <strong>IUIAutomationTablePattern</strong> interface from the element. */
-	UIA_IsTablePatternAvailablePropertyId(30038, VT_BOOL, boolean.class),
+	UIA_IsTablePatternAvailablePropertyId(30038),
 	/** Identifies the <strong>IsTableItemPatternAvailable</strong> property, which indicates whether the <strong>IUIAutomationTableItemPattern</strong> interface from the element. */
-	UIA_IsTableItemPatternAvailablePropertyId(30039, VT_BOOL, boolean.class),
+	UIA_IsTableItemPatternAvailablePropertyId(30039),
 	/** Identifies the <strong>IsTextPatternAvailable</strong> property, which indicates whether the <strong>IUIAutomationTextPattern</strong> interface from the element. */
-	UIA_IsTextPatternAvailablePropertyId(30040, VT_BOOL, boolean.class),
+	UIA_IsTextPatternAvailablePropertyId(30040),
 	/** Identifies the <strong>IsTogglePatternAvailable</strong> property, which indicates whether the <strong>IUIAutomationTogglePattern</strong> interface from the element. */
-	UIA_IsTogglePatternAvailablePropertyId(30041, VT_BOOL, boolean.class),
+	UIA_IsTogglePatternAvailablePropertyId(30041),
 	/** Identifies the <strong>IsTransformPatternAvailable</strong> property, which indicates whether the <strong>IUIAutomationTransformPattern</strong> interface from the element. */
-	UIA_IsTransformPatternAvailablePropertyId(30042, VT_BOOL, boolean.class),
+	UIA_IsTransformPatternAvailablePropertyId(30042),
 	/** Identifies the <strong>IsTransformPattern2Available</strong> property, which indicates whether version two of the <strong>IUIAutomationTransformPattern2</strong> interface from the element. Supported starting with Windows 8. */
-	UIA_IsValuePatternAvailablePropertyId(30043, VT_BOOL, boolean.class),
+	UIA_IsValuePatternAvailablePropertyId(30043),
 	/** Identifies the <strong>IsWindowPatternAvailable</strong> property, which indicates whether the <strong>IUIAutomationWindowPattern</strong> interface from the element. */
-	UIA_IsWindowPatternAvailablePropertyId(30044, VT_BOOL, boolean.class),
+	UIA_IsWindowPatternAvailablePropertyId(30044),
 
 	
 	// control pattern property ids (https://docs.microsoft.com/en-us/windows/win32/winauto/uiauto-control-pattern-propids)
 	
 	/** Identifies the <strong>Value</strong> property of the Value control pattern. This property indicates the value of the automation element. Variant type: <strong>VT_BSTR</strong> Default value: empty string */
-	UIA_ValueValuePropertyId(30045, VT_BSTR, String.class),
+	UIA_ValueValuePropertyId(30045),
 	/** Identifies the <strong>IsReadOnly</strong> property of the Value control pattern. This property indicates whether the value of the automation element is read-only.  Variant type: <strong>VT_BOOL</strong> Default value: <strong>TRUE</strong> */
-	UIA_ValueIsReadOnlyPropertyId(30046, VT_BOOL, boolean.class),
+	UIA_ValueIsReadOnlyPropertyId(30046),
 
 	
 	/** Identifies the Value property of the RangeValue control pattern. This property is the current value of the automation element.  Variant type: <strong>VT_R8</strong> Default value: 0 */
-	UIA_RangeValueValuePropertyId(30047, VT_R8, float.class),
+	UIA_RangeValueValuePropertyId(30047),
 	/** Identifies the <strong>IsReadOnly</strong> property of the RangeValue control pattern. This property indicates whether the value of the automation element is read-only. Variant type: <strong>VT_BOOL</strong> Default value: <strong>TRUE</strong> */
-	UIA_RangeValueIsReadOnlyPropertyId(30048, VT_BOOL, boolean.class),
+	UIA_RangeValueIsReadOnlyPropertyId(30048),
 	/** Identifies the <strong>Minimum</strong> property of the RangeValue control pattern. This property is the minimum range value supported by the automation element.  Variant type: <strong>VT_R8</strong> Default value: 0 */
-	UIA_RangeValueMinimumPropertyId(30049, VT_R8, float.class),
+	UIA_RangeValueMinimumPropertyId(30049),
 	/** Identifies the <strong>Maximum</strong> property of the RangeValue control pattern. This property is the maximum range value supported by the automation element. Variant type: <strong>VT_R8</strong> Default value: 0 */
-	UIA_RangeValueMaximumPropertyId(30050, VT_R8, float.class),
+	UIA_RangeValueMaximumPropertyId(30050),
 	/** Identifies the <strong>Value</strong> property. Variant type: <strong>VT_R8</strong> Default value: 0 */
-	UIA_RangeValueLargeChangePropertyId(30051, VT_R8, float.class),
+	UIA_RangeValueLargeChangePropertyId(30051),
 	/** Identifies the <strong>Value</strong> property.  Variant type: <strong>VT_R8</strong> Default value: 0 */
-	UIA_RangeValueSmallChangePropertyId(30052, VT_R8, float.class),
+	UIA_RangeValueSmallChangePropertyId(30052),
 	/** Identifies the <strong>HorizontalScrollPercent</strong> property of the Scroll control pattern. This property is the current horizontal scroll position expressed as a percentage of the total content area within the automation element. Variant type: <strong>VT_R8</strong> Default value: 0 */
-	UIA_ScrollHorizontalScrollPercentPropertyId(30053, VT_R8, float.class),
+	UIA_ScrollHorizontalScrollPercentPropertyId(30053),
 	/** Identifies the <strong>HorizontalViewSize</strong> property of the Scroll control pattern.  This property is the horizontal size of the viewable region expressed as a percentage of the total content area within the element.  Variant type: <strong>VT_R8</strong> Default value: 100 */
-	UIA_ScrollHorizontalViewSizePropertyId(30054, VT_R8, float.class),
+	UIA_ScrollHorizontalViewSizePropertyId(30054),
 	/** Identifies the <strong>VerticalScrollPercent</strong> property of the Scroll control pattern. This property is the current vertical scroll position expressed as a percentage of the total content area within the automation element. Variant type: <strong>VT_R8</strong> Default value: 0 */
-	UIA_ScrollVerticalScrollPercentPropertyId(30055, VT_R8, float.class),
+	UIA_ScrollVerticalScrollPercentPropertyId(30055),
 	/** Identifies the <strong>VerticalViewSize</strong> property of the Scroll control pattern. This property is the vertical size of the viewable region expressed as a percentage of the total content area within the element.  Variant type: <strong>VT_R8</strong> Default value: 100 */
-	UIA_ScrollVerticalViewSizePropertyId(30056, VT_R8, float.class),
+	UIA_ScrollVerticalViewSizePropertyId(30056),
 	/** Identifies the <strong>HorizontallyScrollable</strong> property of the Scroll control pattern. This property indicates whether the automation element can scroll horizontally.  Variant type: <strong>VT_BOOL</strong> Default value: <strong>FALSE</strong> */
-	UIA_ScrollHorizontallyScrollablePropertyId(30057, VT_BOOL, boolean.class),
+	UIA_ScrollHorizontallyScrollablePropertyId(30057),
 	/** Identifies the <strong>VerticallyScrollable</strong> property of the Scroll control pattern.  This property indicates whether the automation element can scroll vertically.  Variant type: <strong>VT_BOOL</strong> Default value: <strong>FALSE</strong> */
-	UIA_ScrollVerticallyScrollablePropertyId(30058, VT_BOOL, boolean.class),
+	UIA_ScrollVerticallyScrollablePropertyId(30058),
 	/** Identifies the <strong>IsSelectionRequired</strong> property of the Selection control pattern. This property indicates whether the automation element requires at least one child item to be selected. Variant type: <strong>VT_BOOL</strong> Default value: <strong>FALSE</strong> */
-	UIA_SelectionSelectionPropertyId(30059, VT_UNKNOWN | VT_ARRAY, Node[].class),
+	UIA_SelectionSelectionPropertyId(30059),
 	/** Identifies the <strong>CanSelectMultiple</strong> property of the Selection control pattern. This property indicates whether the automation element allows more than one child element to be selected concurrently. Variant type: <strong>VT_BOOL</strong> Default value: <strong>FALSE</strong> */
-	UIA_SelectionCanSelectMultiplePropertyId(30060, VT_BOOL, boolean.class),
+	UIA_SelectionCanSelectMultiplePropertyId(30060),
 	/** Identifies the <strong>IsSelectionRequired</strong> property of the Selection control pattern. This property indicates whether the automation element requires at least one child item to be selected. Variant type: <strong>VT_BOOL</strong> Default value: <strong>FALSE</strong> */
-	UIA_SelectionIsSelectionRequiredPropertyId(30061, VT_BOOL, boolean.class),
+	UIA_SelectionIsSelectionRequiredPropertyId(30061),
 	/** Identifies the <strong>RowCount</strong> property of the Grid control pattern. This property indicates the total number of rows in the grid. Variant type: <strong>VT_I4</strong> Default value: 0 */
-	UIA_GridRowCountPropertyId(30062, VT_I4, int.class)
+	UIA_GridRowCountPropertyId(30062)
 	
 	
 	,
-	UIA_GridColumnCountPropertyId(30063, 0, null),
+	UIA_GridColumnCountPropertyId(30063),
 
-	UIA_GridItemRowPropertyId(30064, 0, null),
+	UIA_GridItemRowPropertyId(30064),
 
-	UIA_GridItemColumnPropertyId(30065, 0, null),
+	UIA_GridItemColumnPropertyId(30065),
 
-	UIA_GridItemRowSpanPropertyId(30066, 0, null),
+	UIA_GridItemRowSpanPropertyId(30066),
 
-	UIA_GridItemColumnSpanPropertyId(30067, 0, null),
+	UIA_GridItemColumnSpanPropertyId(30067),
 
-	UIA_GridItemContainingGridPropertyId(30068, 0, null),
+	UIA_GridItemContainingGridPropertyId(30068),
 
-	UIA_DockDockPositionPropertyId(30069, 0, null),
+	UIA_DockDockPositionPropertyId(30069),
 
-	UIA_ExpandCollapseExpandCollapseStatePropertyId(30070, 0, null),
+	UIA_ExpandCollapseExpandCollapseStatePropertyId(30070),
 
-	UIA_MultipleViewCurrentViewPropertyId(30071, 0, null),
+	UIA_MultipleViewCurrentViewPropertyId(30071),
 
-	UIA_MultipleViewSupportedViewsPropertyId(30072, 0, null),
+	UIA_MultipleViewSupportedViewsPropertyId(30072),
 
-	UIA_WindowCanMaximizePropertyId(30073, 0, null),
+	UIA_WindowCanMaximizePropertyId(30073),
 
-	UIA_WindowCanMinimizePropertyId(30074, 0, null),
+	UIA_WindowCanMinimizePropertyId(30074),
 
-	UIA_WindowWindowVisualStatePropertyId(30075, 0, null),
+	UIA_WindowWindowVisualStatePropertyId(30075),
 
-	UIA_WindowWindowInteractionStatePropertyId(30076, 0, null),
+	UIA_WindowWindowInteractionStatePropertyId(30076),
 
-	UIA_WindowIsModalPropertyId(30077, 0, null),
+	UIA_WindowIsModalPropertyId(30077),
 
-	UIA_WindowIsTopmostPropertyId(30078, 0, null),
+	UIA_WindowIsTopmostPropertyId(30078),
 
-	UIA_SelectionItemIsSelectedPropertyId(30079, 0, null),
+	UIA_SelectionItemIsSelectedPropertyId(30079),
 
-	UIA_SelectionItemSelectionContainerPropertyId(30080, 0, null),
+	UIA_SelectionItemSelectionContainerPropertyId(30080),
 
-	UIA_TableRowHeadersPropertyId(30081, 0, null),
+	UIA_TableRowHeadersPropertyId(30081),
 
-	UIA_TableColumnHeadersPropertyId(30082, 0, null),
+	UIA_TableColumnHeadersPropertyId(30082),
 
-	UIA_TableRowOrColumnMajorPropertyId(30083, 0, null),
+	UIA_TableRowOrColumnMajorPropertyId(30083),
 
-	UIA_TableItemRowHeaderItemsPropertyId(30084, 0, null),
+	UIA_TableItemRowHeaderItemsPropertyId(30084),
 
-	UIA_TableItemColumnHeaderItemsPropertyId(30085, 0, null),
+	UIA_TableItemColumnHeaderItemsPropertyId(30085),
 
-	UIA_ToggleToggleStatePropertyId(30086, 0, null),
+	UIA_ToggleToggleStatePropertyId(30086),
 
-	UIA_TransformCanMovePropertyId(30087, 0, null),
+	UIA_TransformCanMovePropertyId(30087),
 
-	UIA_TransformCanResizePropertyId(30088, 0, null),
+	UIA_TransformCanResizePropertyId(30088),
 
-	UIA_TransformCanRotatePropertyId(30089, 0, null),
+	UIA_TransformCanRotatePropertyId(30089),
 
-	UIA_IsLegacyIAccessiblePatternAvailablePropertyId(30090, 0, null),
+	UIA_IsLegacyIAccessiblePatternAvailablePropertyId(30090),
 
-	UIA_LegacyIAccessibleChildIdPropertyId(30091, 0, null),
+	UIA_LegacyIAccessibleChildIdPropertyId(30091),
 
-	UIA_LegacyIAccessibleNamePropertyId(30092, 0, null),
+	UIA_LegacyIAccessibleNamePropertyId(30092),
 
-	UIA_LegacyIAccessibleValuePropertyId(30093, 0, null),
+	UIA_LegacyIAccessibleValuePropertyId(30093),
 
-	UIA_LegacyIAccessibleDescriptionPropertyId(30094, 0, null),
+	UIA_LegacyIAccessibleDescriptionPropertyId(30094),
 
-	UIA_LegacyIAccessibleRolePropertyId(30095, 0, null),
+	UIA_LegacyIAccessibleRolePropertyId(30095),
 
-	UIA_LegacyIAccessibleStatePropertyId(30096, 0, null),
+	UIA_LegacyIAccessibleStatePropertyId(30096),
 
-	UIA_LegacyIAccessibleHelpPropertyId(30097, 0, null),
+	UIA_LegacyIAccessibleHelpPropertyId(30097),
 
-	UIA_LegacyIAccessibleKeyboardShortcutPropertyId(30098, 0, null),
+	UIA_LegacyIAccessibleKeyboardShortcutPropertyId(30098),
 
-	UIA_LegacyIAccessibleSelectionPropertyId(30099, 0, null),
+	UIA_LegacyIAccessibleSelectionPropertyId(30099),
 
-	UIA_LegacyIAccessibleDefaultActionPropertyId(30100, 0, null),
+	UIA_LegacyIAccessibleDefaultActionPropertyId(30100),
 
-	UIA_AriaRolePropertyId(30101, 0, null),
+	UIA_AriaRolePropertyId(30101),
 
-	UIA_AriaPropertiesPropertyId(30102, 0, null),
+	UIA_AriaPropertiesPropertyId(30102),
 
-	UIA_IsDataValidForFormPropertyId(30103, 0, null),
+	UIA_IsDataValidForFormPropertyId(30103),
 
-	UIA_ControllerForPropertyId(30104, 0, null),
+	UIA_ControllerForPropertyId(30104),
 
-	UIA_DescribedByPropertyId(30105, 0, null),
+	UIA_DescribedByPropertyId(30105),
 
-	UIA_FlowsToPropertyId(30106, 0, null),
+	UIA_FlowsToPropertyId(30106),
 
-	UIA_ProviderDescriptionPropertyId(30107, 0, null),
+	UIA_ProviderDescriptionPropertyId(30107),
 
-	UIA_IsItemContainerPatternAvailablePropertyId(30108, 0, null),
+	UIA_IsItemContainerPatternAvailablePropertyId(30108),
 
-	UIA_IsVirtualizedItemPatternAvailablePropertyId(30109, 0, null),
+	UIA_IsVirtualizedItemPatternAvailablePropertyId(30109),
 
-	UIA_IsSynchronizedInputPatternAvailablePropertyId(30110, 0, null),
+	UIA_IsSynchronizedInputPatternAvailablePropertyId(30110),
 
-	UIA_OptimizeForVisualContentPropertyId(30111, 0, null),
+	UIA_OptimizeForVisualContentPropertyId(30111),
 
-	UIA_IsObjectModelPatternAvailablePropertyId(30112, 0, null),
+	UIA_IsObjectModelPatternAvailablePropertyId(30112),
 
-	UIA_AnnotationAnnotationTypeIdPropertyId(30113, 0, null),
+	UIA_AnnotationAnnotationTypeIdPropertyId(30113),
 
-	UIA_AnnotationAnnotationTypeNamePropertyId(30114, 0, null),
+	UIA_AnnotationAnnotationTypeNamePropertyId(30114),
 
-	UIA_AnnotationAuthorPropertyId(30115, 0, null),
+	UIA_AnnotationAuthorPropertyId(30115),
 
-	UIA_AnnotationDateTimePropertyId(30116, 0, null),
+	UIA_AnnotationDateTimePropertyId(30116),
 
-	UIA_AnnotationTargetPropertyId(30117, 0, null),
+	UIA_AnnotationTargetPropertyId(30117),
 
-	UIA_IsAnnotationPatternAvailablePropertyId(30118, 0, null),
+	UIA_IsAnnotationPatternAvailablePropertyId(30118),
 
-	UIA_IsTextPattern2AvailablePropertyId(30119, 0, null),
+	UIA_IsTextPattern2AvailablePropertyId(30119),
 
-	UIA_StylesStyleIdPropertyId(30120, 0, null),
+	UIA_StylesStyleIdPropertyId(30120),
 
-	UIA_StylesStyleNamePropertyId(30121, 0, null),
+	UIA_StylesStyleNamePropertyId(30121),
 
-	UIA_StylesFillColorPropertyId(30122, 0, null),
+	UIA_StylesFillColorPropertyId(30122),
 
-	UIA_StylesFillPatternStylePropertyId(30123, 0, null),
+	UIA_StylesFillPatternStylePropertyId(30123),
 
-	UIA_StylesShapePropertyId(30124, 0, null),
+	UIA_StylesShapePropertyId(30124),
 
-	UIA_StylesFillPatternColorPropertyId(30125, 0, null),
+	UIA_StylesFillPatternColorPropertyId(30125),
 
-	UIA_StylesExtendedPropertiesPropertyId(30126, 0, null),
+	UIA_StylesExtendedPropertiesPropertyId(30126),
 
-	UIA_IsStylesPatternAvailablePropertyId(30127, 0, null),
+	UIA_IsStylesPatternAvailablePropertyId(30127),
 
-	UIA_IsSpreadsheetPatternAvailablePropertyId(30128, 0, null),
+	UIA_IsSpreadsheetPatternAvailablePropertyId(30128),
 
-	UIA_SpreadsheetItemFormulaPropertyId(30129, 0, null),
+	UIA_SpreadsheetItemFormulaPropertyId(30129),
 
-	UIA_SpreadsheetItemAnnotationObjectsPropertyId(30130, 0, null),
+	UIA_SpreadsheetItemAnnotationObjectsPropertyId(30130),
 
-	UIA_SpreadsheetItemAnnotationTypesPropertyId(30131, 0, null),
+	UIA_SpreadsheetItemAnnotationTypesPropertyId(30131),
 
-	UIA_IsSpreadsheetItemPatternAvailablePropertyId(30132, 0, null),
+	UIA_IsSpreadsheetItemPatternAvailablePropertyId(30132),
 
-	UIA_Transform2CanZoomPropertyId(30133, 0, null),
+	UIA_Transform2CanZoomPropertyId(30133),
 
-	UIA_IsTransformPattern2AvailablePropertyId(30134, 0, null),
+	UIA_IsTransformPattern2AvailablePropertyId(30134),
 
-	UIA_LiveSettingPropertyId(30135, 0, null),
+	UIA_LiveSettingPropertyId(30135),
 
-	UIA_IsTextChildPatternAvailablePropertyId(30136, 0, null),
+	UIA_IsTextChildPatternAvailablePropertyId(30136),
 
-	UIA_IsDragPatternAvailablePropertyId(30137, 0, null),
+	UIA_IsDragPatternAvailablePropertyId(30137),
 
-	UIA_DragIsGrabbedPropertyId(30138, 0, null),
+	UIA_DragIsGrabbedPropertyId(30138),
 
-	UIA_DragDropEffectPropertyId(30139, 0, null),
+	UIA_DragDropEffectPropertyId(30139),
 
-	UIA_DragDropEffectsPropertyId(30140, 0, null),
+	UIA_DragDropEffectsPropertyId(30140),
 
-	UIA_IsDropTargetPatternAvailablePropertyId(30141, 0, null),
+	UIA_IsDropTargetPatternAvailablePropertyId(30141),
 
-	UIA_DropTargetDropTargetEffectPropertyId(30142, 0, null),
+	UIA_DropTargetDropTargetEffectPropertyId(30142),
 
-	UIA_DropTargetDropTargetEffectsPropertyId(30143, 0, null),
+	UIA_DropTargetDropTargetEffectsPropertyId(30143),
 
-	UIA_DragGrabbedItemsPropertyId(30144, 0, null),
+	UIA_DragGrabbedItemsPropertyId(30144),
 
-	UIA_Transform2ZoomLevelPropertyId(30145, 0, null),
+	UIA_Transform2ZoomLevelPropertyId(30145),
 
-	UIA_Transform2ZoomMinimumPropertyId(30146, 0, null),
+	UIA_Transform2ZoomMinimumPropertyId(30146),
 
-	UIA_Transform2ZoomMaximumPropertyId(30147, 0, null),
+	UIA_Transform2ZoomMaximumPropertyId(30147),
 
-	UIA_FlowsFromPropertyId(30148, 0, null),
+	UIA_FlowsFromPropertyId(30148),
 
-	UIA_IsTextEditPatternAvailablePropertyId(30149, 0, null),
+	UIA_IsTextEditPatternAvailablePropertyId(30149),
 
-	UIA_IsPeripheralPropertyId(30150, 0, null),
+	UIA_IsPeripheralPropertyId(30150),
 
-	UIA_IsCustomNavigationPatternAvailablePropertyId(30151, 0, null),
+	UIA_IsCustomNavigationPatternAvailablePropertyId(30151),
 
-	UIA_PositionInSetPropertyId(30152, 0, null),
+	UIA_PositionInSetPropertyId(30152),
 
-	UIA_SizeOfSetPropertyId(30153, 0, null),
+	UIA_SizeOfSetPropertyId(30153),
 
-	UIA_LevelPropertyId(30154, 0, null),
+	UIA_LevelPropertyId(30154),
 
-	UIA_AnnotationTypesPropertyId(30155, 0, null),
+	UIA_AnnotationTypesPropertyId(30155),
 
-	UIA_AnnotationObjectsPropertyId(30156, 0, null),
+	UIA_AnnotationObjectsPropertyId(30156),
 
-	UIA_LandmarkTypePropertyId(30157, 0, null),
+	UIA_LandmarkTypePropertyId(30157),
 
-	UIA_LocalizedLandmarkTypePropertyId(30158, 0, null),
+	UIA_LocalizedLandmarkTypePropertyId(30158),
 
-	UIA_FullDescriptionPropertyId(30159, 0, null),
+	UIA_FullDescriptionPropertyId(30159),
 
-	UIA_FillColorPropertyId(30160, 0, null),
+	UIA_FillColorPropertyId(30160),
 
-	UIA_OutlineColorPropertyId(30161, 0, null),
+	UIA_OutlineColorPropertyId(30161),
 
-	UIA_FillTypePropertyId(30162, 0, null),
+	UIA_FillTypePropertyId(30162),
 
-	UIA_VisualEffectsPropertyId(30163, 0, null),
+	UIA_VisualEffectsPropertyId(30163),
 
-	UIA_OutlineThicknessPropertyId(30164, 0, null),
+	UIA_OutlineThicknessPropertyId(30164),
 
-	UIA_CenterPointPropertyId(30165, 0, null),
+	UIA_CenterPointPropertyId(30165),
 
-	UIA_RotationPropertyId(30166, 0, null),
+	UIA_RotationPropertyId(30166),
 
-	UIA_SizePropertyId(30167, 0, null),
+	UIA_SizePropertyId(30167),
 
-	UIA_IsSelectionPattern2AvailablePropertyId(30168, 0, null),
+	UIA_IsSelectionPattern2AvailablePropertyId(30168),
 
-	UIA_Selection2FirstSelectedItemPropertyId(30169, 0, null),
+	UIA_Selection2FirstSelectedItemPropertyId(30169),
 
-	UIA_Selection2LastSelectedItemPropertyId(30170, 0, null),
+	UIA_Selection2LastSelectedItemPropertyId(30170),
 
-	UIA_Selection2CurrentSelectedItemPropertyId(30171, 0, null),
+	UIA_Selection2CurrentSelectedItemPropertyId(30171),
 
-	UIA_Selection2ItemCountPropertyId(30172, 0, null),
+	UIA_Selection2ItemCountPropertyId(30172),
 
-	UIA_HeadingLevelPropertyId(30173, 0, null),
+	UIA_HeadingLevelPropertyId(30173),
 
-	UIA_IsDialogPropertyId(30174, 0, null)
+	UIA_IsDialogPropertyId(30174)
 	
 	;
 
@@ -458,18 +454,14 @@ For an element to appear in the content view, both the <strong>IsContentElement<
 	}
 	
 	private int nativeValue;
-	private int type;
-	private Class<?> javaType;
 	
 	public int getNativeValue() {
 		return nativeValue;
 	}
 	
 	
-	private StandardPropertyIds(int nativeValue, int type, Class<?> javaType) {
+	private StandardPropertyIds(int nativeValue) {
 		this.nativeValue = nativeValue;
-		this.type = type;
-		this.javaType = javaType;
 	}
 	
 	public static Optional<StandardPropertyIds> fromNativeValue(int nativeValue) {

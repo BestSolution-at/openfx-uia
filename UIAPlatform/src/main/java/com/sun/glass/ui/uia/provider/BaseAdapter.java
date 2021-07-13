@@ -24,13 +24,11 @@
  */
 package com.sun.glass.ui.uia.provider;
 
-import com.sun.glass.ui.uia.glass.WinVariant;
+import com.sun.glass.ui.uia.ProxyAccessible;
 
 import javafx.uia.IEventId;
-import javafx.uia.INativeEnum;
 import javafx.uia.IPropertyId;
-
-import com.sun.glass.ui.uia.ProxyAccessible;
+import javafx.uia.Variant;
 
 public abstract class BaseAdapter<T> {
     
@@ -43,23 +41,12 @@ public abstract class BaseAdapter<T> {
         this.provider = provider;
     }
 
-    protected void UiaRaiseAutomationPropertyChangedEvent(int id, WinVariant oldV, WinVariant newV) {
-        ProxyAccessible.UiaRaiseAutomationPropertyChangedEvent(accessible.getNativeAccessible(), id, oldV, newV);       
-    }
-
-    protected void UiaRaiseAutomationPropertyChangedEvent(IPropertyId id, boolean oldV, boolean newV) {
-        UiaRaiseAutomationPropertyChangedEvent(id.getNativeValue(), Convert.variantBoolean(oldV), Convert.variantBoolean(newV));
-    }
-    protected void UiaRaiseAutomationPropertyChangedEvent(IPropertyId id, INativeEnum oldV, INativeEnum newV) {
-        UiaRaiseAutomationPropertyChangedEvent(id.getNativeValue(), Convert.variantEnum(oldV), Convert.variantEnum(newV));
-    }
-    
-    protected void UiaRaiseAutomationEvent(int id) {
-        ProxyAccessible.UiaRaiseAutomationEvent(accessible.getNativeAccessible(), id);
+    protected void UiaRaiseAutomationPropertyChangedEvent(IPropertyId propertyId, Variant oldV, Variant newV) {
+        ProxyAccessible.UiaRaiseAutomationPropertyChangedEvent(accessible.getNativeAccessible(), propertyId.getNativeValue(), oldV.toWinVariant(), newV.toWinVariant());       
     }
 
     protected void UiaRaiseAutomationEvent(IEventId eventId) {
-        UiaRaiseAutomationEvent(eventId.getNativeValue());
+        ProxyAccessible.UiaRaiseAutomationEvent(accessible.getNativeAccessible(), eventId.getNativeValue());
     }
 
 }

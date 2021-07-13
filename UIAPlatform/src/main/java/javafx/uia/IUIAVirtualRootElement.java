@@ -22,26 +22,30 @@
  * http://www.gnu.org/licenses/gpl.html
  * ----------------------------------------------------------------
  */
-package com.sun.glass.ui.uia.provider;
+package javafx.uia;
 
-import com.sun.glass.ui.uia.ProxyAccessible;
+import java.util.List;
 
-import javafx.uia.IToggleProvider;
+import javafx.geometry.Point2D;
 
-public class ToggleProviderAdapter extends BaseAdapter<IToggleProvider> implements NativeIToggleProvider {
+/**
+ * marks an IUIAElement to be a virtual root.
+ * <p>Its descendents must be IUIAVirtualElements</p>
+ */
+public interface IUIAVirtualRootElement extends IUIAElement {
+    
+    /**
+     * 
+     * @return
+     *   the virtual children of this element.
+     *   <p>Note: if an element has children its JavaFX children are ignored.</p>
+     */
+    List<IUIAElement> getChildren();
 
-    public ToggleProviderAdapter(ProxyAccessible accessible, IToggleProvider provider) {
-        super(accessible, provider);
-    }
-
-    @Override
-    public void Toggle() {
-        provider.Toggle();
-    }
-
-    @Override
-    public int get_ToggleState() {
-        return Convert.convertNativeEnum(provider.get_ToggleState());
-    }
+    /**
+     * @param point the coordinates in screen space
+     * @return the virtual child under the point
+     */
+    IUIAElement getChildFromPoint(Point2D point);
 
 }

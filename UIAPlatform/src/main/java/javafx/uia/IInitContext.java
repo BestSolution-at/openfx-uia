@@ -22,26 +22,8 @@
  * http://www.gnu.org/licenses/gpl.html
  * ----------------------------------------------------------------
  */
-package com.sun.glass.ui.uia.provider;
+package javafx.uia;
 
-import com.sun.glass.ui.uia.ProxyAccessible;
-
-import javafx.uia.IToggleProvider;
-
-public class ToggleProviderAdapter extends BaseAdapter<IToggleProvider> implements NativeIToggleProvider {
-
-    public ToggleProviderAdapter(ProxyAccessible accessible, IToggleProvider provider) {
-        super(accessible, provider);
-    }
-
-    @Override
-    public void Toggle() {
-        provider.Toggle();
-    }
-
-    @Override
-    public int get_ToggleState() {
-        return Convert.convertNativeEnum(provider.get_ToggleState());
-    }
-
+public interface IInitContext extends IPropertySupport, IEventSupport {
+    
 }

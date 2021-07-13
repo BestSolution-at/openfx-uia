@@ -27,15 +27,20 @@ package javafx.uia;
 /**
  * Provides access to controls that can cycle through a set of states and maintain a state after it is set.
  */
-public interface IToggleProvider {
+public interface IToggleProvider extends IInitable {
 
-	/** Event support for IToggleProvider */
-	interface IToggleProviderEvents {
-		/** notifies UIA that the toggle state has changed 
-		 * @param oldValue the old value
-		 * @param newValue the new value
-		*/
-		void notifyToggleStateChanged(ToggleState oldValue, ToggleState newValue);
+	/**
+	 * context object for IToggleProvider.
+	 * <p>
+	 * The context object encapsulates the functionality to fire property changes and events.
+	 * </p>
+	 */
+	class ToggleProviderContext {
+		public IProperty<ToggleState> ToggleState;
+
+		public ToggleProviderContext(IInitContext init, IToggleProvider toggleProvider) {
+			ToggleState = init.addProperty(StandardPropertyIds.UIA_ToggleToggleStatePropertyId, toggleProvider::get_ToggleState, StandardVariantConverters.I4_INativeEnum());
+		}
 	}
 	
 	/**
@@ -51,10 +56,7 @@ public interface IToggleProvider {
 	 */
 	ToggleState get_ToggleState();
 
-	/**
-	 * initializes the event support
-	 * <p>clients must implement this and store the events object to be able to dispatch events</p>
-	 * @param events the event support
-	 */
-	void initialize(IToggleProviderEvents events);
+	default ToggleProviderContext getToggleProviderContext() {
+		return UIA.Defaults.getContext(ToggleProviderContext.class, this);
+	}
 }

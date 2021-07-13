@@ -25,11 +25,14 @@
 package uia.sample.samples;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
@@ -39,6 +42,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.uia.ControlType;
 import javafx.uia.IUIAElement;
+import javafx.uia.IUIAVirtualElement;
+import javafx.uia.IUIAVirtualRootElement;
 import javafx.uia.UIA;
 import uia.sample.Sample;
 
@@ -48,19 +53,45 @@ public class CanvasWithVirtualChildren implements Sample {
 
     private Node description;
 
+    private Stream<IUIAElement> flatten(IUIAElement element) {
+        if (element instanceof IUIAVirtualRootElement) {
+            IUIAVirtualRootElement root = (IUIAVirtualRootElement) element;
+            return Stream.concat(
+                Stream.of(element),
+                root.getChildren().stream().flatMap(this::flatten)
+            );
+        } else if (element instanceof IUIAVirtualElement) {
+            IUIAVirtualElement node = (IUIAVirtualElement) element;
+            return Stream.concat(
+                Stream.of(element),
+                node.getChildren().stream().flatMap(this::flatten)
+            ); 
+        } else {
+            return Stream.of(element);
+        }
+    }
+
     private class MyCanvas extends Canvas {
 
-        class UIACanvas implements IUIAElement {
+        class UIACanvas implements IUIAVirtualRootElement {
             private List<IUIAElement> children = new ArrayList<>();
 
-            @Override
-            public IUIAElement getParent() {
-                return null;
-            }
             @Override
             public List<IUIAElement> getChildren() {
                 return children;
             }
+
+            @Override
+            public IUIAElement getChildFromPoint(Point2D point) {
+                // we simply select the last candidate - it should be the top most one in our case
+                List<IUIAElement> candidates = flatten(this).filter(child -> child.getBounds().contains(point)).collect(Collectors.toList());
+                if (candidates.isEmpty()) {
+                    return null;
+                } else {
+                    return candidates.get(candidates.size() - 1);
+                }
+            }
+
             @Override
             public ControlType getControlType() {
                 return ControlType.UIA_CustomControlTypeId;
@@ -71,9 +102,6 @@ public class CanvasWithVirtualChildren implements Sample {
             }
             @Override
             public void SetFocus() {
-            }
-            @Override
-            public void initialize(IUIAElementEvents events) {
             }
         }
 
@@ -88,7 +116,10 @@ public class CanvasWithVirtualChildren implements Sample {
         }
     }
 
-    private class MyRectangle implements IUIAElement {
+    private class MyRectangle implements IUIAVirtualElement {
+
+        private IUIAElement parent;
+        private List<IUIAElement> children = new ArrayList<>();
 
         Paint color;
         double x;
@@ -111,11 +142,11 @@ public class CanvasWithVirtualChildren implements Sample {
 
         @Override
         public IUIAElement getParent() {
-            return sample.uia;
+            return parent;
         }
         @Override
         public List<IUIAElement> getChildren() {
-            return Collections.emptyList();
+            return children;
         }
         @Override
         public ControlType getControlType() {
@@ -127,10 +158,6 @@ public class CanvasWithVirtualChildren implements Sample {
         }
         @Override
         public void SetFocus() {
-        }
-        @Override
-        public void initialize(IUIAElementEvents events) {
-            
         }
     }
 
@@ -144,17 +171,33 @@ public class CanvasWithVirtualChildren implements Sample {
         sample.setWidth(300);
         sample.setHeight(50);
 
-        List<MyRectangle> rects = new ArrayList<>();
-        rects.add(new MyRectangle(Color.RED, 10, 10, 50, 20));
-        rects.add(new MyRectangle(Color.GREEN, 70, 10, 50, 20));
-        rects.add(new MyRectangle(Color.BLUE, 130, 10, 50, 20));
+        MyRectangle parent1 = new MyRectangle(new Color(1.0, 0, 0, 0.4), 70, 10, 125, 30);
+        MyRectangle red = new MyRectangle(Color.RED, 10, 10, 50, 30);
+        MyRectangle green = new MyRectangle(Color.GREEN, 75, 15, 50, 20);
+        MyRectangle blue = new MyRectangle(Color.BLUE, 140, 15, 50, 20);
 
-
-        sample.uia.children.addAll(rects);
-
+        sample.uia.children.add(red); red.parent = sample.uia;
+        sample.uia.children.add(parent1); parent1.parent = sample.uia;
+ 
+        parent1.children.add(green); green.parent = parent1;
+        parent1.children.add(blue); blue.parent = parent1;
 
         GraphicsContext ctx = sample.getGraphicsContext2D();
-        rects.forEach(rect -> rect.render(ctx));
+        Consumer<IUIAElement> render = new Consumer<IUIAElement>() {
+            @Override
+            public void accept(IUIAElement el) {
+                if (el instanceof MyRectangle) {
+                    ((MyRectangle) el).render(ctx);
+                }
+                if (el instanceof IUIAVirtualRootElement) {
+                    ((IUIAVirtualRootElement) el).getChildren().forEach(this);
+                } else if (el instanceof IUIAVirtualElement) {
+                    ((IUIAVirtualElement) el).getChildren().forEach(this);
+                }
+            }
+        };
+
+        render.accept(sample.uia);
     }
 
     @Override

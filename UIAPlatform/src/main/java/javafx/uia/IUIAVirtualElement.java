@@ -22,26 +22,28 @@
  * http://www.gnu.org/licenses/gpl.html
  * ----------------------------------------------------------------
  */
-package com.sun.glass.ui.uia.provider;
+package javafx.uia;
 
-import com.sun.glass.ui.uia.ProxyAccessible;
+import java.util.List;
 
-import javafx.uia.IToggleProvider;
+/**
+ * marks an IUIAElement to be virtual.
+ * <p>Virtual Elements only may exist under Virtual Roots</p>
+ */
+public interface IUIAVirtualElement extends IUIAElement {
+    
+    /**
+     * 
+     * @return 
+     *   the parent if it is a virtual element
+     */
+    IUIAElement getParent();
 
-public class ToggleProviderAdapter extends BaseAdapter<IToggleProvider> implements NativeIToggleProvider {
-
-    public ToggleProviderAdapter(ProxyAccessible accessible, IToggleProvider provider) {
-        super(accessible, provider);
-    }
-
-    @Override
-    public void Toggle() {
-        provider.Toggle();
-    }
-
-    @Override
-    public int get_ToggleState() {
-        return Convert.convertNativeEnum(provider.get_ToggleState());
-    }
+    /**
+     * 
+     * @return
+     *   the virtual children of this element.
+     */
+    List<IUIAElement> getChildren();
 
 }

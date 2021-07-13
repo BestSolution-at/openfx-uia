@@ -27,6 +27,9 @@ package javafx.uia;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.sun.glass.ui.uia.ProxyAccessible;
+import com.sun.glass.ui.uia.ProxyAccessibleRegistry;
+
 import javafx.scene.AccessibleAttribute;
 
 public class UIA {
@@ -42,6 +45,17 @@ public class UIA {
 		public static int getId(IUIAElement element) {
 			int hash = System.identityHashCode(element);
 			return idMap.computeIfAbsent(hash, h -> nextId++);
+		}
+
+		public static <T> T getContext(Class<T> type, Object provider) {
+			if (provider instanceof IUIAElement) {
+				IUIAElement element = (IUIAElement) provider;
+				ProxyAccessible instance = ProxyAccessibleRegistry.getInstance().findAccessible(element);
+				if (instance != null) {
+					return instance.getContext(type);
+				}
+			}
+			throw new RuntimeException("Context not available " + type + " for " + provider);
 		}
 	}
 

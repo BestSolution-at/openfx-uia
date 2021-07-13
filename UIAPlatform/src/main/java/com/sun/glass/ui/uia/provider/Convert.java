@@ -31,6 +31,10 @@ import javafx.uia.INativeEnum;
 
 public class Convert {
     
+    public static int convertNativeEnum(INativeEnum value) {
+        return value.getNativeValue();
+    }
+
     public static int convertBoolean(boolean value) {
         return value ? 1 : 0;
     }

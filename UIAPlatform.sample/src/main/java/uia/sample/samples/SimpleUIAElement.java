@@ -24,56 +24,71 @@
  */
 package uia.sample.samples;
 
-import java.util.Collections;
-import java.util.List;
-
 import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
+import javafx.scene.input.MouseEvent;
 import javafx.uia.ControlType;
+import javafx.uia.IInitContext;
+import javafx.uia.IProperty;
 import javafx.uia.IUIAElement;
 import javafx.uia.UIA;
 import uia.sample.Sample;
 
 public class SimpleUIAElement implements Sample {
 
+
+    class MyLabelElement implements IUIAElement {
+
+        public IProperty<Point2D> clickable;
+        public IProperty<Bounds> bounds;
+        public IProperty<String> name;
+
+        String getName() {
+            return "myLabel";
+        }
+
+        @Override
+        public void initialize(IInitContext props) {
+            name = props.addNameProperty(this::getName);
+            clickable = props.addClickablePointProperty(this::getClickablePoint);
+            bounds = props.addBoundingRectangleProperty(this::getBounds);
+        }
+
+        public Point2D getClickablePoint() {
+            Bounds b = getBounds();
+            return new Point2D(b.getMinX() + b.getWidth() / 2, b.getMinY() + b.getHeight() / 2);
+        }
+
+        @Override
+        public ControlType getControlType() {
+            return ControlType.UIA_TextControlTypeId;
+        }
+
+        @Override
+        public Bounds getBounds() {
+            return content.localToScreen(content.getBoundsInLocal());
+        }
+
+        @Override
+        public void SetFocus() {
+        }
+ 
+    }
+
     class MyLabel extends Label {
 
-        IUIAElement uia = new IUIAElement(){
-
-            @Override
-            public IUIAElement getParent() {
-                return null;
-            }
-
-            @Override
-            public List<IUIAElement> getChildren() {
-                return Collections.emptyList();
-            }
-
-            @Override
-            public ControlType getControlType() {
-                return ControlType.UIA_TextControlTypeId;
-            }
-
-            @Override
-            public Bounds getBounds() {
-                return MyLabel.this.localToScreen(MyLabel.this.getBoundsInLocal());
-            }
-
-            @Override
-            public void SetFocus() {
-            }
-
-            @Override
-            public void initialize(IUIAElementEvents events) {
-            }
-            
-        };
+        MyLabelElement uia = new MyLabelElement();
 
         MyLabel(String text) {
             super(text);
+
+            addEventHandler(MouseEvent.MOUSE_CLICKED, evt -> {
+                System.err.println("FIRE!");
+                uia.bounds.fireChanged(uia.getBounds(), uia.getBounds());
+            });
         }
 
         @Override

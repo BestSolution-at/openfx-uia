@@ -27,59 +27,12 @@ package com.sun.glass.ui.uia.provider;
 import com.sun.glass.ui.uia.ProxyAccessible;
 
 import javafx.uia.IWindowProvider;
-import javafx.uia.StandardEventIds;
-import javafx.uia.StandardPropertyIds;
-import javafx.uia.WindowInteractionState;
 import javafx.uia.WindowVisualState;
 
 public class WindowProviderAdapter extends BaseAdapter<IWindowProvider> implements NativeIWindowProvider {
-    
-    private final IWindowProvider.IWindowProviderEvents events = new IWindowProvider.IWindowProviderEvents() {
-        @Override
-        public void notifyCanMaximizeChanged(boolean oldValue, boolean newValue) {
-            UiaRaiseAutomationPropertyChangedEvent(StandardPropertyIds.UIA_WindowCanMinimizePropertyId, oldValue, newValue);            
-        }
-
-        @Override
-        public void notifyCanMinimizeChanged(boolean oldValue, boolean newValue) {
-            UiaRaiseAutomationPropertyChangedEvent(StandardPropertyIds.UIA_WindowCanMinimizePropertyId, oldValue, newValue);            
-        }
-
-        @Override
-        public void notifyIsModalChanged(boolean oldValue, boolean newValue) {
-            UiaRaiseAutomationPropertyChangedEvent(StandardPropertyIds.UIA_WindowIsModalPropertyId, oldValue, newValue);            
-        }
-
-        @Override
-        public void notifyIsTopmostChanged(boolean oldValue, boolean newValue) {
-            UiaRaiseAutomationPropertyChangedEvent(StandardPropertyIds.UIA_WindowIsTopmostPropertyId, oldValue, newValue);            
-        }
-
-        @Override
-        public void notifyWindowInteractionStateChanged(WindowInteractionState oldValue, WindowInteractionState newValue) {
-            UiaRaiseAutomationPropertyChangedEvent(StandardPropertyIds.UIA_WindowWindowInteractionStatePropertyId, oldValue, newValue);            
-        }
-
-        @Override
-        public void notifyWindowVisualStateChanged(WindowVisualState oldValue, WindowVisualState newValue) {
-            UiaRaiseAutomationPropertyChangedEvent(StandardPropertyIds.UIA_WindowWindowVisualStatePropertyId, oldValue, newValue);            
-        }
-
-        @Override
-        public void notifyWindowOpened() {
-            UiaRaiseAutomationEvent(StandardEventIds.UIA_Window_WindowOpenedEventId);
-        }
-
-        @Override
-        public void notifyWindowClosed() {
-            UiaRaiseAutomationEvent(StandardEventIds.UIA_Window_WindowClosedEventId);    
-        }
-       
-    };
 
     public WindowProviderAdapter(ProxyAccessible accessible, IWindowProvider provider) {
         super(accessible, provider);
-        provider.initialize(events);
     }
 
     @Override
@@ -109,12 +62,12 @@ public class WindowProviderAdapter extends BaseAdapter<IWindowProvider> implemen
 
     @Override
     public int get_WindowInteractionState() {
-        return provider.get_WindowInteractionState().getNativeValue();
+        return Convert.convertNativeEnum(provider.get_WindowInteractionState());
     }
 
     @Override
     public int get_WindowVisualState() {
-        return provider.get_WindowVisualState().getNativeValue();
+        return Convert.convertNativeEnum(provider.get_WindowVisualState());
     }
 
     @Override

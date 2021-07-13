@@ -24,10 +24,7 @@
  */
 package javafx.uia;
 
-import java.util.List;
-
 import javafx.geometry.Bounds;
-import javafx.scene.input.KeyCombination;
 
 /**
  * central interface of the openfx-uia api.
@@ -43,49 +40,7 @@ import javafx.scene.input.KeyCombination;
  * This adoption of the UIA api is required to wire it with javafx.
  * </p>
  */
-public interface IUIAElement {
-    
-    interface IUIAElementEvents {
-        /** 
-         * raises an <code>UIA_AutomationPropertyChangedEventId</code> for <code>UIA_ControlTypePropertyId</code>
-         * @param oldValue the old value
-         * @param newValue the new value
-        */
-        void notifyControlTypeChanged(ControlType oldValue, ControlType newValue);
-        /** 
-         * raises an <code>UIA_AutomationPropertyChangedEventId</code> for <code>UIA_BoundingRectanglePropertyId</code>
-         * @param oldValue the old value
-         * @param newValue the new value
-         * */
-        void notifyBoundsChanged(Bounds oldValue, Bounds newValue);
-
-        /** raises an <code>UIA_StructureChangedEventId</code> */
-        void notifyStructureChanged();
-    }
-
-    /**
-     * 
-     * @return 
-     *   null if it is attached to a JavaFX node
-     *   the parent if it is a virtual element
-     */
-    IUIAElement getParent();
-
-    /**
-     * 
-     * @return
-     *   the virtual children of this element.
-     *   <p>Note: if an element has children its JavaFX children are ignored.</p>
-     */
-    List<IUIAElement> getChildren();
-
-    /**
-     * if the element is purely virtual
-     * @return virtual
-     */
-    default boolean isVirtual() {
-        return getParent() != null;
-    }
+public interface IUIAElement extends IInitable {
 
     /**
      * the id
@@ -117,62 +72,11 @@ public interface IUIAElement {
      */
     Bounds getBounds();
 
-    interface Common {
-         /** UIA_NamePropertyId
-          * @return the name
-          */
-        String getName();
-        /** UIA_IsContentElementPropertyId 
-         * @return true if content element
-        */
-        boolean isContentElement();
-        /** UIA_IsControlElementPropertyId 
-         * @return true if control element
-        */
-        boolean isControlElement();
-        /** UIA_IsEnabledPropertyId 
-         * @return true if enabled
-        */
-        boolean isEnabled();
-        /** UIA_AccessKeyPropertyId 
-         * @return the access key
-        */
-        String getAccessKey();
-        /** UIA_AcceleratorKeyPropertyId 
-         * @return the accelerator key combination
-        */
-        KeyCombination getAcceleratorKey();
-        /** UIA_HelpTextPropertyId 
-         * @return the help text
-        */
-        String getHelpText();
-        /** UIA_LocalizedControlTypePropertyId 
-         * @return the localized control type label
-        */
-        String getLocalizedControlType();
-        /** UIA_HasKeyboardFocusPropertyId 
-         * @return true if has keyboard focus
-        */
-        boolean hasKeyboardFocus();
-        /** UIA_IsKeyboardFocusablePropertyId 
-         * @return true if is keyboard focusable
-        */
-        boolean isKeyboardFocusable();
-        /** UIA_IsPasswordPropertyId 
-         * @return true if password field
-        */
-        boolean isPassword();
-
-
-    }
-
     /**
      * Sets the focus to this element.
      * <p>this method is from the IRawElementProviderFragment</p>
      */
     void SetFocus();
-
-    void initialize(IUIAElementEvents events);
 
     default boolean isProviderAvailable(Class<?> providerType) {
         return providerType.isAssignableFrom(getClass());
@@ -181,4 +85,5 @@ public interface IUIAElement {
     default <T> T getProvider(Class<T> providerType) {
         return (T) this;
     }
+
 }

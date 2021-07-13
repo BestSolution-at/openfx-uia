@@ -24,57 +24,93 @@
  */
 package javafx.uia;
 
+import com.sun.glass.ui.uia.glass.WinVariant;
+
 public class Variant {
-	public static final int VT_EMPTY = 0;
-    public static final int VT_NULL  = 1;
-    public static final int VT_I2    = 2;
-    public static final int VT_I4    = 3;
-    public static final int VT_R4    = 4;
-    public static final int VT_R8    = 5;
-    public static final int VT_BOOL  = 11;
-    public static final int VT_BSTR  = 8;
-    public static final int VT_ARRAY = 0x2000;
-    public static final int VT_UNKNOWN = 13;
 
-    public short vt;
+    private WinVariant winVariant;
 
-    public short iVal;
-    public int lVal;
-    public float fltVal;
-    public double dblVal;
-    public boolean boolVal;
-    public String bstrVal;
-
-    public double[] pDblVal;
-    public long punkVal;
-
-
-    @Override
-    public String toString() {
-        String value = "";
-        switch (vt) {
-            case VT_EMPTY: value = "<empty>";
-            break;
-            case VT_NULL: value = "<null>"; 
-            break;
-            case VT_I2: value += iVal; 
-            break;
-            case VT_I4: value += iVal; 
-            break;
-            case VT_R4: value += fltVal; 
-            break;
-            case VT_R8: value += dblVal; 
-            break;
-            case VT_BOOL: value += boolVal; 
-            break;
-            case VT_BSTR: value += bstrVal; 
-            break;
-            case VT_ARRAY: value = "<array> " + punkVal; 
-            break;
-            case VT_UNKNOWN: value = "<unknown> " + punkVal;
-            break;
-
-        }
-        return "Variant[" + value + "]";
+    private Variant(WinVariant ww) {
+        this.winVariant = ww;
     }
+
+    public WinVariant toWinVariant() {
+        return winVariant;
+    }
+
+    public static Variant vt_empty() {
+        WinVariant v = new WinVariant();
+        v.vt = WinVariant.VT_EMPTY;
+        return new Variant(v);
+    }
+
+    public static Variant vt_null() {
+        WinVariant v = new WinVariant();
+        v.vt = WinVariant.VT_NULL;
+        return new Variant(v);
+    }
+
+    public static Variant vt_i2(short value) {
+        WinVariant v = new WinVariant();
+        v.vt = WinVariant.VT_I2;
+        v.iVal = value;
+        return new Variant(v);
+    }
+
+    public static Variant vt_i4(int value) {
+        WinVariant v = new WinVariant();
+        v.vt = WinVariant.VT_I4;
+        v.lVal = value;
+        return new Variant(v);
+    }
+
+    public static Variant vt_r4(float value) {
+        WinVariant v = new WinVariant();
+        v.vt = WinVariant.VT_R4;
+        v.fltVal = value;
+        return new Variant(v);
+    }
+
+    public static Variant vt_r8(double value) {
+        WinVariant v = new WinVariant();
+        v.vt = WinVariant.VT_R8;
+        v.dblVal = value;
+        return new Variant(v);
+    }
+
+    public static Variant vt_bool(boolean value) {
+        WinVariant v = new WinVariant();
+        v.vt = WinVariant.VT_BOOL;
+        v.boolVal = value;
+        return new Variant(v);
+    }
+
+    public static Variant vt_bstr(String value) {
+        WinVariant v = new WinVariant();
+        v.vt = WinVariant.VT_BSTR;
+        v.bstrVal = value;
+        return new Variant(v);
+    }
+
+    public static Variant vt_unknown(long value) {
+        WinVariant v = new WinVariant();
+        v.vt = WinVariant.VT_UNKNOWN;
+        v.punkVal = value;
+        return new Variant(v);
+    }
+
+    public static Variant vt_r8_array(double[] value) {
+        WinVariant v = new WinVariant();
+        v.vt = WinVariant.VT_R8 | WinVariant.VT_ARRAY;
+        v.pDblVal = value;
+        return new Variant(v);
+    }
+
+    public static Variant vt_r4_array(float[] value) {
+        WinVariant v = new WinVariant();
+        v.vt = WinVariant.VT_R4 | WinVariant.VT_ARRAY;
+        v.pFltVal = value;
+        return new Variant(v);
+    }
+
 }

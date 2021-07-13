@@ -28,64 +28,88 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import com.sun.glass.ui.uia.ProxyAccessible;
+import com.sun.glass.ui.uia.ProxyAccessibleRegistry;
 import com.sun.glass.ui.uia.glass.WinVariant;
 
-import javafx.geometry.Bounds;
-import javafx.uia.ControlType;
-import javafx.uia.IInvokeProvider;
-import javafx.uia.IToggleProvider;
+import javafx.uia.IEvent;
+import javafx.uia.IEventId;
+import javafx.uia.IInitContext;
+import javafx.uia.IProperty;
+import javafx.uia.IPropertyId;
 import javafx.uia.IUIAElement;
-import javafx.uia.IWindowProvider;
-import javafx.uia.StandardEventIds;
+import javafx.uia.IUIAVirtualElement;
+import javafx.uia.IUIAVirtualRootElement;
+import javafx.uia.IVariantConverter;
 import javafx.uia.StandardPatternIds;
 import javafx.uia.StandardPropertyIds;
+import javafx.uia.Variant;
 
 public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements NativeIRawElementProviderSimple, NativeIRawElementProviderFragment {
 
-    private final IUIAElement.IUIAElementEvents events = new IUIAElement.IUIAElementEvents(){
-        @Override
-        public void notifyControlTypeChanged(ControlType oldValue, ControlType newValue) {
-            UiaRaiseAutomationPropertyChangedEvent(StandardPropertyIds.UIA_ControlTypePropertyId, oldValue, newValue);
+    private class Prop<T> implements IProperty<T> {
+        private IPropertyId id;
+        private Supplier<T> getter;
+        private IVariantConverter<T> converter;
+
+        private Variant getAsVariant() {
+            return converter.toVariant(getter.get());
         }
-        @Override
-        public void notifyBoundsChanged(Bounds oldBounds, Bounds newBounds) {
-            // TODO need to pass bounds over variant
+
+        public Prop(IPropertyId id, Supplier<T> getter, IVariantConverter<T> converter) {
+            this.id = id;
+            this.getter = getter;
+            this.converter = converter;
         }
+
         @Override
-        public void notifyStructureChanged() {
-            UiaRaiseAutomationEvent(StandardEventIds.UIA_StructureChangedEventId);            
+        public void fireChanged(T oldValue, T newValue) {
+            UiaRaiseAutomationPropertyChangedEvent(id, converter.toVariant(oldValue), converter.toVariant(newValue));
+        }
+    }
+
+    private final IInitContext init = new IInitContext(){
+        @Override
+        public <T> IProperty<T> addProperty(IPropertyId id, Supplier<T> getter, IVariantConverter<T> converter) {
+            Prop<T> p = new Prop<T>(id, getter, converter);
+            installedProps.put(id.getNativeValue(), p);
+            return p;
+        }
+
+        @Override
+        public IEvent addEvent(IEventId id) {
+            return () -> UiaRaiseAutomationEvent(id);
         }
     };
 
-    private Map<Class<?>, Object> nativeProviders = new HashMap<>();
+    private Map<Integer, Prop<?>> installedProps = new HashMap<>();
 
-    public UIAElementAdapter(ProxyAccessible accessible, IUIAElement provider) {
-        super(accessible, provider);
-        provider.initialize(events);
+    private ProviderRegistry providerRegistry = new ProviderRegistry();
 
-        if (provider.isProviderAvailable(IWindowProvider.class)) {
-            IWindowProvider windowProvider = provider.getProvider(IWindowProvider.class);
-            nativeProviders.put(NativeIWindowProvider.class, new WindowProviderAdapter(accessible, windowProvider));
-        }
-        if (provider.isProviderAvailable(IToggleProvider.class)) {
-            IToggleProvider toggleProvider = provider.getProvider(IToggleProvider.class);
-            nativeProviders.put(NativeIToggleProvider.class, new ToggleProviderAdapter(accessible, toggleProvider));
-        }
-        if (provider.isProviderAvailable(IInvokeProvider.class)) {
-            IInvokeProvider javaProvider = provider.getProvider(IInvokeProvider.class);
-            nativeProviders.put(NativeIInvokeProvider.class, new InvokeProviderAdapter(accessible, javaProvider));
+    public ProviderRegistry getProviderRegistry() {
+        return providerRegistry;
+    }
+
+    public UIAElementAdapter(ProxyAccessible accessible, IUIAElement element) {
+        super(accessible, element);
+
+        // element init
+        element.initialize(init);
+
+        // pattern provider init
+        for (ProviderDescriptor<?, ?> descriptor : ProviderDescriptor.Registry.getAvailable()) {
+            if (element.isProviderAvailable(descriptor.javaType)) {
+                providerRegistry.register(descriptor.createInstance(init, accessible, element));
+            }
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> T getNativeProvider(Class<T> type) {
-        return (T) nativeProviders.get(type);
-    }
 
     private void log(IUIAElement element, String msg) {
-        System.err.println("V: " + element + " - " + msg);
+        String glass = " (" + ProxyAccessibleRegistry.getInstance().findAccessible(element).getGlassAccessible() + ")";
+        System.err.println("V: " + element + glass + " - " + msg);
     }
 
 
@@ -97,26 +121,31 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
 
     @Override
     public long get_FragmentRoot() {
+        // JavaFX always uses the scene as fragment root#
+        // should we do our own lookup here instead of going through the glass root?
         return accessible.getGlassAccessibleRoot().get_FragmentRoot();
     }
 
     @Override
     public long[] GetEmbeddedFragmentRoots() {
-        return accessible.getGlassAccessibleRoot().GetEmbeddedFragmentRoots();
+        // JavaFX always return null, it does not support embedded fragment roots
+        return null;
+        //return accessible.getGlassAccessibleRoot().GetEmbeddedFragmentRoots();
+    }
 
+    private boolean isVirtual(IUIAElement element) {
+        return element instanceof IUIAVirtualElement;
+    }
+    private boolean isVirtualRoot(IUIAElement element) {
+        return element instanceof IUIAVirtualRootElement;
     }
 
     @Override
     public int[] GetRuntimeId() {
-        IUIAElement element = accessible.getUIAElement();
-        if (element != null && element.isVirtual()) {
-            //log(node, "GetRuntimeId()");
-            final int UiaAppendRuntimeId                  = 3;
-            return new int[] {UiaAppendRuntimeId, element.getId()};
-        } else {
-            //System.err.println("GetRuntimeId() -> " + accessible.getGlassAccessibleRoot());
-            return accessible.getGlassAccessibleRoot().GetRuntimeId();
-        }
+        // To not collide with the javafx internal ids we prefix them with a namespace.
+        final int OpenFXUiaNamespace = 0xFFFFFFFF;
+        final int UiaAppendRuntimeId                  = 3;
+        return new int[] {UiaAppendRuntimeId, OpenFXUiaNamespace, provider.getId()};
     }
 
     private <T> Optional<T> first(List<T> list) {
@@ -131,20 +160,79 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
 		}
 		return Optional.of(list.get(list.size() - 1));
     }
+
+    private <T> Optional<T> next(List<T> list, T cur) {
+        int index = list.indexOf(cur);
+        int next = index + 1;
+        if (next < list.size()) {
+            return Optional.of(list.get(next));
+        } else {
+            return Optional.empty();
+        }
+    }
+    private <T> Optional<T> prev(List<T> list, T cur) {
+        int index = list.indexOf(cur);
+        int prev = index - 1;
+        if (prev >= 0) {
+            return Optional.of(list.get(prev));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private Optional<IUIAElement> getParent(IUIAElement element) {
+        if (isVirtual(element)) {
+            return Optional.of(((IUIAVirtualElement) element).getParent());
+        } else {
+            return Optional.empty();
+        }
+    }
+    private Optional<List<IUIAElement>> getChildren(IUIAElement element) {
+        if (isVirtual(element)) {
+            return  Optional.of(((IUIAVirtualElement) element).getChildren());
+        } else if (isVirtualRoot(element)) {
+            return  Optional.of(((IUIAVirtualRootElement) element).getChildren());
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    private Optional<IUIAElement> findParent(IUIAElement cur) {
+        return getParent(cur);
+    }
+    private Optional<IUIAElement> findFirstChild(IUIAElement cur) {
+        return getChildren(cur).flatMap(this::first);
+    }
+    private Optional<IUIAElement> findLastChild(IUIAElement cur) {
+        return getChildren(cur).flatMap(this::last);
+    }
+    private Optional<IUIAElement> findNextSibling(IUIAElement cur) {
+        return getParent(cur).flatMap(this::getChildren).flatMap(children -> next(children, cur));
+    }
+    private Optional<IUIAElement> findPreviousSibling(IUIAElement cur) {
+        return getParent(cur).flatMap(this::getChildren).flatMap(children -> prev(children, cur));
+    }
+
+    
+    private Optional<Long> getNative(IUIAElement element) {
+        return Optional.ofNullable(element).map(el -> {
+            ProxyAccessible result = ProxyAccessibleRegistry.getInstance().findFXAccessible(element);
+            if (result == null) {
+                result = ProxyAccessibleRegistry.getInstance().getVirtualAccessible(accessible, el);
+            }
+            return result;
+        }).map(ProxyAccessible::getNativeAccessible);
+    }
+
     @Override
     public long Navigate(int direction) {
         IUIAElement element = accessible.getUIAElement();
-        if (element != null && (element.isVirtual() || !element.getChildren().isEmpty())) {
+        if (element != null && (isVirtual(element) || isVirtualRoot(element))) {
             log(element, "Navigate("+direction+")");
         }
         // TODO custom UIANode child navigation - how to get the UIANode
-       
         if (element != null) {
-            boolean isVirtual = element.isVirtual();
-            boolean isVirtualRoot = !element.getChildren().isEmpty() && accessible.getGlassAccessible() != null;
-
-        
-            if (isVirtual || isVirtualRoot) {
+            if (isVirtual(element) || isVirtualRoot(element)) {
                 final int NavigateDirection_Parent            = 0;
                 final int NavigateDirection_NextSibling       = 1;
                 final int NavigateDirection_PreviousSibling   = 2;
@@ -154,58 +242,41 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
                     // Note: need mapping from UIANode to ProxyAccessible
                     switch (direction) {
                         case NavigateDirection_FirstChild: {
-                            List<IUIAElement> children = element.getChildren();
-                            Optional<IUIAElement> firstChild = first(children);
+                            Optional<IUIAElement> firstChild = findFirstChild(element);
                             log(element, "First Child: " + firstChild);
-                            return firstChild.map(accessible::getVirtualAccessible).map(ProxyAccessible::getNativeAccessible).orElse(0L);
+                            return firstChild.flatMap(this::getNative).orElse(0L);
                         } 
                         case NavigateDirection_LastChild: {
-                            List<IUIAElement> children = element.getChildren();
-                            Optional<IUIAElement> lastChild = last(children);
+                            Optional<IUIAElement> lastChild = findLastChild(element);
                             log(element, "Last Child: " + lastChild);
-                            return lastChild.map(accessible::getVirtualAccessible).map(ProxyAccessible::getNativeAccessible).orElse(0L);
+                            return lastChild.flatMap(this::getNative).orElse(0L);
                         }
                     
                         case NavigateDirection_Parent: 
-                            if (isVirtualRoot) {
+                            if (isVirtualRoot(element)) {
                                 // a virtual root needs to delegate to the glass version
+                                System.err.println("PARENT: " + accessible + " / glass: " + (accessible!=null?""+accessible.getGlassAccessible():"-"));
                                 return accessible.getGlassAccessible().Navigate(direction);
                             } else {
-                                return accessible.getVirtualAccessible(element.getParent()).getNativeAccessible();
+                                Optional<IUIAElement> parent = findParent(element);
+                                if (!parent.isPresent()) {
+                                    // Runtime panic
+                                    log(element, "ERROR parent of " + element + " not found!");
+                                }
+                                return parent.flatMap(this::getNative).orElse(0L);
                             } 
 
                         case NavigateDirection_NextSibling:
-                            if (isVirtualRoot) {
-                                // a virtual root needs to delegate to the glass version
-                                return accessible.getGlassAccessible().Navigate(direction);
-                            } else {
-                                List<IUIAElement> siblings = element.getParent().getChildren();
-                                int index = siblings.indexOf(element);
-                                int next = index + 1;
-                                if (next < siblings.size()) {
-                                    log(element, "Next Sibling: " + siblings.get(next));
-                                    return accessible.getVirtualAccessible(siblings.get(next)).getNativeAccessible();
-                                } else {
-                                    return 0L;
-                                }
-                            }
-                            case NavigateDirection_PreviousSibling:
-                            if (isVirtualRoot) {
-                                // a virtual root needs to delegate to the glass version
-                                return accessible.getGlassAccessible().Navigate(direction);
-                            } else {
-                                List<IUIAElement> siblings = element.getParent().getChildren();
-                                int index = siblings.indexOf(element);
-                                int prev = index - 1;
-                                if (prev >= 0) {
-                                    log(element, "Prev Sibling: " + siblings.get(prev));
-                                    return accessible.getVirtualAccessible(siblings.get(prev)).getNativeAccessible();
-                                } else {
-                                    return 0L;
-                                }
-                            }
-                        
+                            Optional<IUIAElement> nextSibling = findNextSibling(element);
+                            log(element, "Next Sibling: " + nextSibling);
+                            return nextSibling.flatMap(this::getNative).orElse(0L);
+                        case NavigateDirection_PreviousSibling:
+                            Optional<IUIAElement> prevSibling = findPreviousSibling(element);
+                            log(element, "Prev Sibling: " + prevSibling);
+                            return prevSibling.flatMap(this::getNative).orElse(0L);
+
                         default:
+                            log(element, "DEFAULT FALLTHROUGH!");
                         return 0L;
 
                     }
@@ -216,13 +287,14 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
             }
         }
 
+        // default handling for non virtual elements
         if (accessible.getGlassAccessible() != null) {
             // no node means glass should handle it
             //System.err.println("Delegating navigate to glass: " + accessible.getGlassAccessible());
             return accessible.getGlassAccessible().Navigate(direction);
         }
 
-        log(element, "FALLTHROGH PANIK!!"); 
+        log(element, "FALLTHROGH PANIK!! - this should never happen!"); 
         System.err.println(accessible);
         System.err.println(element);
         Thread.dumpStack();
@@ -238,37 +310,20 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
     public long GetPatternProvider(int patternId) {
 
         // TODO we should return here for the default patterns that are always provided without asking glass
-        log(provider, "GetPatternProvider("+StandardPatternIds.fromNativeValue(patternId)+")");
-
-        if (StandardPatternIds.UIA_TogglePatternId.getNativeValue() == patternId) {
-            return getNativeProvider(NativeIToggleProvider.class) != null ? accessible.getNativeAccessible() : 0L;
+        
+        if (providerRegistry.isProviderAvailable(patternId)) {
+            log(provider, "GetPatternProvider("+StandardPatternIds.fromNativeValue(patternId)+")");
+            return accessible.getNativeAccessible();
+        } else {
+            return 0L;
         }
-
-        if (StandardPatternIds.UIA_WindowPatternId.getNativeValue() == patternId) {
-            return getNativeProvider(NativeIWindowProvider.class) != null ? accessible.getNativeAccessible() : 0L;
-        }
-
-        if (StandardPatternIds.UIA_InvokePatternId.getNativeValue() == patternId) {
-            return getNativeProvider(NativeIInvokeProvider.class) != null ? accessible.getNativeAccessible() : 0L;
-        }
-
-        // fall back to glass
-        return accessible.getGlassAccessibleRoot().GetPatternProvider(patternId);
-
-
-//       IUIAElement element = accessible.getUIAElement();
-//       if (element != null && element.isVirtual()) {
-//           log(element, "GetPatternProvider("+patternId+")");
-//       }
-//       //System.err.println("GetPatternProvider("+patternId+") -> " + accessible.getGlassAccessibleRoot());
-//       return accessible.getGlassAccessibleRoot().GetPatternProvider(patternId);
 
     }
 
     @Override
     public long get_HostRawElementProvider() {
         IUIAElement element = accessible.getUIAElement();
-        if (element != null && element.isVirtual()) {
+        if (element != null && isVirtual(element)) {
             // virtual node
             //log(node, "get_HostRawElementProvider() -> 0L");
             return 0L;
@@ -285,6 +340,12 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
         if (element != null) {
             String pid = StandardPropertyIds.fromNativeValue(propertyId).map(Object::toString).orElse("" + propertyId);
             log(element, "GetPropertyValue("+pid+") for " + element);
+            
+            Prop<?> p = installedProps.get(propertyId);
+            if (p != null) {
+                return p.getAsVariant().toWinVariant();
+            }
+        
 
 
             // this is for now for debugging
@@ -292,7 +353,7 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
                 return Convert.variantString("UIANode: " + element);
             }
 
-            if (element.isVirtual()) {
+            if (isVirtual(element)) {
                 if (StandardPropertyIds.UIA_AutomationIdPropertyId.getNativeValue() == propertyId) {
                     return Convert.variantString(element.getAutomationId());
                 }
@@ -303,6 +364,10 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
                     return Convert.variantEnum(element.getControlType());
                 }
             }
+
+            if (StandardPropertyIds.UIA_ProviderDescriptionPropertyId.getNativeValue() == propertyId) {
+                return Convert.variantString("OpenFX-UIA Provider");
+            }
             /*
             if (PropertyId.UIA_BoundingRectanglePropertyId.getNativeValue() == propertyId) {
                 if (node.boundsProperty() != null) {
@@ -312,10 +377,17 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
             */
         }
         //System.err.println("GetPropertyValue("+propertyId+") -> " + accessible.getGlassAccessibleRoot());
-        WinVariant result = accessible.getGlassAccessibleRoot().GetPropertyValue(propertyId);
-        String pid = StandardPropertyIds.fromNativeValue(propertyId).map(Object::toString).orElse("" + propertyId);
+
+
+        //WinVariant result = accessible.getGlassAccessibleRoot().GetPropertyValue(propertyId);
+        //String pid = StandardPropertyIds.fromNativeValue(propertyId).map(Object::toString).orElse("" + propertyId);
         //System.err.println(pid + " => " + result);
-        return result;
+        //return result;
+
+        // no defaults!
+        return null;
     }
+
+    
     
 }

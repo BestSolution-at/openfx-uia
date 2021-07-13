@@ -24,14 +24,13 @@
  */
 package com.sun.glass.ui.uia;
 
+import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.HashMap;
-import java.util.Map;
 
 import com.sun.glass.ui.Accessible;
 import com.sun.glass.ui.View;
@@ -39,12 +38,16 @@ import com.sun.glass.ui.uia.glass.WinAccessible;
 import com.sun.glass.ui.uia.glass.WinVariant;
 import com.sun.glass.ui.uia.provider.NativeITextProvider;
 import com.sun.glass.ui.uia.provider.NativeIToggleProvider;
+import com.sun.glass.ui.uia.provider.NativeIInvokeProvider;
 import com.sun.glass.ui.uia.provider.UIAElementAdapter;
 import com.sun.javafx.tk.quantum.QuantumToolkit;
 
+import javafx.geometry.Point2D;
 import javafx.scene.AccessibleAction;
 import javafx.scene.AccessibleAttribute;
+import javafx.scene.Node;
 import javafx.uia.IUIAElement;
+import javafx.uia.IUIAVirtualRootElement;
 
 @SuppressWarnings("restriction")
 public class ProxyAccessible extends Accessible {
@@ -105,16 +108,14 @@ public class ProxyAccessible extends Accessible {
         }
     }
 
-    private <T> T getNativeProvider(Class<T> type) {
-        return uiaElementAdapter == null ? null : uiaElementAdapter.getNativeProvider(type);
+    public <T> T getContext(Class<T> type) {
+        return uiaElementAdapter.getProviderRegistry().getContext(type);
     }
 
-    // TODO management & dispose
-    static Map<IUIAElement, ProxyAccessible> virtuals = new HashMap<>();
-        
-    public ProxyAccessible getVirtualAccessible(IUIAElement element) {
-        return virtuals.computeIfAbsent(element, el -> new ProxyAccessible(this, el));
+    private <T> T getNativeProvider(Class<T> nativeType) {
+        return uiaElementAdapter == null ? null : uiaElementAdapter.getProviderRegistry().getNativeInstance(nativeType);
     }
+
 
     public IUIAElement getUIAElement() {
         return uiaElement;
@@ -129,6 +130,7 @@ public class ProxyAccessible extends Accessible {
             peer = 0L;
         }
 
+        // TODO virtuals have no glass NPE!
         glass.dispose();
     }
 
@@ -178,25 +180,12 @@ public class ProxyAccessible extends Accessible {
 
     private void initializeJavaFXElement(IUIAElement element) {
         initialize(element);
-        initialize(element);
-  //      uiaElementAdapter = new UIAElementAdapter(this, element);
 
- //       for (ProviderNfo provider : availableProviders) {
-  //          System.err.println("Checking " + provider.type + ": " + element.isProviderAvailable(provider.type));
- //           if (element.isProviderAvailable(provider.type)) {
- //               System.err.println("Adding " + provider.id + ", " + provider.type + ", " + element);
- //               this.registry.genericAddProvider(provider.id, provider.type, element);
- //           }
- //       }
- //       if (element != null) {
-  //          virtuals.put(element, this);
- //           listen(element);
- //       }
+        ProxyAccessibleRegistry.getInstance().registerFXAccessible(element, this);
     }
+
     private void initializeVirtualElement(IUIAElement element) {
         initialize(element);
-
-//        uiaElementAdapter = new UIAElementAdapter(this, element);
     }
 
     private void connect() {
@@ -245,7 +234,34 @@ public class ProxyAccessible extends Accessible {
 		}
 	}
 
+    private class GetProviderFromNode implements PrivilegedAction<Object> {
+        Node node;
+		Class<?> providerType;
+
+		@Override
+		public Object run() {
+            Object result = node.queryAccessibleAttribute(AccessibleAttribute.TEXT, "getProvider", providerType);
+			if (result != null) {
+				
+				if (result instanceof String) {
+					return null;
+				}
+				
+				try {
+					providerType.cast(result);
+				} catch (Exception e) {
+					String msg = "The expected provider type" + " is " + providerType.getSimpleName() + " but found "
+							+ result.getClass().getSimpleName();
+					System.err.println(msg);
+					return null; // Fail no exception
+				}
+			}
+			return result;
+		}
+	}
+
 	GetProvider getProvider = new GetProvider();
+    GetProviderFromNode getProviderFromNode = new GetProviderFromNode();
 
 	@SuppressWarnings("unchecked")
 	public <T> T getProvider(Class<T> providerType) {
@@ -255,6 +271,18 @@ public class ProxyAccessible extends Accessible {
 		return (T) QuantumToolkit.runWithoutRenderLock(() -> {
 			getProvider.providerType = providerType;
 			return (T) AccessController.doPrivileged(getProvider, acc);
+		});
+	}
+
+    @SuppressWarnings("unchecked")
+	public <T> T getProviderFromNode(Node node, Class<T> providerType) {
+		AccessControlContext acc = getAccessControlContext();
+		if (acc == null)
+			return null;
+		return (T) QuantumToolkit.runWithoutRenderLock(() -> {
+            getProviderFromNode.node = node;
+			getProviderFromNode.providerType = providerType;
+			return (T) AccessController.doPrivileged(getProviderFromNode, acc);
 		});
 	}
 
@@ -389,13 +417,46 @@ public class ProxyAccessible extends Accessible {
         });
     }
 
+    private static ProxyAccessible getNodeAccessible(Node node) {
+        // TODO maybe there is a way without using reflection
+        try {
+            Method getter = Node.class.getDeclaredMethod("getAccessible");
+            getter.setAccessible(true);
+            ProxyAccessible accessible = (ProxyAccessible) getter.invoke(node);
+            return accessible;
+        } catch (Exception e) {
+            System.err.println("Failed to get Accessible! " + node);
+            e.printStackTrace();
+            throw new RuntimeException("Failed to get Accessible! " + node , e);
+        }
+    }
+
     /***********************************************/
     /*     IRawElementProviderFragmentRoot         */
     /***********************************************/
     private long IRawElementProviderFragmentRoot_ElementProviderFromPoint(double x, double y) {
         return Util.guard(() -> {
-            checkGlass();
-            return glass.ElementProviderFromPoint(x, y);
+            // glass should never be null, since this query is only executed at Scene Level
+            Node node = glass.ElementProviderFromPointAsNode(x, y);
+            ProxyAccessible accessible = getNodeAccessible(node);
+            IUIAElement element = accessible.getUIAElement();
+            if (element instanceof IUIAVirtualRootElement) {
+                // we deal with a virtual root - so we need to pick into the virtual structure...
+                IUIAVirtualRootElement virtualRoot = (IUIAVirtualRootElement) element;
+                IUIAElement pickedChild = virtualRoot.getChildFromPoint(new Point2D(x, y));
+                if (pickedChild != null && pickedChild != virtualRoot) {
+                    // now we have the IUIAElement, but it may not have been initialized yet
+                    // since all children of a virtual root have the virtual root itself as glassRoot this should work
+                    ProxyAccessible pickedAccessible = ProxyAccessibleRegistry.getInstance().getVirtualAccessible(accessible, pickedChild);
+                    return pickedAccessible.getNativeAccessible();
+                } else {
+                    // if we pick null, we return the root itself
+                    return getNativeAccessible(node);
+                }
+            } else {
+                // we return the javafx node
+                return getNativeAccessible(node);
+            }
         });
     }
     private long IRawElementProviderFragmentRoot_GetFocus() {
@@ -425,8 +486,13 @@ public class ProxyAccessible extends Accessible {
     /***********************************************/
     private void IInvokeProvider_Invoke() {
         Util.guard(() -> {
-            checkGlass();
-            glass.Invoke();
+            NativeIInvokeProvider provider = getNativeProvider(NativeIInvokeProvider.class);
+            if (provider != null) {
+                provider.Invoke();
+            } else {
+                checkGlass();
+                glass.Invoke();
+            }
         });
     }
     /***********************************************/
@@ -861,4 +927,6 @@ public class ProxyAccessible extends Accessible {
     private int WindowProvider_get_WindowVisualState() {return 0;}
     private void WindowProvider_SetVisualState(int s) {}
     private boolean WindowProvider_WaitForInputIdle(int s) {return false;}
+
+    
 }

@@ -141,6 +141,8 @@ static jfieldID fid_dblVal;
 static jfieldID fid_boolVal;
 static jfieldID fid_bstrVal;
 static jfieldID fid_pDblVal;
+static jfieldID fid_pFltVal;
+
 
 
 /* static */ HRESULT ProxyAccessible::copyString(JNIEnv* env, jstring jString, BSTR* pbstrVal)
@@ -167,6 +169,7 @@ static jfieldID fid_pDblVal;
             jint* intPtr = (jint*)listPtr;
             jlong* longPtr = (jlong*)listPtr;
             jdouble* doublePtr = (jdouble*)listPtr;
+            jfloat* floatPtr = (jfloat*)listPtr;
             for (LONG i = 0; i < size; i++) {
                 if (vt == VT_UNKNOWN) {
                     //TODO make sure AddRef on elements is not required ?
@@ -178,13 +181,15 @@ static jfieldID fid_pDblVal;
                 else if (vt == VT_R8) {
                     SafeArrayPutElement(psa, &i, (void*)&(doublePtr[i]));
                 }
+                else if (vt == VT_R4) {
+                    SafeArrayPutElement(psa, &i, (void*)&(floatPtr[i]));
+                }
             }
             env->ReleasePrimitiveArrayCritical(list, listPtr, 0);
             *pparrayVal = psa;
             return S_OK;
         }
     }
-    return E_FAIL;
 }
 
 /* static */ HRESULT ProxyAccessible::copyVariant(JNIEnv* env, jobject jVariant, VARIANT* pRetVal)
@@ -231,6 +236,11 @@ static jfieldID fid_pDblVal;
     case VT_R8 | VT_ARRAY: {
         jarray list = (jarray)env->GetObjectField(jVariant, fid_pDblVal);
         hr = ProxyAccessible::copyList(env, list, &(pRetVal->parray), VT_R8);
+        break;
+    }
+    case VT_R4 | VT_ARRAY: {
+        jarray list = (jarray)env->GetObjectField(jVariant, fid_pFltVal);
+        hr = ProxyAccessible::copyList(env, list, &(pRetVal->parray), VT_R4);
         break;
     }
     }
@@ -1401,6 +1411,8 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1initIDs
     fid_bstrVal = env->GetFieldID(jVariantClass, "bstrVal", "Ljava/lang/String;");
     if (env->ExceptionCheck()) return;
     fid_pDblVal = env->GetFieldID(jVariantClass, "pDblVal", "[D");
+    if (env->ExceptionCheck()) return;
+    fid_pFltVal = env->GetFieldID(jVariantClass, "pFltVal", "[F");
     if (env->ExceptionCheck()) return;
 }
 

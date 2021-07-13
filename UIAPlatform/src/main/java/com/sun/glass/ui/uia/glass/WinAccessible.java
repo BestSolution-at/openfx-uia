@@ -1125,6 +1125,11 @@ public final class WinAccessible extends Accessible {
         Node node = (Node)getAttribute(NODE_AT_POINT, new Point2D(x, y));
         return getNativeAccessible(node);
     }
+    public Node ElementProviderFromPointAsNode(double x, double y) {
+        if (isDisposed()) return null;
+        return (Node)getAttribute(NODE_AT_POINT, new Point2D(x, y));
+    }
+    
 
     public long GetFocus() {
         if (isDisposed()) return 0;

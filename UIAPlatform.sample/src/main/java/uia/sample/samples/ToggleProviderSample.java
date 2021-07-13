@@ -24,9 +24,6 @@
  */
 package uia.sample.samples;
 
-import java.util.Collections;
-import java.util.List;
-
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -52,24 +49,10 @@ public class ToggleProviderSample implements Sample {
 
         class MyElement implements IUIAElement, IToggleProvider {
 
-            private IToggleProviderEvents events;
-
             MyElement() {
                 MyLabel.this.toggleState.addListener((obs, ol, ne) -> {
-                    if (events != null) {
-                        events.notifyToggleStateChanged(ol ? ToggleState.On : ToggleState.Off, ne ? ToggleState.On : ToggleState.Off);
-                    }
+                    getToggleProviderContext().ToggleState.fireChanged(ol ? ToggleState.On : ToggleState.Off, ne ? ToggleState.On : ToggleState.Off);
                 });
-            }
-
-            @Override
-            public IUIAElement getParent() {
-                return null;
-            }
-
-            @Override
-            public List<IUIAElement> getChildren() {
-                return Collections.emptyList();
             }
 
             @Override
@@ -87,12 +70,6 @@ public class ToggleProviderSample implements Sample {
             }
 
             @Override
-            public void initialize(IUIAElementEvents events) {
-            }
-
-
-
-            @Override
             public void Toggle() {
                 toggleState.set(!toggleState.get());
             }
@@ -102,11 +79,6 @@ public class ToggleProviderSample implements Sample {
                 return toggleState.get() ? ToggleState.On : ToggleState.Off;
             }
 
-            @Override
-            public void initialize(IToggleProviderEvents events) {
-                this.events = events;
-            }
-            
         };
 
         MyElement uia = new MyElement();
