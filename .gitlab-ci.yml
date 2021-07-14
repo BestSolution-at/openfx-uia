@@ -40,9 +40,8 @@ deploy_snapshot:
   stage: deploy
   only:
     - master
-  variables:
-    DEPLOY_VERSION: 999.0.0-`date "+%s" -d "$CI_COMMIT_TIMESTAMP"`
   script:
+    - export DEPLOY_VERSION="999.0.0-`date "+%s" -d "$CI_COMMIT_TIMESTAMP"`"
     - echo "Running deploy_snapshot for master DEPLOY_VERSION = $DEPLOY_VERSION"
     - ls UIAPlatform/build/libs/UIAPlatform.jar
     - ls UIAPlatform/build/libs/UIAPlatform-sources.jar
@@ -61,11 +60,10 @@ deploy_snapshot:
 deploy_release:
   stage: deploy
   only:
-    - /^r[0-9]+[.][0-9]+[.][0-9]+(-[a-z0-9]+)?$/
-  variables:
-    DEPLOY_VERSION: echo "$CI_COMMIT_TAG" | sed -r "s/r([0-9]+[.][0-9]+[.][0-9]+([-](m|rc)[0-9]+)?)/\1/g"
+    - /^r[0-9]+[.][0-9]+[.][0-9]+([-](m|rc)[0-9]+)?$/
   script:
-    - echo "Running deploy_release for $CI_COMMIT_TAG"
+    - export DEPLOY_VERSION="`echo "$CI_COMMIT_TAG" | sed -r "s/r([0-9]+[.][0-9]+[.][0-9]+([-](m|rc)[0-9]+)?)/\1/g"`"
+    - echo "Running deploy_release for $CI_COMMIT_TAG, DEPLOY_VERSION = $DEPLOY_VERSION"
     - mvn -version
     - ls UIAPlatform/build/libs/UIAPlatform.jar
     - ls UIAPlatform/build/libs/UIAPlatform-sources.jar
