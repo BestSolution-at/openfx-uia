@@ -42,6 +42,8 @@ deploy_snapshot:
     - master
   script:
     - export DEPLOY_VERSION="999.0.0-`date "+%s" -d "$CI_COMMIT_TIMESTAMP"`"
+    # for now we overwrite the timestamp with snapshot, need to figure out how to set all artifacts to the same timestamp -.-
+    - export DEPLOY_VERSION="999.0.0-SNAPSHOT"
     - echo "Running deploy_snapshot for master DEPLOY_VERSION = $DEPLOY_VERSION"
     - ls UIAPlatform/build/libs/UIAPlatform.jar
     - ls UIAPlatform/build/libs/UIAPlatform-sources.jar
