@@ -22,7 +22,10 @@ build:
   tags:
     - win64
   artifacts:
-    untracked: true
+    paths:
+      - UIAPlatform/build
+      - UIAPlatform.native/build
+      - UIAPlatform.sample/build
     expire_in: 10 mins
 
 
@@ -38,6 +41,12 @@ deploy_snapshot:
     - ls UIAPlatform/build/libs/UIAPlatform-javadoc.jar
     - ls UIAPlatform.sample/build/libs/UIAPlatform.sample.jar
     - ls UIAPlatform.sample/build/libs/launcher.jar
+    - mvn deploy:deploy-file -Durl=http://nexus.ci.bestsolution.at:8081/repository/beso-oss-snapshots/ -DrepositoryId=beso-oss-snapshots -Dfile=UIAPlatform/build/libs/UIAPlatform.jar -DgroupId=at.bestsolution.openfx-uia -DartifactId=UIAPlatform -Dversion=9.9.9-SNAPSHOT -Dpackaging=jar -DgeneratePom.description="JavaFX UIA platform." 
+    - mvn deploy:deploy-file -Durl=http://nexus.ci.bestsolution.at:8081/repository/beso-oss-snapshots/ -DrepositoryId=beso-oss-snapshots -Dfile=UIAPlatform/build/libs/UIAPlatform-sources.jar -DgroupId=at.bestsolution.openfx-uia -DartifactId=UIAPlatform -Dversion=9.9.9-SNAPSHOT -Dpackaging=jar -Dclassifier=sources -DgeneratePom.description="JavaFX UIA platform." 
+    - mvn deploy:deploy-file -Durl=http://nexus.ci.bestsolution.at:8081/repository/beso-oss-snapshots/ -DrepositoryId=beso-oss-snapshots -Dfile=UIAPlatform/build/libs/UIAPlatform-javadoc.jar -DgroupId=at.bestsolution.openfx-uia -DartifactId=UIAPlatform -Dversion=9.9.9-SNAPSHOT -Dpackaging=jar -Dclassifier=javadoc -DgeneratePom.description="JavaFX UIA platform." 
+    - mvn deploy:deploy-file -Durl=http://nexus.ci.bestsolution.at:8081/repository/beso-oss-snapshots/ -DrepositoryId=beso-oss-snapshots -Dfile=UIAPlatform.sample/build/libs/UIAPlatform.sample.jar -DgroupId=at.bestsolution.openfx-uia -DartifactId=UIAPlatform.sample -Dversion=9.9.9-SNAPSHOT -Dpackaging=jar -DgeneratePom.description="JavaFX UIA platform sample." 
+    - mvn deploy:deploy-file -Durl=http://nexus.ci.bestsolution.at:8081/repository/beso-oss-snapshots/ -DrepositoryId=beso-oss-snapshots -Dfile=UIAPlatform.sample/build/libs/launcher.jar -DgroupId=at.bestsolution.openfx-uia -DartifactId=UIAPlatform.fullsample -Dversion=9.9.9-SNAPSHOT -Dpackaging=jar -DgeneratePom.description="JavaFX UIA platform full sample. This is a self running sample." 
+    
   tags:
     - deploy-mvn
 

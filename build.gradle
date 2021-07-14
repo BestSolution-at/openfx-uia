@@ -1,0 +1,4 @@
+allprojects {
+    group = 'at.bestsolution.openfx-uia'
+    version = '1.0'
+}

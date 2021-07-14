@@ -1,4 +1,0 @@
-allprojects {
-    group = 'openfx-uia'
-    version = '1.0'
-}
