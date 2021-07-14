@@ -1,5 +1,10 @@
 
+stages:
+  - build
+  - deploy
+
 build:
+  stage: build
   before_script:
     - |
       if (-not (Test-Path "$pwd\java\zulu8.54.0.21-ca-fx-jdk8.0.292-win_x64")) {
@@ -16,3 +21,37 @@ build:
     - ./gradlew --no-daemon assemble
   tags:
     - win64
+  artifacts:
+    untracked: true
+    expire_in: 10 mins
+
+
+deploy_snapshot:
+  stage: deploy
+  only:
+    - master
+  script:
+    - echo "Running deploy_snapshot for master"
+    - mvn -version
+    - ls UIAPlatform/build/libs/UIAPlatform.jar
+    - ls UIAPlatform/build/libs/UIAPlatform-sources.jar
+    - ls UIAPlatform/build/libs/UIAPlatform-javadoc.jar
+    - ls UIAPlatform.sample/build/libs/UIAPlatform.sample.jar
+    - ls UIAPlatform.sample/build/libs/launcher.jar
+  tags:
+    - deploy-mvn
+
+deploy_release:
+  stage: deploy
+  only:
+    - /^r[0-9]+[.][0-9]+[.][0-9]+(-[a-z0-9]+)?$/
+  script:
+    - echo "Running deploy_release for $CI_COMMIT_TAG"
+    - mvn -version
+    - ls UIAPlatform/build/libs/UIAPlatform.jar
+    - ls UIAPlatform/build/libs/UIAPlatform-sources.jar
+    - ls UIAPlatform/build/libs/UIAPlatform-javadoc.jar
+    - ls UIAPlatform.sample/build/libs/UIAPlatform.sample.jar
+    - ls UIAPlatform.sample/build/libs/launcher.jar
+  tags:
+   - deploy-mvn
