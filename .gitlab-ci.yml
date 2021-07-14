@@ -43,7 +43,7 @@ deploy_snapshot:
   variables:
     DEPLOY_VERSION: 999.0.0-`date "+%s" -d "$CI_COMMIT_TIMESTAMP"`
   script:
-    - echo "Running deploy_snapshot for master"
+    - echo "Running deploy_snapshot for master DEPLOY_VERSION = $DEPLOY_VERSION"
     - ls UIAPlatform/build/libs/UIAPlatform.jar
     - ls UIAPlatform/build/libs/UIAPlatform-sources.jar
     - ls UIAPlatform/build/libs/UIAPlatform-javadoc.jar
