@@ -75,6 +75,8 @@ sourceSets {
 }
 
 task phatJar(type: Jar) {
+    dependsOn configurations.platformLib
+
     baseName "launcher"
     from sourceSets.launcher.output
     from configurations.platformLib.files
