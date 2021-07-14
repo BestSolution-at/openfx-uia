@@ -30,13 +30,8 @@ import javafx.uia.IInvokeProvider;
 
 public class InvokeProviderAdapter extends BaseAdapter<IInvokeProvider> implements NativeIInvokeProvider {
     
-    private final IInvokeProvider.IInvokeProviderEvents events = new IInvokeProvider.IInvokeProviderEvents() {
-        // empty
-    };
-
     public InvokeProviderAdapter(ProxyAccessible accessible, IInvokeProvider provider) {
         super(accessible, provider);
-        provider.initialize(events);
     }
 
     @Override
