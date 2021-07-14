@@ -40,8 +40,6 @@ deploy_snapshot:
   stage: deploy
   only:
     - master
-  before_script:
-  - export COMMIT_TIME=$(git show -s --format=%ct $CI_COMMIT_SHA)   
   script:
     - echo "Running deploy_snapshot for master"
     - ls UIAPlatform/build/libs/UIAPlatform.jar
@@ -49,11 +47,11 @@ deploy_snapshot:
     - ls UIAPlatform/build/libs/UIAPlatform-javadoc.jar
     - ls UIAPlatform.sample/build/libs/UIAPlatform.sample.jar
     - ls UIAPlatform.sample/build/libs/launcher.jar
-    - mvn $MAVEN_CLI_OPTS deploy:deploy-file -Durl=http://nexus.ci.bestsolution.at:8081/repository/beso-oss-snapshots/ -DrepositoryId=beso-oss-snapshots -Dfile=UIAPlatform/build/libs/UIAPlatform.jar -DgroupId=at.bestsolution.openfx-uia -DartifactId=UIAPlatform -Dversion=999.0.0-$COMMIT_TIME -Dpackaging=jar -DgeneratePom.description="JavaFX UIA platform." 
-    - mvn $MAVEN_CLI_OPTS deploy:deploy-file -Durl=http://nexus.ci.bestsolution.at:8081/repository/beso-oss-snapshots/ -DrepositoryId=beso-oss-snapshots -Dfile=UIAPlatform/build/libs/UIAPlatform-sources.jar -DgroupId=at.bestsolution.openfx-uia -DartifactId=UIAPlatform -Dversion=999.0.0-$COMMIT_TIME -Dpackaging=jar -Dclassifier=sources -DgeneratePom.description="JavaFX UIA platform." 
-    - mvn $MAVEN_CLI_OPTS deploy:deploy-file -Durl=http://nexus.ci.bestsolution.at:8081/repository/beso-oss-snapshots/ -DrepositoryId=beso-oss-snapshots -Dfile=UIAPlatform/build/libs/UIAPlatform-javadoc.jar -DgroupId=at.bestsolution.openfx-uia -DartifactId=UIAPlatform -Dversion=999.0.0-$COMMIT_TIME -Dpackaging=jar -Dclassifier=javadoc -DgeneratePom.description="JavaFX UIA platform." 
-    - mvn $MAVEN_CLI_OPTS deploy:deploy-file -Durl=http://nexus.ci.bestsolution.at:8081/repository/beso-oss-snapshots/ -DrepositoryId=beso-oss-snapshots -Dfile=UIAPlatform.sample/build/libs/UIAPlatform.sample.jar -DgroupId=at.bestsolution.openfx-uia -DartifactId=UIAPlatform.sample -Dversion=999.0.0-$COMMIT_TIME -Dpackaging=jar -DgeneratePom.description="JavaFX UIA platform sample." 
-    - mvn $MAVEN_CLI_OPTS deploy:deploy-file -Durl=http://nexus.ci.bestsolution.at:8081/repository/beso-oss-snapshots/ -DrepositoryId=beso-oss-snapshots -Dfile=UIAPlatform.sample/build/libs/launcher.jar -DgroupId=at.bestsolution.openfx-uia -DartifactId=UIAPlatform.fullsample -Dversion=999.0.0-$COMMIT_TIME -Dpackaging=jar -DgeneratePom.description="JavaFX UIA platform full sample. This is a self running sample." 
+    - mvn $MAVEN_CLI_OPTS deploy:deploy-file -Durl=http://nexus.ci.bestsolution.at:8081/repository/beso-oss-snapshots/ -DrepositoryId=beso-oss-snapshots -Dfile=UIAPlatform/build/libs/UIAPlatform.jar -DgroupId=at.bestsolution.openfx-uia -DartifactId=UIAPlatform -Dversion=999.0.0-$CI_COMMIT_TIMESTAMP -Dpackaging=jar -DgeneratePom.description="JavaFX UIA platform." 
+    - mvn $MAVEN_CLI_OPTS deploy:deploy-file -Durl=http://nexus.ci.bestsolution.at:8081/repository/beso-oss-snapshots/ -DrepositoryId=beso-oss-snapshots -Dfile=UIAPlatform/build/libs/UIAPlatform-sources.jar -DgroupId=at.bestsolution.openfx-uia -DartifactId=UIAPlatform -Dversion=999.0.0-$CI_COMMIT_TIMESTAMP -Dpackaging=jar -Dclassifier=sources -DgeneratePom.description="JavaFX UIA platform." 
+    - mvn $MAVEN_CLI_OPTS deploy:deploy-file -Durl=http://nexus.ci.bestsolution.at:8081/repository/beso-oss-snapshots/ -DrepositoryId=beso-oss-snapshots -Dfile=UIAPlatform/build/libs/UIAPlatform-javadoc.jar -DgroupId=at.bestsolution.openfx-uia -DartifactId=UIAPlatform -Dversion=999.0.0-$CI_COMMIT_TIMESTAMP -Dpackaging=jar -Dclassifier=javadoc -DgeneratePom.description="JavaFX UIA platform." 
+    - mvn $MAVEN_CLI_OPTS deploy:deploy-file -Durl=http://nexus.ci.bestsolution.at:8081/repository/beso-oss-snapshots/ -DrepositoryId=beso-oss-snapshots -Dfile=UIAPlatform.sample/build/libs/UIAPlatform.sample.jar -DgroupId=at.bestsolution.openfx-uia -DartifactId=UIAPlatform.sample -Dversion=999.0.0-$CI_COMMIT_TIMESTAMP -Dpackaging=jar -DgeneratePom.description="JavaFX UIA platform sample." 
+    - mvn $MAVEN_CLI_OPTS deploy:deploy-file -Durl=http://nexus.ci.bestsolution.at:8081/repository/beso-oss-snapshots/ -DrepositoryId=beso-oss-snapshots -Dfile=UIAPlatform.sample/build/libs/launcher.jar -DgroupId=at.bestsolution.openfx-uia -DartifactId=UIAPlatform.fullsample -Dversion=999.0.0-$CI_COMMIT_TIMESTAMP -Dpackaging=jar -DgeneratePom.description="JavaFX UIA platform full sample. This is a self running sample." 
     
   tags:
     - deploy-mvn
