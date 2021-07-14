@@ -27,6 +27,12 @@ javadoc {
     exclude 'com/sun/glass/ui/uia/**'
 }
 
+import java.nio.file.Paths
+compileJava {
+    options.fork = true
+    options.forkOptions.executable =  Paths.get(System.getenv("JDK8FX")).resolve("bin/javac").toString()
+}
+
 configurations {
     debugDll
 }

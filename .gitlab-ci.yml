@@ -21,6 +21,7 @@ build:
         Expand-Archive jdk8fx.zip -DestinationPath java
       }
       $env:JAVA_HOME = "$pwd\java\zulu8.54.0.21-ca-fx-jdk8.0.292-win_x64"
+      $env:JDK8FX = "$pwd\java\zulu8.54.0.21-ca-fx-jdk8.0.292-win_x64"
     - Import-Module "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
     - Enter-VsDevShell -VsInstallPath "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools"
   script:

@@ -2,8 +2,29 @@ plugins {
     id "application"
 }
 
+println "Gradle on " + Jvm.current()
+
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
+
+
+java {
+    
+//    toolchain {
+//        languageVersion = JavaLanguageVersion.of(8)
+//        vendor = JvmVendorSpec.AZUL
+//    }
+    
+}
+
+compileJava {
+    options.fork = true
+    options.forkOptions.executable =  Paths.get(System.getenv("JDK8FX")).resolve("bin/javac").toString()
+}
+
+jar {
+    from sourceSets.main.output
+}
 
 repositories {
     mavenCentral()
@@ -23,16 +44,52 @@ dependencies {
 }
 
 import org.gradle.internal.jvm.Jvm
+import java.nio.file.Paths
+
 def getJreExtDir() {
-    Jvm.current().jre.toPath().resolve('lib/ext')
+
+    def jdk = Paths.get(System.getenv("JDK8FX"))
+    jdk.resolve("jre/lib/ext");
+/*    def jvm = Jvm.current()
+    println "Running on " + jvm
+    if (jvm.jre != null) {
+        jvm.jre.toPath().resolve('lib/ext')
+    } else {
+        null
+    }
+    */
 }
 def getPlatformExtPath() {
     configurations.platformLib.files[0].parent
 }
 
+sourceSets {
+    main {
+        java {
+        }
+    }
+    launcher {
+        java {
+        }
+    }
+}
+
+task phatJar(type: Jar) {
+    baseName "launcher"
+    from sourceSets.launcher.output
+    from configurations.platformLib.files
+    from configurations.runtimeElements.artifacts.files
+    manifest {
+        attributes 'Main-Class': 'uia.sample.PlatformLauncher'
+    }
+}
+        
 task runWithPlatform(type: JavaExec) {
 	group = 'application'
 	description = 'Runs the sample with the glass platfrom configured'
+
+    executable = Paths.get(System.getenv("JDK8FX")).resolve("bin/java").toString()
+
 	classpath = sourceSets.main.runtimeClasspath
 	main = 'uia.sample.Simple'
 	systemProperty "java.ext.dirs", "${getJreExtDir()};${getPlatformExtPath()}"
