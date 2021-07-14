@@ -115,6 +115,8 @@ public class ProxyTextRangeProvider {
     }
 
     private Variant convert(WinVariant variant) {
+        // TODO
+        /*
         Variant result = new Variant();
         result.vt = variant.vt;
         result.boolVal = variant.boolVal;
@@ -125,20 +127,11 @@ public class ProxyTextRangeProvider {
         result.lVal = variant.lVal;
         result.pDblVal = variant.pDblVal;
         result.punkVal = variant.punkVal;
-        return result;
+        */
+        return Variant.vt_empty();
     }
     private WinVariant convert(Variant variant) {
-        WinVariant result = new WinVariant();
-        result.vt = variant.vt;
-        result.boolVal = variant.boolVal;
-        result.bstrVal = variant.bstrVal;
-        result.dblVal = variant.dblVal;
-        result.fltVal = variant.fltVal;
-        result.iVal = variant.iVal;
-        result.lVal = variant.lVal;
-        result.pDblVal = variant.pDblVal;
-        result.punkVal = variant.punkVal;
-        return result;
+        return variant.toWinVariant();
     }
 
     private WinVariant GetAttributeValue(int attributeId) {
