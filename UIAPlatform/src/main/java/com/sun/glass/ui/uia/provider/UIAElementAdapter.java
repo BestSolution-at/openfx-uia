@@ -239,7 +239,6 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
         if (element != null && (isVirtual(element) || isVirtualRoot(element))) {
             log(element, "Navigate("+direction+")");
         }
-        // TODO custom UIANode child navigation - how to get the UIANode
         if (element != null) {
             if (isVirtual(element) || isVirtualRoot(element)) {
                 final int NavigateDirection_Parent            = 0;
@@ -317,16 +316,12 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
 
     @Override
     public long GetPatternProvider(int patternId) {
-
-        // TODO we should return here for the default patterns that are always provided without asking glass
-        
         if (providerRegistry.isProviderAvailable(patternId)) {
             log(provider, "GetPatternProvider("+StandardPatternIds.fromNativeValue(patternId)+")");
             return accessible.getNativeAccessible();
         } else {
             return 0L;
         }
-
     }
 
     @Override
