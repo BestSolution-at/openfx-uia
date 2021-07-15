@@ -1853,9 +1853,9 @@ public final class WinAccessible extends Accessible {
         return contentHeight == 0 ? 0 : scrollPaneHeight / contentHeight * 100;
     }
 
-    /***********************************************/
+    /* **********************************************/
     /*             IScrollItemProvider             */
-    /***********************************************/
+    /* **********************************************/
     public void ScrollIntoView() {
         if (isDisposed()) return;
         AccessibleRole role = (AccessibleRole)getAttribute(ROLE);

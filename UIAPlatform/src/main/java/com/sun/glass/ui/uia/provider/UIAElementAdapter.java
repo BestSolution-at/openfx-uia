@@ -45,6 +45,7 @@ import javafx.uia.IUIAVirtualRootElement;
 import javafx.uia.IVariantConverter;
 import javafx.uia.StandardPatternIds;
 import javafx.uia.StandardPropertyIds;
+import javafx.uia.StandardVariantConverters;
 import javafx.uia.Variant;
 
 public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements NativeIRawElementProviderSimple, NativeIRawElementProviderFragment {
@@ -124,7 +125,6 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
 
     @Override
     public float[] get_BoundingRectangle() {
-        // TODO should we return javafx bounds?
         return Convert.convertBounds(provider.getBounds());
     }
 
@@ -344,7 +344,6 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
 
     @Override
     public WinVariant GetPropertyValue(int propertyId) {
-        // TODO
         IUIAElement element = accessible.getUIAElement();
         if (element != null) {
             String pid = StandardPropertyIds.fromNativeValue(propertyId).map(Object::toString).orElse("" + propertyId);
@@ -355,44 +354,11 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
                 return p.getAsVariant().toWinVariant();
             }
         
-
-
-            // this is for now for debugging
-            if (StandardPropertyIds.UIA_HelpTextPropertyId.getNativeValue() == propertyId) {
-                return Convert.variantString("UIANode: " + element);
-            }
-
-            if (isVirtual(element)) {
-                if (StandardPropertyIds.UIA_AutomationIdPropertyId.getNativeValue() == propertyId) {
-                    return Convert.variantString(element.getAutomationId());
-                }
-            }
-
-            if (StandardPropertyIds.UIA_ControlTypePropertyId.getNativeValue() == propertyId) {
-                if (element.getControlType() != null) {
-                    return Convert.variantEnum(element.getControlType());
-                }
-            }
-
             if (StandardPropertyIds.UIA_ProviderDescriptionPropertyId.getNativeValue() == propertyId) {
-                return Convert.variantString("OpenFX-UIA Provider");
+                return StandardVariantConverters.BSTR.toVariant("OpenFX-UIA Provider").toWinVariant();
             }
-            /*
-            if (PropertyId.UIA_BoundingRectanglePropertyId.getNativeValue() == propertyId) {
-                if (node.boundsProperty() != null) {
-                    return Convert.variantBounds(node.boundsProperty().get());
-                }
-            }
-            */
+            
         }
-        //System.err.println("GetPropertyValue("+propertyId+") -> " + accessible.getGlassAccessibleRoot());
-
-
-        //WinVariant result = accessible.getGlassAccessibleRoot().GetPropertyValue(propertyId);
-        //String pid = StandardPropertyIds.fromNativeValue(propertyId).map(Object::toString).orElse("" + propertyId);
-        //System.err.println(pid + " => " + result);
-        //return result;
-
         // no defaults!
         return null;
     }
