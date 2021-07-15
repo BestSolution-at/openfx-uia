@@ -22,6 +22,10 @@ compileJava {
     options.forkOptions.executable =  Paths.get(System.getenv("JDK8FX")).resolve("bin/javac").toString()
 }
 
+java {
+    withSourcesJar()
+}
+
 jar {
     from sourceSets.main.output
 }
