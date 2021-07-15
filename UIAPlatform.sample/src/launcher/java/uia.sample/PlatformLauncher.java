@@ -94,8 +94,25 @@ public class PlatformLauncher {
         return java.toString();
     }
 
-    public static void main(String[] args) throws IOException {
+    static boolean checkJDK() {
+        String jdk8fx = System.getenv("JDK8FX");
+        if (jdk8fx == null) {
+            return false;
+        }
+        Path path = Paths.get(jdk8fx);
+        if (!Files.exists(path)) {
+            return false;
+        }
+        return true;
+    }
 
+    public static void main(String[] args) throws IOException {
+       
+        if (!checkJDK()) {
+            System.out.println("The environment variable JDK8FX must point to your Java 8 JDK with FX for this to work.");
+            System.exit(-1);
+        }
+         
         try {
             
             //Process p0 = new ProcessBuilder("dir", getClasspath()).start();
