@@ -2,28 +2,14 @@ plugins {
     id "application"
 }
 
-println "Gradle on " + Jvm.current()
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
-
-
-java {
-    
-//    toolchain {
-//        languageVersion = JavaLanguageVersion.of(8)
-//        vendor = JvmVendorSpec.AZUL
-//    }
-    
-}
-
-compileJava {
-    options.fork = true
-    options.forkOptions.executable =  Paths.get(System.getenv("JDK8FX")).resolve("bin/javac").toString()
-}
-
 java {
     withSourcesJar()
+
+    toolchain {
+        // since auto detection is disabled only the env var JDK8FX is picked up as java 8 toolchain (see gradle.properties)
+        // it seems not possible to query for toolchains with included JavaFX...
+        languageVersion = JavaLanguageVersion.of(8)
+    }
 }
 
 jar {
@@ -47,22 +33,18 @@ dependencies {
     implementation "org.asciidoctor:asciidoctorj:2.5.1"
 }
 
-import org.gradle.internal.jvm.Jvm
+
 import java.nio.file.Paths
-
-def getJreExtDir() {
-
-    def jdk = Paths.get(System.getenv("JDK8FX"))
-    jdk.resolve("jre/lib/ext");
-/*    def jvm = Jvm.current()
-    println "Running on " + jvm
-    if (jvm.jre != null) {
-        jvm.jre.toPath().resolve('lib/ext')
-    } else {
-        null
-    }
-    */
+def getJDKBase() {
+    Paths.get(javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(8)
+    }.get().metadata.installationPath.toString())
 }
+
+def getJDKExt() {
+    getJDKBase().resolve("jre/lib/ext").normalize()
+}
+
 def getPlatformExtPath() {
     configurations.platformLib.files[0].parent
 }
@@ -94,11 +76,13 @@ task runWithPlatform(type: JavaExec) {
 	group = 'application'
 	description = 'Runs the sample with the glass platfrom configured'
 
-    executable = Paths.get(System.getenv("JDK8FX")).resolve("bin/java").toString()
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
 
 	classpath = sourceSets.main.runtimeClasspath
 	main = 'uia.sample.Simple'
-	systemProperty "java.ext.dirs", "${getJreExtDir()};${getPlatformExtPath()}"
+	systemProperty "java.ext.dirs", "${getJDKExt()};${getPlatformExtPath()}"
     systemProperty "glass.platform", "UIA"
     systemProperty "glass.accessible.force", true
 }
