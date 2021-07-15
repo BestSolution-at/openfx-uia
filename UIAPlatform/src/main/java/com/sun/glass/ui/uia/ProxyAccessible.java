@@ -60,11 +60,11 @@ public class ProxyAccessible extends Accessible {
             Path libDir = Files.createTempDirectory("openfx-uia");
             Path lib = libDir.resolve("UIAPlatform.dll");
             Files.copy(library.openStream(), lib);
-            System.err.println("Using " + lib.toString());
+            Logger.debug(ProxyAccessible.class, () -> "Using " + lib.toString());
             System.load(lib.toString());
 
         } catch (Exception e) {
-            e.printStackTrace();
+            Logger.fatal(ProxyAccessible.class, () -> "Exception during initialization", e);
         }
         _initIDs();
     }
@@ -78,7 +78,7 @@ public class ProxyAccessible extends Accessible {
     WinAccessible glassRoot;
     
     /*package*/ ProxyAccessible() {
-        System.err.println("ProxyAccessible created.");
+        Logger.debug(this, () -> "ProxyAccessible created.");
 
         this.peer = _createProxyAccessible();
         if (this.peer == 0L) {
@@ -95,7 +95,7 @@ public class ProxyAccessible extends Accessible {
         } else {
             glassRoot = context.glassRoot;
         }
-        System.err.println("ProxyAccessible created (virtual) " + uiaElement);
+        Logger.debug(this, () -> "ProxyAccessible created (virtual) " + uiaElement);
         this.peer = _createProxyAccessible();
         if (this.peer == 0L) {
             throw new RuntimeException("could not create platform accessible");
@@ -195,10 +195,10 @@ public class ProxyAccessible extends Accessible {
     private void connect() {
         if (uiaElement == null) {
             uiaElement = getProvider(IUIAElement.class);
-            System.err.println("Got uiaNode: " + uiaElement);
+            Logger.debug(this, () -> "Got uiaNode: " + uiaElement);
             if (uiaElement != null) {
                 initializeJavaFXElement(uiaElement);
-                System.err.println("connected to " + uiaElement + ".");
+                Logger.debug(this, () -> "connected to " + uiaElement + ".");
             }
         }
     }
@@ -228,9 +228,8 @@ public class ProxyAccessible extends Accessible {
 				try {
 					providerType.cast(result);
 				} catch (Exception e) {
-					String msg = "The expected provider type" + " is " + providerType.getSimpleName() + " but found "
-							+ result.getClass().getSimpleName();
-					System.err.println(msg);
+                    Logger.error(ProxyAccessible.this, () -> "The expected provider type" + " is " + providerType.getSimpleName() + " but found "
+                    + result.getClass().getSimpleName(), e);
 					return null; // Fail no exception
 				}
 			}
@@ -254,9 +253,8 @@ public class ProxyAccessible extends Accessible {
 				try {
 					providerType.cast(result);
 				} catch (Exception e) {
-					String msg = "The expected provider type" + " is " + providerType.getSimpleName() + " but found "
-							+ result.getClass().getSimpleName();
-					System.err.println(msg);
+                    Logger.error(ProxyAccessible.this, () -> "The expected provider type" + " is " + providerType.getSimpleName() + " but found "
+                            + result.getClass().getSimpleName(), e);
 					return null; // Fail no exception
 				}
 			}
@@ -429,8 +427,7 @@ public class ProxyAccessible extends Accessible {
             ProxyAccessible accessible = (ProxyAccessible) getter.invoke(node);
             return accessible;
         } catch (Exception e) {
-            System.err.println("Failed to get Accessible! " + node);
-            e.printStackTrace();
+            Logger.error(ProxyAccessible.class, () -> "Failed to get Accessible! " + node, e);
             throw new RuntimeException("Failed to get Accessible! " + node , e);
         }
     }

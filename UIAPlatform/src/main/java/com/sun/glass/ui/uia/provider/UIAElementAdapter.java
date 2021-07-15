@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import com.sun.glass.ui.uia.Logger;
 import com.sun.glass.ui.uia.ProxyAccessible;
 import com.sun.glass.ui.uia.ProxyAccessibleRegistry;
 import com.sun.glass.ui.uia.glass.WinVariant;
@@ -119,7 +120,7 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
 
     private void log(IUIAElement element, String msg) {
         String glass = " (" + ProxyAccessibleRegistry.getInstance().findAccessible(element).getGlassAccessible() + ")";
-        System.err.println("V: " + element + glass + " - " + msg);
+        Logger.debug(this, () -> "V: " + element + glass + " - " + msg);
     }
 
 
@@ -263,7 +264,7 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
                         case NavigateDirection_Parent: 
                             if (isVirtualRoot(element)) {
                                 // a virtual root needs to delegate to the glass version
-                                System.err.println("PARENT: " + accessible + " / glass: " + (accessible!=null?""+accessible.getGlassAccessible():"-"));
+                                log(element, "PARENT: " + accessible + " / glass: " + (accessible!=null?""+accessible.getGlassAccessible():"-"));
                                 return accessible.getGlassAccessible().Navigate(direction);
                             } else {
                                 Optional<IUIAElement> parent = findParent(element);
@@ -298,13 +299,10 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
         // default handling for non virtual elements
         if (accessible.getGlassAccessible() != null) {
             // no node means glass should handle it
-            //System.err.println("Delegating navigate to glass: " + accessible.getGlassAccessible());
             return accessible.getGlassAccessible().Navigate(direction);
         }
 
         log(element, "FALLTHROGH PANIK!! - this should never happen!"); 
-        System.err.println(accessible);
-        System.err.println(element);
         Thread.dumpStack();
         return 0L;
     }
@@ -329,10 +327,8 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
         IUIAElement element = accessible.getUIAElement();
         if (element != null && isVirtual(element)) {
             // virtual node
-            //log(node, "get_HostRawElementProvider() -> 0L");
             return 0L;
         } else {
-            //System.err.println("get_HostRawElementProvider() -> " + accessible.getGlassAccessibleRoot());
             return accessible.getGlassAccessibleRoot().get_HostRawElementProvider();
         }
     }

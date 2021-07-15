@@ -55,7 +55,7 @@ public class ReflectiveApplication extends Application implements InvokeLaterDis
 	private final Supplier<Accessible> accessibleFactory;
 	
 	public ReflectiveApplication(Application application, InvokeLaterDispatcher.InvokeLaterSubmitter submitter, Supplier<Accessible> accessibleFactory) {
-		System.err.println("new ReflectiveApplication");
+		Logger.debug(this, () -> "new ReflectiveApplication");
 		this.application = application;
 		this.submitter = submitter;
 		this.accessibleFactory = accessibleFactory;
