@@ -24,12 +24,22 @@
  */
 package com.sun.glass.ui.uia;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Supplier;
+
 import com.sun.glass.ui.uia.glass.WinVariant;
+import com.sun.glass.ui.uia.provider.Convert;
+import com.sun.glass.ui.uia.winapi.Windows;
 
 import javafx.geometry.Bounds;
+import javafx.uia.ITextAttribute;
 import javafx.uia.ITextAttributeId;
+import javafx.uia.ITextAttributeSupport;
 import javafx.uia.ITextRangeProvider;
 import javafx.uia.ITextRangeProvider2;
+import javafx.uia.IVariantConverter;
+import javafx.uia.TextAttributeValue;
 import javafx.uia.TextPatternRangeEndpoint;
 import javafx.uia.TextUnit;
 import javafx.uia.Variant;
@@ -57,14 +67,39 @@ public class ProxyTextRangeProvider {
     private static int idCount = 1;
     private int id;
 
-    ProxyTextRangeProvider(ProxyAccessible accessible, ITextRangeProvider impl) {
+   
+    private Map<ITextAttributeId, Supplier<TextAttributeValue<Object>>> attribs = new HashMap<>();
+    private Map<ITextAttributeId, IVariantConverter<Object>> converters = new HashMap<>();
+    private Map<ITextAttributeId, javafx.uia.FindAttribute<Object>> findAttributes = new HashMap<>();
+
+    @SuppressWarnings("unchecked")
+    private ITextAttributeSupport support = new ITextAttributeSupport(){
+
+        @Override
+        public <T> ITextAttribute<T> addAttribute(ITextAttributeId id, Supplier<TextAttributeValue<T>> getter, IVariantConverter<T> converter, javafx.uia.FindAttribute<T> findAttribute) {
+            
+            attribs.put(id, (Supplier<TextAttributeValue<Object>>) (Supplier<?>)getter);
+            converters.put(id, (IVariantConverter<Object>) converter);
+            if (findAttribute != null) {
+                findAttributes.put(id, (javafx.uia.FindAttribute<Object>) findAttribute);
+            }
+            return null;
+        }
+        
+    };
+
+    public ProxyTextRangeProvider(ProxyAccessible accessible, ITextRangeProvider impl) {
         this.accessible = accessible;
         this.impl = impl;
         peer = _createTextRangeProvider(accessible.getNativeAccessible());
         id = idCount++;
+
+        System.err.println("ProxyTextRangeProvider created. acc=" + accessible);
+
+        impl.initialize(support);
     }
 
-    long getNativeProvider() {
+    public long getNativeProvider() {
         return peer;
     }
 
@@ -101,61 +136,145 @@ public class ProxyTextRangeProvider {
         impl.ExpandToEnclosingUnit(TextUnit.fromNativeValue(unit).get());
     }
 
-    private long FindAttribute(int attributeId, WinVariant val, boolean backward) {
-        ITextRangeProvider range = impl.FindAttribute(ITextAttributeId.fromNativeValue(attributeId), convert(val), backward);
+    private Variant convert(long variant) {
+        short vt = Windows.VariantGetVt(variant);
+        switch (vt) {
+            case Windows.VT_ARRAY | Windows.VT_R4:
+                return Variant.vt_r4_array(Windows.VariantGetFltSafeArray(variant));
+            case Windows.VT_ARRAY | Windows.VT_R8:
+                return Variant.vt_r8_array(Windows.VariantGetDblSafeArray(variant));
+            case Windows.VT_I2:
+                return Variant.vt_i2(Windows.VariantGetIVal(variant));
+            case Windows.VT_I4:
+                return Variant.vt_i4(Windows.VariantGetLVal(variant));
+            case Windows.VT_R4:
+                return Variant.vt_r4(Windows.VariantGetFltVal(variant));
+            case Windows.VT_R8:
+                return Variant.vt_r8(Windows.VariantGetDblVal(variant));
+            case Windows.VT_BOOL:
+                return Variant.vt_bool(Windows.VariantGetBoolVal(variant));
+            case Windows.VT_BSTR:
+                return Variant.vt_bstr(Windows.VariantGetBstrVal(variant));
+            case Windows.VT_UNKNOWN:
+                return Variant.vt_unknown(Windows.VariantGetPunkVal(variant));
+        }
+        System.err.println("Variant unknown; using VT_EMPTY");
+        Thread.dumpStack();
+        return Variant.vt_empty();
+    }
 
-        ProxyTextRangeProvider proxy = new ProxyTextRangeProvider(accessible, range);
-        return proxy.getNativeProvider();
+    private long FindAttribute(int attributeId, long variantValue, boolean backward) {
+        try {
+            ITextAttributeId id = ITextAttributeId.fromNativeValue(attributeId);
+            javafx.uia.FindAttribute<Object> findAttribute = findAttributes.get(id);
+            if (findAttribute != null) {
+                Variant variant = convert(variantValue);
+                IVariantConverter<Object> converter = converters.get(id);
+                Object value = converter.toObject(variant);
+                ITextRangeProvider range = findAttribute.findAttribute(backward, value);
+                if (range != null) {
+                    ProxyTextRangeProvider proxy = new ProxyTextRangeProvider(accessible, range);
+                    return proxy.getNativeProvider();
+                } else {
+                    return 0L;
+                }
+            } else {
+                return 0L;
+            }
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return 0L;
+        }
+    }
+
+    private long FindAttribute(int attributeId, WinVariant val, boolean backward) {
+        return 0L;
+        // try {
+        //     System.err.println("FindAttribute " + attributeId + ", " + val + ", " + backward);
+        //     ITextAttributeId id = ITextAttributeId.fromNativeValue(attributeId);
+        //     System.err.println("  id = " + id);
+        //     javafx.uia.FindAttribute<Object> findAttribute = findAttributes.get(id);
+        //     System.err.println("  findAttribute = " + findAttribute);
+        //     if (findAttribute != null) {
+        //         Variant variant = convert(val);
+        //         IVariantConverter<Object> converter = converters.get(id);
+        //         Object value = converter.toObject(variant);
+        //         ITextRangeProvider range = findAttribute.findAttribute(backward, value);
+        //         if (range == null) {
+        //             return 0L;
+        //         }
+        //         ProxyTextRangeProvider proxy = new ProxyTextRangeProvider(accessible, range);
+        //         return proxy.getNativeProvider();
+        //     } else {
+        //         return 0L;
+        //     }
+
+
+        //     // ITextRangeProvider range = impl.FindAttribute(ITextAttributeId.fromNativeValue(attributeId), convert(val), backward);
+
+        //     // ProxyTextRangeProvider proxy = new ProxyTextRangeProvider(accessible, range);
+        //     // return proxy.getNativeProvider();
+        // } catch (Exception e) {
+        //     e.printStackTrace();
+        //     return 0L;
+        // }
     }
 
     private long FindText(String text, boolean backward, boolean ignoreCase) {
         ITextRangeProvider range = impl.FindText(text, backward, ignoreCase);
-        ProxyTextRangeProvider proxy = new ProxyTextRangeProvider(accessible, range);
-        return proxy.getNativeProvider();
+        if (range != null) {
+            ProxyTextRangeProvider proxy = new ProxyTextRangeProvider(accessible, range);
+            return proxy.getNativeProvider();
+        } else {
+            return 0L;
+        }
     }
 
-    private Variant convert(WinVariant variant) {
-        // TODO
-        /*
-        Variant result = new Variant();
-        result.vt = variant.vt;
-        result.boolVal = variant.boolVal;
-        result.bstrVal = variant.bstrVal;
-        result.dblVal = variant.dblVal;
-        result.fltVal = variant.fltVal;
-        result.iVal = variant.iVal;
-        result.lVal = variant.lVal;
-        result.pDblVal = variant.pDblVal;
-        result.punkVal = variant.punkVal;
-        */
-        return Variant.vt_empty();
-    }
     private WinVariant convert(Variant variant) {
         return variant.toWinVariant();
     }
 
     private WinVariant GetAttributeValue(int attributeId) {
-        Variant result = impl.GetAttributeValue(ITextAttributeId.fromNativeValue(attributeId));
-        return convert(result);
+
+        try {
+        ITextAttributeId id = ITextAttributeId.fromNativeValue(attributeId);
+
+        Supplier<TextAttributeValue<Object>> getter = attribs.get(id);
+
+        if (getter != null) {
+
+            TextAttributeValue<Object> value = getter.get();
+
+            if (value.isNotSupported()) {
+                System.err.println(" not supported ");
+                return Variant.vt_unknown(Windows.UiaGetReservedNotSupportedValue()).toWinVariant();
+            }
+            if (value.isMixed()) {
+                System.err.println(" mixed ");
+                return Variant.vt_unknown(Windows.UiaGetReservedMixedAttributeValue()).toWinVariant();
+            }
+
+            return converters.get(id).toVariant(value.getValue()).toWinVariant();
+
+        } else {
+            return Variant.vt_empty().toWinVariant();
+        }
+        // Variant result = impl.GetAttributeValue(ITextAttributeId.fromNativeValue(attributeId));
+        // return convert(result);
+
+        } catch (Exception e) {
+            System.err.println("TOTAL FAILURE " + ITextAttributeId.fromNativeValue(attributeId));
+            e.printStackTrace();
+
+            return Variant.vt_empty().toWinVariant();
+        }
     }
 
     private double[] GetBoundingRectangles() {
         Bounds[] bounds = impl.GetBoundingRectangles();
-
-        // TODO move bounds conversion code
-        if (bounds != null) {
-            double[] result = new double[bounds.length * 4];
-            int index = 0;
-            for (int i = 0; i < bounds.length; i++) {
-                Bounds b = bounds[i];
-                result[index++] = b.getMinX();
-                result[index++] = b.getMinY();
-                result[index++] = b.getWidth();
-                result[index++] = b.getHeight();
-            }
-            return result;
-        }
-        return null;
+        return Convert.convertBoundsArrayDouble(bounds);
     }
 
     private long GetEnclosingElement() {

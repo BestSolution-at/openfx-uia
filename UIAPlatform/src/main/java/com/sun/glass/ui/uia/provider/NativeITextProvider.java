@@ -30,5 +30,6 @@ public interface NativeITextProvider {
     long[] GetSelection();
     long[] GetVisibleRanges();
     long RangeFromChild(long childElement);
+    long RangeFromPoint(double x, double y);
 
 }

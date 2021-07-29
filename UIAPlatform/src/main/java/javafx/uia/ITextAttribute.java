@@ -24,21 +24,5 @@
  */
 package javafx.uia;
 
-import java.util.stream.Stream;
-
-public interface ITextAttributeId {
-
-    int getNativeValue();
-
-    static ITextAttributeId fromNativeValue(int attributeId) {
-        return Stream.of(StandardTextAttributeIds.values())
-        .filter(value -> value.getNativeValue() == attributeId)
-        .map(v -> (ITextAttributeId)v).findFirst()
-        .orElse(new ITextAttributeId() {
-            @Override
-            public int getNativeValue() {
-                return attributeId;
-            }
-        });
-    }
+public interface ITextAttribute<T> {
 }

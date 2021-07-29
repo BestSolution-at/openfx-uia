@@ -24,21 +24,43 @@
  */
 package javafx.uia;
 
-import java.util.stream.Stream;
+public class TextAttributeValue<Type> {
 
-public interface ITextAttributeId {
+    private Type value;
+    private boolean mixed;
+    private boolean notSupported;
 
-    int getNativeValue();
-
-    static ITextAttributeId fromNativeValue(int attributeId) {
-        return Stream.of(StandardTextAttributeIds.values())
-        .filter(value -> value.getNativeValue() == attributeId)
-        .map(v -> (ITextAttributeId)v).findFirst()
-        .orElse(new ITextAttributeId() {
-            @Override
-            public int getNativeValue() {
-                return attributeId;
-            }
-        });
+    private TextAttributeValue(Type value) {
+        this.value = value;
     }
+
+    private TextAttributeValue(boolean mixed, boolean notSupported) {
+        this.mixed = mixed;
+        this.notSupported = notSupported;
+    }
+
+    public boolean isNotSupported() {
+        return notSupported;
+    }
+
+    public boolean isMixed() {
+        return mixed;
+    }
+
+    public Type getValue() {
+        return value;
+    }
+
+    public static <Type> TextAttributeValue<Type> value(Type value) {
+        return new TextAttributeValue<>(value);
+    }
+
+    public static <Type> TextAttributeValue<Type> mixed() {
+        return new TextAttributeValue<>(true, false);
+    }
+
+    public static <Type> TextAttributeValue<Type> notSupported() {
+        return new TextAttributeValue<>(false, true);
+    }
+
 }

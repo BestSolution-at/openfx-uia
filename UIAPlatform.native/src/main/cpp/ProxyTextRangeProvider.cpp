@@ -32,6 +32,7 @@ static jmethodID mid_Compare;
 static jmethodID mid_CompareEndpoints;
 static jmethodID mid_ExpandToEnclosingUnit;
 static jmethodID mid_FindAttribute;
+static jmethodID mid_FindAttribute2;
 static jmethodID mid_FindText;
 static jmethodID mid_GetAttributeValue;
 static jmethodID mid_GetBoundingRectangles;
@@ -162,7 +163,8 @@ IFACEMETHODIMP ProxyTextRangeProvider::FindAttribute(TEXTATTRIBUTEID attributeId
     jobject jVal = NULL;
     JNIEnv* env = GetEnv();
     if (env == NULL) return E_FAIL;
-    jlong ptr = env->CallLongMethod(m_jTextRangeProvider, mid_FindAttribute, attributeId, jVal, backward);
+    jlong ptr = env->CallLongMethod(m_jTextRangeProvider, mid_FindAttribute2, attributeId, (jlong) &val, backward);
+    // jlong ptr = env->CallLongMethod(m_jTextRangeProvider, mid_FindAttribute, attributeId, jVal, backward);
     if (CheckAndClearException(env)) return E_FAIL;
     ProxyTextRangeProvider* gtrp = reinterpret_cast<ProxyTextRangeProvider*>(ptr);
 
@@ -202,7 +204,6 @@ IFACEMETHODIMP ProxyTextRangeProvider::GetAttributeValue(TEXTATTRIBUTEID attribu
     if (env == NULL) return E_FAIL;
     jobject jVariant = env->CallObjectMethod(m_jTextRangeProvider, mid_GetAttributeValue, attributeId);
     if (CheckAndClearException(env)) return E_FAIL;
-
     return ProxyAccessible::copyVariant(env, jVariant, pRetVal);
 }
 
@@ -350,6 +351,8 @@ extern "C" JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyTextRangeProvid
     mid_ExpandToEnclosingUnit = env->GetMethodID(jClass, "ExpandToEnclosingUnit", "(I)V");
     if (env->ExceptionCheck()) return;
     mid_FindAttribute = env->GetMethodID(jClass, "FindAttribute", "(ILcom/sun/glass/ui/uia/glass/WinVariant;Z)J");
+    if (env->ExceptionCheck()) return;
+    mid_FindAttribute2 = env->GetMethodID(jClass, "FindAttribute", "(IJZ)J");
     if (env->ExceptionCheck()) return;
     mid_FindText = env->GetMethodID(jClass, "FindText", "(Ljava/lang/String;ZZ)J");
     if (env->ExceptionCheck()) return;

@@ -70,6 +70,7 @@ static jmethodID mid_IRangeValueProvider_get_SmallChange;
 static jmethodID mid_IValueProvider_SetValueString;
 static jmethodID mid_IValueProvider_get_ValueString;
 
+static jmethodID mid_ITextProvider_GetSelection;
 static jmethodID mid_ITextProvider_GetVisibleRanges;
 static jmethodID mid_ITextProvider_RangeFromChild;
 static jmethodID mid_ITextProvider_RangeFromPoint;
@@ -564,7 +565,14 @@ IFACEMETHODIMP ProxyAccessible::Invoke()
 IFACEMETHODIMP ProxyAccessible::GetSelection(SAFEARRAY** pRetVal)
 {
     if (pRetVal == NULL) return E_INVALIDARG;
-    return callArrayMethod(mid_ISelectionProvider_GetSelection, VT_UNKNOWN, pRetVal);
+
+    // TODO GetSelection is both for ITextRangeProvider and ISelectionProvider
+    // how should we switch between the two :?
+
+    return callArrayMethod(mid_ITextProvider_GetSelection, VT_UNKNOWN, pRetVal);
+
+
+    //return callArrayMethod(mid_ISelectionProvider_GetSelection, VT_UNKNOWN, pRetVal);
 }
 
 IFACEMETHODIMP ProxyAccessible::get_CanSelectMultiple(BOOL* pRetVal)
@@ -1274,6 +1282,8 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1initIDs
     if (env->ExceptionCheck()) return;
 
     /* ITextProvider */
+    mid_ITextProvider_GetSelection = env->GetMethodID(jClass, "ITextProvider_GetSelection", "()[J");
+    if (env->ExceptionCheck()) return;
     mid_ITextProvider_GetVisibleRanges = env->GetMethodID(jClass, "ITextProvider_GetVisibleRanges", "()[J");
     if (env->ExceptionCheck()) return;
     mid_ITextProvider_RangeFromChild = env->GetMethodID(jClass, "ITextProvider_RangeFromChild", "(J)J");
@@ -1501,7 +1511,7 @@ JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible_UiaRaiseAutoma
  * Method:    UiaClientsAreListening
  * Signature: ()Z
  */
-JNIEXPORT jboolean JNICALL Java_com_sun_glass_ui_uiaProxyAccessible_UiaClientsAreListening
+JNIEXPORT jboolean JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible_UiaClientsAreListening
 (JNIEnv* env, jclass jClass)
 {
     return UiaClientsAreListening() ? JNI_TRUE : JNI_FALSE;

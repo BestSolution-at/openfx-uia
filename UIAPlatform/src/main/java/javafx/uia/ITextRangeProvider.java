@@ -29,6 +29,12 @@ import javafx.geometry.Bounds;
 /** Provides access to a span of continuous text in a text container that implements ITextProvider or ITextProvider2. */
 public interface ITextRangeProvider {
     
+
+     default void initialize(ITextAttributeSupport context) {
+
+     }
+
+
     /** Adds the text range to the collection of selected text ranges in a control that supports multiple, disjoint spans of selected text. */
     void AddToSelection();
     
@@ -49,11 +55,9 @@ public interface ITextRangeProvider {
      * Returns a value that specifies whether two text ranges have identical endpoints.
      * <p>
      * Returns a negative value if the caller's endpoint occurs earlier in the text than the target endpoint.
-
-Returns zero if the caller's endpoint is at the same location as the target endpoint.
-
-Returns a positive value if the caller's endpoint occurs later in the text than the target endpoint.
-</p>
+     * Returns zero if the caller's endpoint is at the same location as the target endpoint.
+     * Returns a positive value if the caller's endpoint occurs later in the text than the target endpoint.
+     * </p>
      * @param endpoint the endpoint
      * @param targetRange The text range to be compared.
      * @param targetEndpoint the target endpoint
@@ -67,22 +71,41 @@ Returns a positive value if the caller's endpoint occurs later in the text than 
      */
     void ExpandToEnclosingUnit(TextUnit unit);
 
-    ITextRangeProvider FindAttribute(ITextAttributeId attributeId, Variant val, boolean backward);
+//   Note: FindAttribute is available by using initialize() for your attributes
+//     /**
+//      * Returns a text range subset that has the specified text attribute value.
+//      * @param attributeId The identifier of the text attribute. For a list of text attribute IDs, see Text Attribute Identifiers.
+//      * @param val The attribute value to search for. This value must match the type specified for the attribute.
+//      * @param backward TRUE if the last occurring text range should be returned instead of the first; otherwise FALSE.
+//      * @return Receives a pointer to the text range having a matching attribute and attribute value; otherwise NULL.
+//      */
+//     ITextRangeProvider FindAttribute(ITextAttributeId attributeId, Variant val, boolean backward);
 
+    /**
+     * Returns a text range subset that contains the specified text.
+     * @param text The text string to search for.
+     * @param backward TRUE if the last occurring text range should be returned instead of the first; otherwise FALSE.
+     * @param ignoreCase TRUE if case should be ignored; otherwise FALSE.
+     * @return Receives a pointer to the text range matching the specified text; otherwise NULL. This parameter is passed uninitialized.
+     */
     ITextRangeProvider FindText(String text, boolean backward, boolean ignoreCase);
 
-    Variant GetAttributeValue(ITextAttributeId attributeId);
-
+    //   Note: GetAttributeValue is available by using initialize() for your attributes
+    // /**
+    //  * Retrieves the value of the specified text attribute across the text range.
+    //  * @param attributeId The identifier of the text attribute. For a list of text attribute IDs, see Text Attribute Identifiers.
+    //  * @return
+    //  */
+    // Variant GetAttributeValue(ITextAttributeId attributeId);
 
     /**
      * 
      * @return Receives a pointer to one of the following.
-
-    An array of bounding rectangles for each full or partial line of text in a text range.
-    An empty array for a degenerate range.
-    An empty array for a text range that has screen coordinates placing it completely off-screen, scrolled out of view, or obscured by an overlapping window.
-
-This parameter is passed uninitialized. 
+     * <ul>
+     * <li>An array of bounding rectangles for each full or partial line of text in a text range.</li>
+     * <li>An empty array for a degenerate range.</li>
+     * <li>An empty array for a text range that has screen coordinates placing it completely off-screen, scrolled out of view, or obscured by an overlapping window.</li>
+     * </ul>
      */
     Bounds[] GetBoundingRectangles();
 

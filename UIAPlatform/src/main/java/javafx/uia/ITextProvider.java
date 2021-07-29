@@ -24,11 +24,51 @@
  */
 package javafx.uia;
 
+import javafx.geometry.Point2D;
+
+/**
+ * Provides access to controls that contain text.
+ */
 public interface ITextProvider {
     
+    class TextProviderContext {
+
+		public TextProviderContext(IInitContext init, ITextProvider provider) {
+            // empty for now
+		}
+	}
+
+    /**
+     * Retrieves a text range that encloses the main text of a document.
+     * @return the document range
+     */
     ITextRangeProvider get_DocumentRange();
+    /**
+     * Retrieves a value that specifies the type of text selection that is supported by the control.
+     * @return the supported text selection
+     */
     SupportedTextSelection get_SupportedTextSelection();
+    /**
+     * Retrieves a collection of text ranges that represents the currently selected text in a text-based control.
+     * @return the currently selected ranges
+     */
     ITextRangeProvider[] GetSelection();
+    /**
+     * Retrieves an array of disjoint text ranges from a text-based control where each text range represents a contiguous span of visible text.
+     * @return the visible text ranges
+     */
     ITextRangeProvider[] GetVisibleRanges();
+    /**
+     * Retrieves a text range enclosing a child element such as an image, hyperlink, or other embedded object.
+     * @param childElement the child
+     * @return the range
+     */
     ITextRangeProvider RangeFromChild(IUIAElement childElement);
+    /**
+     * Returns the degenerate (empty) text range nearest to the specified screen coordinates.
+     * @param point the coordinates in screen space
+     * @return the range
+     */
+    ITextRangeProvider RangeFromPoint(Point2D point);
+
 }

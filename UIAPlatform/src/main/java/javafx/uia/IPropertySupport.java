@@ -34,7 +34,7 @@ public interface IPropertySupport {
     <T> IProperty<T> addProperty(IPropertyId id, Supplier<T> getter, IVariantConverter<T> converter);
 
     default IProperty<ControlType> addControlTypeProperty(Supplier<ControlType> getter) {
-        return addProperty(StandardPropertyIds.UIA_ControlTypePropertyId, getter, StandardVariantConverters.I4_INativeEnum());
+        return addProperty(StandardPropertyIds.UIA_ControlTypePropertyId, getter, StandardVariantConverters.I4_INativeEnum(ControlType::fromNativeValue));
     }
 
     default IProperty<String> addNameProperty(Supplier<String> getter) {
@@ -112,7 +112,7 @@ public interface IPropertySupport {
     }
 
     default IProperty<OrientationType> addOrientationTypeProperty(Supplier<OrientationType> getter) {
-        return addProperty(StandardPropertyIds.UIA_OrientationPropertyId, getter, StandardVariantConverters.I4_INativeEnum());
+        return addProperty(StandardPropertyIds.UIA_OrientationPropertyId, getter, StandardVariantConverters.I4_INativeEnum(OrientationType::fromNativeValue));
     }
 
     default IProperty<Boolean> addIsRequiredForFormProperty(Supplier<Boolean> getter) {

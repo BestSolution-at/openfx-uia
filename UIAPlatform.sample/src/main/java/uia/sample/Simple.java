@@ -37,6 +37,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import uia.sample.samples.CanvasWithVirtualChildren;
+import uia.sample.samples.SimpleTextProvider;
+import uia.sample.samples.SimpleTextProviderWithAttributes;
 import uia.sample.samples.SimpleUIAElement;
 import uia.sample.samples.SimpleUIAElementWithProperties;
 import uia.sample.samples.ToggleProviderSample;
@@ -55,7 +57,10 @@ public class Simple extends Application {
             new SimpleUIAElement(), 
             new SimpleUIAElementWithProperties(),
             new ToggleProviderSample(), 
-            new CanvasWithVirtualChildren());
+            new CanvasWithVirtualChildren(),
+            new SimpleTextProvider(),
+            new SimpleTextProviderWithAttributes()
+            );
 
         VBox s = new VBox();
         s.setFillWidth(true);

@@ -52,6 +52,10 @@ import javafx.uia.IUIAVirtualRootElement;
 @SuppressWarnings("restriction")
 public class ProxyAccessible extends Accessible {
 
+    public static void requireLibrary() {
+
+    }
+    
     private static native void _initIDs();
     static {
         // TODO better library loading - maybe look at how glass does it?
@@ -619,15 +623,20 @@ public class ProxyAccessible extends Accessible {
             NativeITextProvider textProvider = getNativeProvider(NativeITextProvider.class);
             if (textProvider != null) {
                 return textProvider.GetVisibleRanges();
-                //ITextRangeProvider[] result = textProvider.GetVisibleRanges();
-                //long[] rr = new long[result.length];
-                //for (int i = 0; i < result.length; i++) {
-               //     rr[i] = new ProxyTextRangeProvider(this, result[i]).getNativeProvider();
-                //}
-                //return rr;
             } else {
                 checkGlass();
                 return glass.GetVisibleRanges();
+            }
+        });
+    }
+    private long[] ITextProvider_GetSelection() {
+        return Util.guard(() -> {
+            NativeITextProvider textProvider = getNativeProvider(NativeITextProvider.class);
+            if (textProvider != null) {
+                return textProvider.GetSelection();
+            } else {
+                checkGlass();
+                return glass.GetSelection();
             }
         });
     }
@@ -636,8 +645,6 @@ public class ProxyAccessible extends Accessible {
             NativeITextProvider textProvider = getNativeProvider(NativeITextProvider.class);
             if (textProvider != null) {
                 return textProvider.RangeFromChild(childElement);
-                // textProvider.RangeFromChild(childElement);
-                // return 0L;
             } else {
                 checkGlass();
                 return glass.RangeFromChild(childElement);
@@ -648,9 +655,7 @@ public class ProxyAccessible extends Accessible {
         return Util.guard(() -> {
             NativeITextProvider textProvider = getNativeProvider(NativeITextProvider.class);
             if (textProvider != null) {
-                
-                //textProvider.RangeFromPoint(x, y);
-                return 0L;
+                return textProvider.RangeFromPoint(x, y);
             } else {
                 checkGlass();
                 return glass.RangeFromPoint(x, y);
@@ -662,8 +667,6 @@ public class ProxyAccessible extends Accessible {
             NativeITextProvider textProvider = getNativeProvider(NativeITextProvider.class);
             if (textProvider != null) {
                 return textProvider.get_DocumentRange();
-                //ITextRangeProvider range = textProvider.get_DocumentRange();
-                //return new ProxyTextRangeProvider(this, range).getNativeProvider();
             } else {
                 checkGlass();
                 return glass.get_DocumentRange();

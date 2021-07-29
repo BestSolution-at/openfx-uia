@@ -26,4 +26,5 @@
 
 public interface IVariantConverter<T> {
     Variant toVariant(T value);
+    T toObject(Variant variant);
 }

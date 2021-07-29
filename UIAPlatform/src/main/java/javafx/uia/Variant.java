@@ -38,6 +38,36 @@ public class Variant {
         return winVariant;
     }
 
+    public short getIVal() {
+        return winVariant.iVal;
+    }
+    public int getLVal() {
+        return winVariant.lVal;
+    }
+    public boolean getBoolVal() {
+        return winVariant.boolVal;
+    }
+    public String getBstrVal() {
+        return winVariant.bstrVal;
+    }
+    public long getPunkVal() {
+        return winVariant.punkVal;
+    }
+    public float getFltVal() {
+        return winVariant.fltVal;
+    }
+    public double getDblVal() {
+        return winVariant.dblVal;
+    }
+
+    public float[] getFltSafeArray() {
+        return winVariant.pFltVal;
+    }
+    public double[] getDblSafeArray() {
+        return winVariant.pDblVal;
+    }
+
+
     public static Variant vt_empty() {
         WinVariant v = new WinVariant();
         v.vt = WinVariant.VT_EMPTY;

@@ -48,8 +48,8 @@ public interface IWindowProvider extends IInitable {
 			CanMinimize = init.addProperty(StandardPropertyIds.UIA_WindowCanMinimizePropertyId, windowProvider::get_CanMinimize, StandardVariantConverters.BOOL);
 			IsModal = init.addProperty(StandardPropertyIds.UIA_WindowIsModalPropertyId, windowProvider::get_IsModal, StandardVariantConverters.BOOL);
 			IsTopmost = init.addProperty(StandardPropertyIds.UIA_WindowIsTopmostPropertyId, windowProvider::get_IsTopmost, StandardVariantConverters.BOOL);
-			WindowVisualState = init.addProperty(StandardPropertyIds.UIA_WindowWindowVisualStatePropertyId, windowProvider::get_WindowVisualState, StandardVariantConverters.I4_INativeEnum());
-			WindowInteractionState = init.addProperty(StandardPropertyIds.UIA_WindowWindowInteractionStatePropertyId, windowProvider::get_WindowInteractionState, StandardVariantConverters.I4_INativeEnum());
+			WindowVisualState = init.addProperty(StandardPropertyIds.UIA_WindowWindowVisualStatePropertyId, windowProvider::get_WindowVisualState, StandardVariantConverters.I4_INativeEnum(javafx.uia.WindowVisualState::fromNativeValue));
+			WindowInteractionState = init.addProperty(StandardPropertyIds.UIA_WindowWindowInteractionStatePropertyId, windowProvider::get_WindowInteractionState, StandardVariantConverters.I4_INativeEnum(javafx.uia.WindowInteractionState::fromNativeValue));
 
 			Closed = init.addEvent(StandardEventIds.UIA_Window_WindowClosedEventId);
 			Opened = init.addEvent(StandardEventIds.UIA_Window_WindowOpenedEventId);

@@ -22,38 +22,20 @@
  * http://www.gnu.org/licenses/gpl.html
  * ----------------------------------------------------------------
  */
-package com.sun.glass.ui.uia.provider;
+package javafx.uia;
 
-import javafx.geometry.Bounds;
-import javafx.uia.INativeEnum;
-
-public class Convert {
+/**
+ * Allows typed implementation of FindAttribute in ITextRangeProvider
+ */
+@FunctionalInterface
+public interface FindAttribute<T> {
     
-    public static int convertNativeEnum(INativeEnum value) {
-        return value.getNativeValue();
-    }
+    /**
+     * Returns a text range subset that has the specified text attribute value.
+     * @param value The attribute value to search for. This value must match the type specified for the attribute.
+     * @param backward TRUE if the last occurring text range should be returned instead of the first; otherwise FALSE.
+     * @return Receives a pointer to the text range having a matching attribute and attribute value; otherwise NULL.
+     */
+    ITextRangeProvider findAttribute(boolean backward, T value);
 
-    public static float[] convertBounds(Bounds bounds) {
-        if (bounds != null) {
-            return new float[] {(float)bounds.getMinX(), (float)bounds.getMinY(),
-                                (float)bounds.getWidth(), (float)bounds.getHeight()};
-        }
-        return null;
-    }
-
-    public static double[] convertBoundsArrayDouble(Bounds[] bounds) {
-        if (bounds != null) {
-            double[] result = new double[bounds.length * 4];
-            int index = 0;
-            for (int i = 0; i < bounds.length; i++) {
-                Bounds b = bounds[i];
-                result[index++] = b.getMinX();
-                result[index++] = b.getMinY();
-                result[index++] = b.getWidth();
-                result[index++] = b.getHeight();
-            }
-            return result;
-        }
-        return null;
-    }
 }

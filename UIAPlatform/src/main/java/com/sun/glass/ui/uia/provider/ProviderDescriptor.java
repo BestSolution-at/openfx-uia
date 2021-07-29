@@ -37,6 +37,7 @@ import com.sun.glass.ui.uia.ProxyAccessible;
 import javafx.uia.IInitContext;
 import javafx.uia.IInvokeProvider;
 import javafx.uia.IPatternId;
+import javafx.uia.ITextProvider;
 import javafx.uia.IToggleProvider;
 import javafx.uia.IUIAElement;
 import javafx.uia.IWindowProvider;
@@ -58,6 +59,7 @@ public class ProviderDescriptor<JavaType, NativeType> {
             register(StandardPatternIds.UIA_TogglePatternId, IToggleProvider.class, NativeIToggleProvider.class, ToggleProviderAdapter::new);
             register(StandardPatternIds.UIA_WindowPatternId, IWindowProvider.class, NativeIWindowProvider.class, WindowProviderAdapter::new);
             register(StandardPatternIds.UIA_InvokePatternId, IInvokeProvider.class, NativeIInvokeProvider.class, InvokeProviderAdapter::new);
+            register(StandardPatternIds.UIA_TextPatternId, ITextProvider.class, NativeITextProvider.class, TextProviderAdapter::new);
         }
 
         static <JavaType, NativeType> boolean isAvailable(IPatternId id) {

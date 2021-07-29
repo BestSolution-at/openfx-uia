@@ -39,7 +39,7 @@ public interface IToggleProvider extends IInitable {
 		public final IProperty<ToggleState> ToggleState;
 
 		public ToggleProviderContext(IInitContext init, IToggleProvider toggleProvider) {
-			ToggleState = init.addProperty(StandardPropertyIds.UIA_ToggleToggleStatePropertyId, toggleProvider::get_ToggleState, StandardVariantConverters.I4_INativeEnum());
+			ToggleState = init.addProperty(StandardPropertyIds.UIA_ToggleToggleStatePropertyId, toggleProvider::get_ToggleState, StandardVariantConverters.I4_INativeEnum(javafx.uia.ToggleState::fromNativeValue));
 		}
 	}
 	
