@@ -27,7 +27,7 @@ build:
   script:
     - ./gradlew --no-daemon assemble phatJar
   tags:
-    - win64
+    - win64ps
   artifacts:
     paths:
       - UIAPlatform/build
