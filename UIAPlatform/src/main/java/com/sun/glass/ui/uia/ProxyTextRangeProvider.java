@@ -24,6 +24,7 @@
  */
 package com.sun.glass.ui.uia;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -38,6 +39,7 @@ import javafx.uia.ITextAttributeId;
 import javafx.uia.ITextAttributeSupport;
 import javafx.uia.ITextRangeProvider;
 import javafx.uia.ITextRangeProvider2;
+import javafx.uia.IUIAElement;
 import javafx.uia.IVariantConverter;
 import javafx.uia.TextAttributeValue;
 import javafx.uia.TextPatternRangeEndpoint;
@@ -315,9 +317,13 @@ public class ProxyTextRangeProvider {
     }
 
     private long[] GetChildren() {
-        impl.GetChildren(); // TODO ??? IRaw stuff
-        /* Not embedded object support currently */
-        return new long[0];
+        IUIAElement[] childElements = impl.GetChildren();
+
+        return
+        Arrays.stream(childElements)
+        .map(ProxyAccessibleRegistry.getInstance()::findAccessible)
+        .mapToLong(ProxyAccessible::getNativeAccessible)
+        .toArray();
     }
 
     /***********************************************/

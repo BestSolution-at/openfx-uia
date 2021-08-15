@@ -38,6 +38,10 @@ public class ProxyAccessibleRegistry {
     // TODO management & dispose
     private Map<IUIAElement, ProxyAccessible> virtualAccessibles = new HashMap<>();
 
+
+    private Map<ProxyAccessible, Long> natives = new HashMap<>();
+    private Map<Long, ProxyAccessible> natives2 = new HashMap<>();
+
     public static ProxyAccessibleRegistry getInstance() {
         return INSTANCE;
     }
@@ -64,5 +68,14 @@ public class ProxyAccessibleRegistry {
             result = findVirtualAccessible(element);
         }
         return result;
+    }
+
+    public void registerNative(ProxyAccessible proxyAccessible, long peer) {
+        natives.put(proxyAccessible, peer);
+        natives2.put(peer, proxyAccessible);
+    }
+
+    public ProxyAccessible getByNative(long peer) {
+        return natives2.get(peer);
     }
 }

@@ -25,11 +25,13 @@
 package com.sun.glass.ui.uia.provider;
 
 import com.sun.glass.ui.uia.ProxyAccessible;
+import com.sun.glass.ui.uia.ProxyAccessibleRegistry;
 import com.sun.glass.ui.uia.ProxyTextRangeProvider;
 
 import javafx.geometry.Point2D;
 import javafx.uia.ITextProvider;
 import javafx.uia.ITextRangeProvider;
+import javafx.uia.IUIAElement;
 
 public class TextProviderAdapter extends BaseAdapter<ITextProvider> implements NativeITextProvider {
 
@@ -82,7 +84,12 @@ public class TextProviderAdapter extends BaseAdapter<ITextProvider> implements N
     @Override
     public long RangeFromChild(long childElement) {
         System.err.println("#RangeFromChild()");
-        return 0;
+        
+        ProxyAccessible acc = ProxyAccessibleRegistry.getInstance().getByNative(childElement);
+        IUIAElement el = acc.getUIAElement();
+        
+        ITextRangeProvider range = provider.RangeFromChild(el);
+        return toNative(range);
     }
 
     @Override

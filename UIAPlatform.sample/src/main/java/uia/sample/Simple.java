@@ -33,12 +33,15 @@ import java.util.stream.Collectors;
 import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import uia.sample.samples.CanvasWithVirtualChildren;
 import uia.sample.samples.SimpleTextProvider;
 import uia.sample.samples.SimpleTextProviderWithAttributes;
+import uia.sample.samples.SimpleTextProviderWithChildren;
+import uia.sample.samples.SimpleTextProviderWithChildren2;
 import uia.sample.samples.SimpleUIAElement;
 import uia.sample.samples.SimpleUIAElementWithProperties;
 import uia.sample.samples.ToggleProviderSample;
@@ -50,7 +53,7 @@ public class Simple extends Application {
 
         BorderPane root = new BorderPane();
 
-        root.setPadding(new Insets(20));
+        
         root.setPrefSize(800, 600);
 
         List<Sample> samples = Arrays.asList(
@@ -59,15 +62,22 @@ public class Simple extends Application {
             new ToggleProviderSample(), 
             new CanvasWithVirtualChildren(),
             new SimpleTextProvider(),
-            new SimpleTextProviderWithAttributes()
+            new SimpleTextProviderWithAttributes(),
+            new SimpleTextProviderWithChildren(),
+            new SimpleTextProviderWithChildren2()
             );
 
         VBox s = new VBox();
         s.setFillWidth(true);
+        s.setPadding(new Insets(20));
 
         s.getChildren().addAll(samples.stream().map(sample -> new SampleListItem(sample)).collect(Collectors.toList()));
 
-        root.setCenter(s);
+        ScrollPane sp = new ScrollPane();
+        sp.setFitToWidth(true);
+        sp.setContent(s);
+
+        root.setCenter(sp);
 
         Scene scene = new Scene(root);
         scene.getStylesheets().add(Simple.class.getResource("/sample.css").toExternalForm());

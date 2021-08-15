@@ -89,6 +89,8 @@ public class ProxyAccessible extends Accessible {
             throw new RuntimeException("could not create platform accessible");
         }
 
+        ProxyAccessibleRegistry.getInstance().registerNative(this, peer);
+
         glass = new WinAccessible(this);
     }
 
@@ -104,6 +106,8 @@ public class ProxyAccessible extends Accessible {
         if (this.peer == 0L) {
             throw new RuntimeException("could not create platform accessible");
         }
+
+        ProxyAccessibleRegistry.getInstance().registerNative(this, peer);
 
         this.uiaElement = uiaElement;
         // no glass instance available
