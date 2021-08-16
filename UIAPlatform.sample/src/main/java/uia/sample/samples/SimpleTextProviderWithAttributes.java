@@ -393,8 +393,7 @@ public class SimpleTextProviderWithAttributes implements Sample {
 
         @Override
         public IUIAElement[] GetChildren() {
-           
-            return null;
+            return new IUIAElement[] {};
         }
 
         @Override
