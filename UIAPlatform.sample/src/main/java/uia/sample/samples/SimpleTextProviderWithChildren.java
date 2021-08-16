@@ -343,7 +343,7 @@ public class SimpleTextProviderWithChildren implements Sample {
             if (offset == 0) return true;
             if (offset == text.length()) return true;
             if (offset == BreakIterator.DONE) return true;
-            return bi.isBoundary(offset) && Character.isLetterOrDigit(text.charAt(offset));
+            return bi.isBoundary(offset) && (text.charAt(offset) == '\uFFFC' || Character.isLetterOrDigit(text.charAt(offset)));
         }
 
         @Override
@@ -461,23 +461,45 @@ public class SimpleTextProviderWithChildren implements Sample {
                     BreakIterator bi = BreakIterator.getWordInstance();
                     bi.setText(text);
                     int offset = start;
+
+                    
+
                     while (!isWordStart(bi, text, offset)) {
+                        try {
+                            System.err.println("Move1 !isWordStart " + text.substring(offset, 2));
+                        } catch (Exception e) {}
+                        
                         offset = bi.preceding(start);
                     }
                     while (offset != BreakIterator.DONE && actualCount != requestedCount) {
+
+                        try {
+                            System.err.println("Move1 general " + text.substring(offset, 2));
+                        } catch (Exception e) {}
+
                         if (requestedCount > 0) {
                             offset = bi.following(offset);
                             while (!isWordStart(bi, text, offset)) {
+                                try {
+                                    System.err.println("Move2 !isWordStart " + text.substring(offset, 2));
+                                } catch (Exception e) {}
                                 offset = bi.next();
                             }
                             actualCount++;
                         } else {
                             offset = bi.preceding(offset);
                             while (!isWordStart(bi, text, offset)) {
+                                try {
+                                    System.err.println("Move3 !isWordStart " + text.substring(offset, 2));
+                                } catch (Exception e) {}
                                 offset = bi.previous();
                             }
                             actualCount--;
                         }
+
+                        try {
+                            System.err.println("Move2 general " + text.substring(offset, 2));
+                        } catch (Exception e) {}
                     }
                     if (actualCount != 0) {
                         if (offset != BreakIterator.DONE) {
@@ -487,11 +509,27 @@ public class SimpleTextProviderWithChildren implements Sample {
                         }
                         offset = bi.following(start);
                         while (!isWordStart(bi, text, offset)) {
+                            try {
+                                System.err.println("Move4 !isWordStart " + text.substring(offset, 2));
+                            } catch (Exception e) {}
                             offset = bi.next();
                         }
                         end = offset != BreakIterator.DONE ? offset : length;
                     }
+
+                    try {
+                        System.err.println("### Move: start: " + start + ", end: " + end);
+                        int cStart = Math.max(0, Math.min(start, length));
+                        int cEnd = Math.max(start, Math.min(end, length));
+                        System.err.println("###       cStart: " + cStart + ", cEnd: " + cEnd);
+
+                        System.err.println("###       '" + text.substring(cStart, cEnd) + "'");
+                    } catch (Exception e) {
+                        System.err.println("bullshit"); e.printStackTrace();
+                    }
                     break;
+
+                   
                 }
                 case Line: {
                     // Integer lineIndex = (Integer)getAttribute(LINE_FOR_OFFSET, start);
@@ -585,17 +623,27 @@ public class SimpleTextProviderWithChildren implements Sample {
                 case Format:
                 case Word: {
                     BreakIterator bi = BreakIterator.getWordInstance();
+                    
                     bi.setText(text); //.replaceAll("\uFFFC", " "));
                     while (offset != BreakIterator.DONE && actualCount != requestedCount) {
+                        try {
+                            System.err.println("MoveEndpoint1 general " + text.substring(offset, 2));
+                        } catch (Exception e) {}
                         if (requestedCount > 0) {
                             offset = bi.following(offset);
                             while (!isWordStart(bi, text, offset)) {
+                                try {
+                                    System.err.println("MoveEndpoint1 !isWordStart " + text.substring(offset, 2));
+                                } catch (Exception e) {}
                                 offset = bi.next();
                             }
                             actualCount++;
                         } else {
                             offset = bi.preceding(offset);
                             while (!isWordStart(bi, text, offset)) {
+                                try {
+                                    System.err.println("MoveEndpoint1 !isWordStart " + text.substring(offset, 2));
+                                } catch (Exception e) {}
                                 offset = bi.previous();
                             }
                             actualCount--;
@@ -700,6 +748,17 @@ public class SimpleTextProviderWithChildren implements Sample {
 
         public ChildElement(Embedded embedded) {
             this.embedded = embedded;
+        }
+
+        public ControlType getControlType() {
+            return ControlType.UIA_ImageControlTypeId;
+        }
+
+        @Override
+        public void initialize(javafx.uia.IInitContext init) {
+            init.addNameProperty(() -> "Smiley with Sunglasses");
+            init.addIsControlElementProperty(() -> true);
+            init.addIsContentElementProperty(() -> true);
         }
 
         @Override

@@ -358,7 +358,7 @@ public class SimpleTextProviderWithChildren2 implements Sample {
             if (offset == 0) return true;
             if (offset == text.length()) return true;
             if (offset == BreakIterator.DONE) return true;
-            return bi.isBoundary(offset) && Character.isLetterOrDigit(text.charAt(offset));
+            return bi.isBoundary(offset) && (text.charAt(offset) == '\uFFFC' || Character.isLetterOrDigit(text.charAt(offset)));
         }
 
         @Override
@@ -715,6 +715,17 @@ public class SimpleTextProviderWithChildren2 implements Sample {
 
         public ChildElement(Embedded embedded) {
             this.embedded = embedded;
+        }
+
+        public ControlType getControlType() {
+            return ControlType.UIA_ImageControlTypeId;
+        }
+
+        @Override
+        public void initialize(javafx.uia.IInitContext init) {
+            init.addNameProperty(() -> "Smiley with Sunglasses");
+            init.addIsControlElementProperty(() -> true);
+            init.addIsContentElementProperty(() -> true);
         }
 
         @Override
