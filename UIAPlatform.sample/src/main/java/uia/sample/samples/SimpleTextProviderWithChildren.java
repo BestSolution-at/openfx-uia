@@ -125,7 +125,7 @@ public class SimpleTextProviderWithChildren implements Sample {
         helper.addText(" ", Font.font(12), Color.BLACK);
         helper.addText("World", Font.font(16), Color.RED);
         helper.addText(" ", Font.font(12), Color.BLACK);
-        helper.addImage(new Image("/smiley.png"), 27);
+        helper.addImage(new Image("/face-smile-32.png"), 27);
         helper.addText(",\nthis is ", Font.font(12), Color.BLACK);
         helper.addText("UIA", Font.font(Font.getDefault().getFamily(), FontWeight.BOLD, 14), Color.BLUE);
         helper.addText("\nLorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", Font.font(10), Color.DARKGOLDENROD);
@@ -178,14 +178,10 @@ public class SimpleTextProviderWithChildren implements Sample {
         }
 
         private ITextRangeProvider findFontSizeAttribute(boolean backward, double fontSize) {
-            System.err.println("TextRange " + start + " -> " + end);
-            System.err.println("findFontSizeAttribute " + backward + ", " + fontSize);
-
             List<Integer> foundIdx = new ArrayList<>();
 
             helper.iterateRange(start, end, (nfo) -> {
                 double s = nfo.font == null ? 0 : nfo.font.getSize();
-                System.err.println("colloctor " + nfo.index);
                 final double epsilon = 0.000001d;
                 if (Math.abs(fontSize - s) < epsilon) {
                     foundIdx.add(nfo.index);
@@ -215,14 +211,10 @@ public class SimpleTextProviderWithChildren implements Sample {
                 }
             }
 
-            System.err.println("first = " + first + " last = " + last);
-
             if (first != null && last != null) {
                 if (backward) {
-                    System.err.println("=> TextRange " + last + " -> " + first);
                     return new SimpleRange(textSupplier, last, first);
                 } else {
-                    System.err.println("=> TextRange " + first + " -> " + (last+1));
                     return new SimpleRange(textSupplier, first, last + 1);
                 }
             } else {
@@ -465,41 +457,24 @@ public class SimpleTextProviderWithChildren implements Sample {
                     
 
                     while (!isWordStart(bi, text, offset)) {
-                        try {
-                            System.err.println("Move1 !isWordStart " + text.substring(offset, 2));
-                        } catch (Exception e) {}
-                        
                         offset = bi.preceding(start);
                     }
                     while (offset != BreakIterator.DONE && actualCount != requestedCount) {
 
-                        try {
-                            System.err.println("Move1 general " + text.substring(offset, 2));
-                        } catch (Exception e) {}
-
                         if (requestedCount > 0) {
                             offset = bi.following(offset);
                             while (!isWordStart(bi, text, offset)) {
-                                try {
-                                    System.err.println("Move2 !isWordStart " + text.substring(offset, 2));
-                                } catch (Exception e) {}
                                 offset = bi.next();
                             }
                             actualCount++;
                         } else {
                             offset = bi.preceding(offset);
                             while (!isWordStart(bi, text, offset)) {
-                                try {
-                                    System.err.println("Move3 !isWordStart " + text.substring(offset, 2));
-                                } catch (Exception e) {}
                                 offset = bi.previous();
                             }
                             actualCount--;
                         }
 
-                        try {
-                            System.err.println("Move2 general " + text.substring(offset, 2));
-                        } catch (Exception e) {}
                     }
                     if (actualCount != 0) {
                         if (offset != BreakIterator.DONE) {
@@ -509,23 +484,9 @@ public class SimpleTextProviderWithChildren implements Sample {
                         }
                         offset = bi.following(start);
                         while (!isWordStart(bi, text, offset)) {
-                            try {
-                                System.err.println("Move4 !isWordStart " + text.substring(offset, 2));
-                            } catch (Exception e) {}
                             offset = bi.next();
                         }
                         end = offset != BreakIterator.DONE ? offset : length;
-                    }
-
-                    try {
-                        System.err.println("### Move: start: " + start + ", end: " + end);
-                        int cStart = Math.max(0, Math.min(start, length));
-                        int cEnd = Math.max(start, Math.min(end, length));
-                        System.err.println("###       cStart: " + cStart + ", cEnd: " + cEnd);
-
-                        System.err.println("###       '" + text.substring(cStart, cEnd) + "'");
-                    } catch (Exception e) {
-                        System.err.println("bullshit"); e.printStackTrace();
                     }
                     break;
 
@@ -626,24 +587,15 @@ public class SimpleTextProviderWithChildren implements Sample {
                     
                     bi.setText(text); //.replaceAll("\uFFFC", " "));
                     while (offset != BreakIterator.DONE && actualCount != requestedCount) {
-                        try {
-                            System.err.println("MoveEndpoint1 general " + text.substring(offset, 2));
-                        } catch (Exception e) {}
                         if (requestedCount > 0) {
                             offset = bi.following(offset);
                             while (!isWordStart(bi, text, offset)) {
-                                try {
-                                    System.err.println("MoveEndpoint1 !isWordStart " + text.substring(offset, 2));
-                                } catch (Exception e) {}
                                 offset = bi.next();
                             }
                             actualCount++;
                         } else {
                             offset = bi.preceding(offset);
                             while (!isWordStart(bi, text, offset)) {
-                                try {
-                                    System.err.println("MoveEndpoint1 !isWordStart " + text.substring(offset, 2));
-                                } catch (Exception e) {}
                                 offset = bi.previous();
                             }
                             actualCount--;
@@ -756,7 +708,7 @@ public class SimpleTextProviderWithChildren implements Sample {
 
         @Override
         public void initialize(javafx.uia.IInitContext init) {
-            init.addNameProperty(() -> "Smiley with Sunglasses");
+            init.addNameProperty(() -> "Smiley Emoji");
             init.addIsControlElementProperty(() -> true);
             init.addIsContentElementProperty(() -> true);
         }
@@ -812,8 +764,6 @@ public class SimpleTextProviderWithChildren implements Sample {
 
         @Override
         public ITextRangeProvider RangeFromChild(IUIAElement childElement) {
-            System.err.println("###RangeFromChild " + childElement);
-
             if (childElement instanceof ChildElement) {
                 ChildElement child = (ChildElement) childElement;
                 
@@ -822,8 +772,6 @@ public class SimpleTextProviderWithChildren implements Sample {
 
                 return new SimpleRange(textSupplier, start, end);
             }
-
-            System.err.println("-> null!");
             return null;
         }
 
@@ -858,7 +806,6 @@ public class SimpleTextProviderWithChildren implements Sample {
             javafx.geometry.Point2D pickPoint = canvas.screenToLocal(point);
 
             com.sun.javafx.scene.text.HitInfo hitInfo =  SimpleTextProviderWithChildren.this.helper.pick(pickPoint, new javafx.geometry.Point2D(baseX, baseY));
-            System.err.println("hitInfo: " + hitInfo);
             if (hitInfo != null) {
                 int idx = hitInfo.getCharIndex();
                 idx = Math.min(helper.getText().length()-1, idx);

@@ -27,6 +27,7 @@ package com.sun.glass.ui.uia;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.sun.glass.ui.uia.glass.WinVariant;
@@ -115,27 +116,35 @@ public class ProxyTextRangeProvider {
     /*            ITextRangeProvider               */
     /***********************************************/
     private long Clone() {
-        ITextRangeProvider clone = impl.Clone();
-        
-        ProxyTextRangeProvider cloneProxy = new ProxyTextRangeProvider(accessible, clone);
-        return cloneProxy.getNativeProvider();
+        return Util.guard(() -> {
+            ITextRangeProvider clone = impl.Clone();
+            
+            ProxyTextRangeProvider cloneProxy = new ProxyTextRangeProvider(accessible, clone);
+            return cloneProxy.getNativeProvider();
 
-        /* Note: Currently Clone() natively does not call AddRef() on the returned object.
-         * This mean JFX does not keep a reference to this object, consequently it does not
-         * need to free it.
-         */
+            /* Note: Currently Clone() natively does not call AddRef() on the returned object.
+            * This mean JFX does not keep a reference to this object, consequently it does not
+            * need to free it.
+            */
+        }, 0L);
     }
 
     private boolean Compare(ProxyTextRangeProvider range) {
-        return impl.Compare(range.impl);
+        return Util.guard(() -> {
+            return impl.Compare(range.impl);
+        });
     }
 
     private int CompareEndpoints(int endpoint, ProxyTextRangeProvider targetRange, int targetEndpoint) {
-        return impl.CompareEndpoints(TextPatternRangeEndpoint.fromNativeValue(endpoint).get(), targetRange.impl, TextPatternRangeEndpoint.fromNativeValue(targetEndpoint).get());
+        return Util.guard(() -> {
+            return impl.CompareEndpoints(TextPatternRangeEndpoint.fromNativeValue(endpoint).get(), targetRange.impl, TextPatternRangeEndpoint.fromNativeValue(targetEndpoint).get());
+        });
     }
 
     private void ExpandToEnclosingUnit(int unit) {
-        impl.ExpandToEnclosingUnit(TextUnit.fromNativeValue(unit).get());
+        Util.guard(() -> {
+            impl.ExpandToEnclosingUnit(TextUnit.fromNativeValue(unit).get());
+        });
     }
 
     private Variant convert(long variant) {
@@ -166,72 +175,47 @@ public class ProxyTextRangeProvider {
     }
 
     private long FindAttribute(int attributeId, long variantValue, boolean backward) {
-        try {
-            ITextAttributeId id = ITextAttributeId.fromNativeValue(attributeId);
-            javafx.uia.FindAttribute<Object> findAttribute = findAttributes.get(id);
-            if (findAttribute != null) {
-                Variant variant = convert(variantValue);
-                IVariantConverter<Object> converter = converters.get(id);
-                Object value = converter.toObject(variant);
-                ITextRangeProvider range = findAttribute.findAttribute(backward, value);
-                if (range != null) {
-                    ProxyTextRangeProvider proxy = new ProxyTextRangeProvider(accessible, range);
-                    return proxy.getNativeProvider();
+        return Util.guard(() -> {
+            try {
+                ITextAttributeId id = ITextAttributeId.fromNativeValue(attributeId);
+                javafx.uia.FindAttribute<Object> findAttribute = findAttributes.get(id);
+                if (findAttribute != null) {
+                    Variant variant = convert(variantValue);
+                    IVariantConverter<Object> converter = converters.get(id);
+                    Object value = converter.toObject(variant);
+                    ITextRangeProvider range = findAttribute.findAttribute(backward, value);
+                    if (range != null) {
+                        ProxyTextRangeProvider proxy = new ProxyTextRangeProvider(accessible, range);
+                        return proxy.getNativeProvider();
+                    } else {
+                        return 0L;
+                    }
                 } else {
                     return 0L;
                 }
-            } else {
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
                 return 0L;
             }
-
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return 0L;
-        }
+        }, 0L);
     }
 
     private long FindAttribute(int attributeId, WinVariant val, boolean backward) {
         return 0L;
-        // try {
-        //     System.err.println("FindAttribute " + attributeId + ", " + val + ", " + backward);
-        //     ITextAttributeId id = ITextAttributeId.fromNativeValue(attributeId);
-        //     System.err.println("  id = " + id);
-        //     javafx.uia.FindAttribute<Object> findAttribute = findAttributes.get(id);
-        //     System.err.println("  findAttribute = " + findAttribute);
-        //     if (findAttribute != null) {
-        //         Variant variant = convert(val);
-        //         IVariantConverter<Object> converter = converters.get(id);
-        //         Object value = converter.toObject(variant);
-        //         ITextRangeProvider range = findAttribute.findAttribute(backward, value);
-        //         if (range == null) {
-        //             return 0L;
-        //         }
-        //         ProxyTextRangeProvider proxy = new ProxyTextRangeProvider(accessible, range);
-        //         return proxy.getNativeProvider();
-        //     } else {
-        //         return 0L;
-        //     }
-
-
-        //     // ITextRangeProvider range = impl.FindAttribute(ITextAttributeId.fromNativeValue(attributeId), convert(val), backward);
-
-        //     // ProxyTextRangeProvider proxy = new ProxyTextRangeProvider(accessible, range);
-        //     // return proxy.getNativeProvider();
-        // } catch (Exception e) {
-        //     e.printStackTrace();
-        //     return 0L;
-        // }
     }
 
     private long FindText(String text, boolean backward, boolean ignoreCase) {
-        ITextRangeProvider range = impl.FindText(text, backward, ignoreCase);
-        if (range != null) {
-            ProxyTextRangeProvider proxy = new ProxyTextRangeProvider(accessible, range);
-            return proxy.getNativeProvider();
-        } else {
-            return 0L;
-        }
+        return Util.guard(() -> {
+            ITextRangeProvider range = impl.FindText(text, backward, ignoreCase);
+            if (range != null) {
+                ProxyTextRangeProvider proxy = new ProxyTextRangeProvider(accessible, range);
+                return proxy.getNativeProvider();
+            } else {
+                return 0L;
+            }
+        }, 0L);
     }
 
     private WinVariant convert(Variant variant) {
@@ -239,101 +223,122 @@ public class ProxyTextRangeProvider {
     }
 
     private WinVariant GetAttributeValue(int attributeId) {
+        return Util.guard(() -> {
+            ITextAttributeId id = ITextAttributeId.fromNativeValue(attributeId);
 
-        try {
-        ITextAttributeId id = ITextAttributeId.fromNativeValue(attributeId);
+            Supplier<TextAttributeValue<Object>> getter = attribs.get(id);
 
-        Supplier<TextAttributeValue<Object>> getter = attribs.get(id);
+            if (getter != null) {
 
-        if (getter != null) {
+                TextAttributeValue<Object> value = getter.get();
 
-            TextAttributeValue<Object> value = getter.get();
+                if (value.isNotSupported()) {
+                    return Variant.vt_unknown(Windows.UiaGetReservedNotSupportedValue()).toWinVariant();
+                }
+                if (value.isMixed()) {
+                    return Variant.vt_unknown(Windows.UiaGetReservedMixedAttributeValue()).toWinVariant();
+                }
 
-            if (value.isNotSupported()) {
-                System.err.println(" not supported ");
-                return Variant.vt_unknown(Windows.UiaGetReservedNotSupportedValue()).toWinVariant();
+                return converters.get(id).toVariant(value.getValue()).toWinVariant();
+
+            } else {
+                return Variant.vt_empty().toWinVariant();
             }
-            if (value.isMixed()) {
-                System.err.println(" mixed ");
-                return Variant.vt_unknown(Windows.UiaGetReservedMixedAttributeValue()).toWinVariant();
-            }
 
-            return converters.get(id).toVariant(value.getValue()).toWinVariant();
-
-        } else {
-            return Variant.vt_empty().toWinVariant();
-        }
-        // Variant result = impl.GetAttributeValue(ITextAttributeId.fromNativeValue(attributeId));
-        // return convert(result);
-
-        } catch (Exception e) {
-            System.err.println("TOTAL FAILURE " + ITextAttributeId.fromNativeValue(attributeId));
-            e.printStackTrace();
-
-            return Variant.vt_empty().toWinVariant();
-        }
+        }, Variant.vt_empty().toWinVariant());
     }
 
     private double[] GetBoundingRectangles() {
-        Bounds[] bounds = impl.GetBoundingRectangles();
-        return Convert.convertBoundsArrayDouble(bounds);
+        return Util.guard(() -> {
+            Bounds[] bounds = impl.GetBoundingRectangles();
+            return Convert.convertBoundsArrayDouble(bounds);
+        });
     }
 
     private long GetEnclosingElement() {
-        // TODO ????
-        return accessible.getNativeAccessible();
+        return Util.guard(() -> {
+            return (long) Optional.ofNullable(impl.GetEnclosingElement())
+            .map(element -> {
+                // since GetEnclosingElement navigates upwards we must not create a virtual accessible for a fx element
+                ProxyAccessible acc = ProxyAccessibleRegistry.getInstance().findFXAccessible(element);
+                if (acc == null) {
+                    acc = ProxyAccessibleRegistry.getInstance().getVirtualAccessible(accessible, element);
+                }
+                return acc;
+            })
+            .map(ProxyAccessible::getNativeAccessible)
+            .orElse(0L);
+        });
     }
 
     private String GetText(int maxLength) {
-        return impl.GetText(maxLength);
+        return Util.guard(() -> {
+            return impl.GetText(maxLength);
+        });
     }
 
     private int Move(int unit, final int requestedCount) {
-        return impl.Move(TextUnit.fromNativeValue(unit).get(), requestedCount);
+        return Util.guard(() -> {
+            return impl.Move(TextUnit.fromNativeValue(unit).get(), requestedCount);
+        });
     }
 
     private int MoveEndpointByUnit(int endpoint, int unit, final int requestedCount) {
-        return impl.MoveEndpointByUnit(TextPatternRangeEndpoint.fromNativeValue(endpoint).get(), TextUnit.fromNativeValue(unit).get(), requestedCount);
+        return Util.guard(() -> {
+            return impl.MoveEndpointByUnit(TextPatternRangeEndpoint.fromNativeValue(endpoint).get(), TextUnit.fromNativeValue(unit).get(), requestedCount);
+        });
     }
 
     private void MoveEndpointByRange(int endpoint, ProxyTextRangeProvider targetRange, int targetEndpoint) {
-        impl.MoveEndpointByRange(TextPatternRangeEndpoint.fromNativeValue(endpoint).get(), targetRange.impl, TextPatternRangeEndpoint.fromNativeValue(targetEndpoint).get());
+        Util.guard(() -> {
+            impl.MoveEndpointByRange(TextPatternRangeEndpoint.fromNativeValue(endpoint).get(), targetRange.impl, TextPatternRangeEndpoint.fromNativeValue(targetEndpoint).get());
+        });
     }
 
     private void Select() {
-        impl.Select();
+        Util.guard(() -> {
+            impl.Select();
+        });
     }
 
     private void AddToSelection() {
-        impl.AddToSelection();
+        Util.guard(() -> {
+            impl.AddToSelection();
+        });
     }
 
     private void RemoveFromSelection() {
-        impl.RemoveFromSelection();
+        Util.guard(() -> {
+            impl.RemoveFromSelection();
+        });
     }
 
     private void ScrollIntoView(boolean alignToTop) {
-        impl.ScrollIntoView(alignToTop);
+        Util.guard(() -> {
+            impl.ScrollIntoView(alignToTop);
+        });
     }
 
     private long[] GetChildren() {
-        IUIAElement[] childElements = impl.GetChildren();
-
-        return
-        Arrays.stream(childElements)
-        .map(ProxyAccessibleRegistry.getInstance()::findAccessible)
-        .mapToLong(ProxyAccessible::getNativeAccessible)
-        .toArray();
+        return Util.guard(() -> {
+            IUIAElement[] childElements = impl.GetChildren();
+            return Arrays.stream(childElements)
+            .map(element -> ProxyAccessibleRegistry.getInstance().getVirtualAccessible(accessible, element))
+            .mapToLong(ProxyAccessible::getNativeAccessible)
+            .toArray();
+        });
     }
 
     /***********************************************/
     /*            ITextRangeProvider2              */
     /***********************************************/
     private void ShowContextMenu() {
-        // TODO disable ITextRangeProvider2 interface in IUnknown casting if not available
-        if (impl instanceof ITextRangeProvider2) {
-            ((ITextRangeProvider2) impl).ShowContextMenu();
-        }
+        Util.guard(() -> {
+            // TODO disable ITextRangeProvider2 interface in IUnknown casting if not available
+            if (impl instanceof ITextRangeProvider2) {
+                ((ITextRangeProvider2) impl).ShowContextMenu();
+            }
+        });
     }
 
 }

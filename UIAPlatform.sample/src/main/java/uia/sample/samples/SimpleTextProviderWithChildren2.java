@@ -126,7 +126,7 @@ public class SimpleTextProviderWithChildren2 implements Sample {
 
         String data = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
 
-        Image simleySmall = new Image("/smiley.png", 14, 14, true, true);
+        Image simleySmall = new Image("/face-smile-16.png");
         Font font = Font.font(12);
 
         Random rand = new Random();
@@ -193,14 +193,10 @@ public class SimpleTextProviderWithChildren2 implements Sample {
         }
 
         private ITextRangeProvider findFontSizeAttribute(boolean backward, double fontSize) {
-            System.err.println("TextRange " + start + " -> " + end);
-            System.err.println("findFontSizeAttribute " + backward + ", " + fontSize);
-
             List<Integer> foundIdx = new ArrayList<>();
 
             helper.iterateRange(start, end, (nfo) -> {
                 double s = nfo.font == null ? 0 : nfo.font.getSize();
-                System.err.println("colloctor " + nfo.index);
                 final double epsilon = 0.000001d;
                 if (Math.abs(fontSize - s) < epsilon) {
                     foundIdx.add(nfo.index);
@@ -230,14 +226,10 @@ public class SimpleTextProviderWithChildren2 implements Sample {
                 }
             }
 
-            System.err.println("first = " + first + " last = " + last);
-
             if (first != null && last != null) {
                 if (backward) {
-                    System.err.println("=> TextRange " + last + " -> " + first);
                     return new SimpleRange(textSupplier, last, first);
                 } else {
-                    System.err.println("=> TextRange " + first + " -> " + (last+1));
                     return new SimpleRange(textSupplier, first, last + 1);
                 }
             } else {
@@ -703,6 +695,11 @@ public class SimpleTextProviderWithChildren2 implements Sample {
             
         }
 
+        @Override
+        public String toString() {
+            return "SimpleRange " + start + " -> " + end;
+        }
+
     }
 
     private TextElement element;
@@ -723,7 +720,7 @@ public class SimpleTextProviderWithChildren2 implements Sample {
 
         @Override
         public void initialize(javafx.uia.IInitContext init) {
-            init.addNameProperty(() -> "Smiley with Sunglasses");
+            init.addNameProperty(() -> "Smiley Emoji");
             init.addIsControlElementProperty(() -> true);
             init.addIsContentElementProperty(() -> true);
         }
@@ -779,8 +776,6 @@ public class SimpleTextProviderWithChildren2 implements Sample {
 
         @Override
         public ITextRangeProvider RangeFromChild(IUIAElement childElement) {
-            System.err.println("###RangeFromChild " + childElement);
-
             if (childElement instanceof ChildElement) {
                 ChildElement child = (ChildElement) childElement;
                 
@@ -789,21 +784,19 @@ public class SimpleTextProviderWithChildren2 implements Sample {
 
                 return new SimpleRange(textSupplier, start, end);
             }
-
-            System.err.println("-> null!");
             return null;
         }
 
         @Override
         public void initialize(javafx.uia.IInitContext init) {
-            init.addNameProperty(() -> "Custom Document");
-            init.addIsContentElementProperty(() -> true);
-            init.addIsControlElementProperty(() -> true);
+            //init.addNameProperty(() -> "Custom Document");
+            //init.addIsContentElementProperty(() -> true);
+            //init.addIsControlElementProperty(() -> true);
         }
 
         @Override
         public ControlType getControlType() {
-            return ControlType.UIA_DocumentControlTypeId;
+            return ControlType.UIA_TextControlTypeId;
         }
 
         @Override
@@ -832,7 +825,6 @@ public class SimpleTextProviderWithChildren2 implements Sample {
             javafx.geometry.Point2D pickPoint = canvas.screenToLocal(point);
 
             com.sun.javafx.scene.text.HitInfo hitInfo =  helper.pick(pickPoint, new javafx.geometry.Point2D(baseX, baseY));
-            System.err.println("hitInfo: " + hitInfo);
             if (hitInfo != null) {
                 int idx = hitInfo.getCharIndex();
                 idx = Math.min(helper.getText().length()-1, idx);
@@ -881,7 +873,7 @@ public class SimpleTextProviderWithChildren2 implements Sample {
 
 
 
-        desc = new Label("Simple ITextProvider & ITextRangeProvider sample with children");
+        desc = new Label("Simple ITextProvider & ITextRangeProvider sample with multiple children");
         desc.setWrapText(true);
     }
 

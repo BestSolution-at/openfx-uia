@@ -337,8 +337,8 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
     public WinVariant GetPropertyValue(int propertyId) {
         IUIAElement element = accessible.getUIAElement();
         if (element != null) {
-            String pid = StandardPropertyIds.fromNativeValue(propertyId).map(Object::toString).orElse("" + propertyId);
-            log(element, "GetPropertyValue("+pid+") for " + element);
+            //String pid = StandardPropertyIds.fromNativeValue(propertyId).map(Object::toString).orElse("" + propertyId);
+            //log(element, "GetPropertyValue("+pid+") for " + element);
             
             Prop<?> p = installedProps.get(propertyId);
             if (p != null) {

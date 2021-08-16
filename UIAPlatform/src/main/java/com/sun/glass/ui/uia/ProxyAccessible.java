@@ -52,6 +52,9 @@ import javafx.uia.IUIAVirtualRootElement;
 @SuppressWarnings("restriction")
 public class ProxyAccessible extends Accessible {
 
+    private static int next = 0;
+    private final int num;
+
     public static void requireLibrary() {
 
     }
@@ -82,7 +85,8 @@ public class ProxyAccessible extends Accessible {
     WinAccessible glassRoot;
     
     /*package*/ ProxyAccessible() {
-        Logger.debug(this, () -> "ProxyAccessible created.");
+        this.num = next++;
+        Logger.debug(this, () -> "ProxyAccessible" + num + " created.");
 
         this.peer = _createProxyAccessible();
         if (this.peer == 0L) {
@@ -96,12 +100,13 @@ public class ProxyAccessible extends Accessible {
 
     // this is the *virtual* Accessible
     ProxyAccessible(ProxyAccessible context, IUIAElement uiaElement) {
+        this.num = next++;
         if (context.glass != null) {
             glassRoot = context.glass;
         } else {
             glassRoot = context.glassRoot;
         }
-        Logger.debug(this, () -> "ProxyAccessible created (virtual) " + uiaElement);
+        Logger.debug(this, () -> "ProxyAccessible" + num + " created (virtual) " + uiaElement);
         this.peer = _createProxyAccessible();
         if (this.peer == 0L) {
             throw new RuntimeException("could not create platform accessible");
@@ -298,7 +303,7 @@ public class ProxyAccessible extends Accessible {
 
     @Override
     public String toString() {
-        return "ProxyAccessible[" + glass + ", " + glassRoot + ", " + uiaElement + "]";
+        return "ProxyAccessible" + num + "[" + glass + ", " + glassRoot + ", " + uiaElement + "]";
     }
 
     public WinAccessible getGlassAccessible() {

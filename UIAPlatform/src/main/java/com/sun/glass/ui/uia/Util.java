@@ -57,12 +57,30 @@ public class Util {
             return -1;
         }
     }
+
+    static long guard(LongSupplier code, long onFail) {
+        try {
+            return code.getAsLong();
+        } catch (Throwable t) {
+            t.printStackTrace();
+            return onFail;
+        }
+    }
+
     static <T> T guard(Supplier<T> code) {
         try {
             return code.get();
         } catch (Throwable t) {
             t.printStackTrace();
             return null;
+        }
+    }
+    static <T> T guard(Supplier<T> code, T onFail) {
+        try {
+            return code.get();
+        } catch (Throwable t) {
+            t.printStackTrace();
+            return onFail;
         }
     }
     static interface FloatArraySupplier {

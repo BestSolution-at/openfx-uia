@@ -18,9 +18,6 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.FillRule;
-import javafx.scene.shape.LineTo;
-import javafx.scene.shape.MoveTo;
-import javafx.scene.shape.PathElement;
 import javafx.scene.text.Font;
 
 
@@ -133,87 +130,6 @@ public class LayoutHelper {
         layout.setContent(content.stream().toArray(size -> new com.sun.javafx.scene.text.TextSpan[size]));
     }
 
-    public void renderX(GraphicsContext ctx, Point2D base) {
-        
-        for (com.sun.javafx.scene.text.TextLine line : layout.getLines()) {
-            float curX = 0;
-            for (com.sun.javafx.scene.text.GlyphList run : line.getRuns()) {
-                com.sun.javafx.text.TextRun textRun = (com.sun.javafx.text.TextRun) run;
-                
-                for (int glyphIdx = 0; glyphIdx < run.getGlyphCount(); glyphIdx++) {
-                    
-                    float x = textRun.getXAtOffset(glyphIdx, true);
-
-                    ctx.setStroke(Color.GREEN);
-                    ctx.strokeLine(base.getX() + curX + x, base.getY() + line.getBounds().getMinY(), base.getX() + curX + x, base.getY() + line.getBounds().getMaxY());
-                }
-                curX += textRun.getWidth();
-            }
-        }
-    }
-
-
-    public void renderStuff(GraphicsContext ctx, Point2D base) {
-        {
-            List<com.sun.javafx.geom.RectBounds> range = getRange(0, 5);
-            System.err.println("stuff:; " + range);
-            for (com.sun.javafx.geom.RectBounds bounds : range) {
-
-                ctx.setStroke(Color.BLUEVIOLET);
-                ctx.strokeRect(base.getX() + bounds.getMinX(), base.getY() + bounds.getMinY(), bounds.getWidth(), bounds.getHeight());
-            }
-        }
-        {
-            List<com.sun.javafx.geom.RectBounds> range = getRange(6, 11);
-            System.err.println("stuff:; " + range);
-            for (com.sun.javafx.geom.RectBounds bounds : range) {
-
-                ctx.setStroke(Color.BLUEVIOLET);
-                ctx.strokeRect(base.getX() + bounds.getMinX(), base.getY() + bounds.getMinY(), bounds.getWidth(), bounds.getHeight());
-            }
-        }
-
-        {
-            List<com.sun.javafx.geom.RectBounds> range = getRange(12, 13);
-            System.err.println("stuff:; " + range);
-            for (com.sun.javafx.geom.RectBounds bounds : range) {
-
-                ctx.setStroke(Color.BLUEVIOLET);
-                ctx.strokeRect(base.getX() + bounds.getMinX(), base.getY() + bounds.getMinY(), bounds.getWidth(), bounds.getHeight());
-            }
-        }
-
-        {
-            List<com.sun.javafx.geom.RectBounds> range = getRange(14, 18);
-            System.err.println("stuff:; " + range);
-            for (com.sun.javafx.geom.RectBounds bounds : range) {
-
-                ctx.setStroke(Color.BLUEVIOLET);
-                ctx.strokeRect(base.getX() + bounds.getMinX(), base.getY() + bounds.getMinY(), bounds.getWidth(), bounds.getHeight());
-            }
-        }
-
-        {
-            List<com.sun.javafx.geom.RectBounds> range = getRange(19, 21);
-            System.err.println("stuff:; " + range);
-            for (com.sun.javafx.geom.RectBounds bounds : range) {
-
-                ctx.setStroke(Color.BLUEVIOLET);
-                ctx.strokeRect(base.getX() + bounds.getMinX(), base.getY() + bounds.getMinY(), bounds.getWidth(), bounds.getHeight());
-            }
-        }
-
-        {
-            List<com.sun.javafx.geom.RectBounds> range = getRange(22, 25);
-            System.err.println("stuff:; " + range);
-            for (com.sun.javafx.geom.RectBounds bounds : range) {
-
-                ctx.setStroke(Color.BLUEVIOLET);
-                ctx.strokeRect(base.getX() + bounds.getMinX(), base.getY() + bounds.getMinY(), bounds.getWidth(), bounds.getHeight());
-            }
-        }
-    }
-
     public static class GlyphNfo {
         public int index;
         public Font font;
@@ -293,8 +209,6 @@ public class LayoutHelper {
             float lineX = lineBounds.getMinX();
             while (count > 0 && runIndex < runs.length) {
                 com.sun.javafx.text.TextRun run = runs[runIndex];
-                System.err.println("Run " + runIndex + " " + run);
-                System.err.println(" textSpan: " + run.getTextSpan());
                 int runStart = run.getStart();
                 int runEnd = run.getEnd();
                 float runWidth = run.getWidth();
@@ -330,8 +244,6 @@ public class LayoutHelper {
                     top = lineY + lineBounds.getMinY();
                     bottom = lineY + lineBounds.getMinY() + lineBounds.getHeight();
                     
-                    System.err.println(" base: " + lineY + ", ascent: " + lineBounds.getMinY() + ", height: " + lineBounds.getHeight());
-
                     /* Merge continuous rectangles */
                     if (runLeft != right) {
                         if (left != -1 && right != -1) {
@@ -371,28 +283,14 @@ public class LayoutHelper {
     public void render(GraphicsContext ctx, Point2D base) {
 
         for (com.sun.javafx.scene.text.TextLine line : layout.getLines()) {
-            //System.err.println(" * LINE: " + line);
             for (com.sun.javafx.scene.text.GlyphList run : line.getRuns()) {
-                //System.err.println(" * RUN: " + run);
                 com.sun.javafx.geom.Point2D loc = run.getLocation();
-
-                // ctx.setTransform(new Affine(Affine.scale(2.5, 2.5)));
-
-               // ctx.setFontSmoothingType(FontSmoothingType.LCD);
-               // ctx.setImageSmoothing(true);
 
                 if (run.getTextSpan() instanceof TextFragment) {
                     TextFragment textFragment = (TextFragment) run.getTextSpan();
-                    //System.err.println(" => " + textFragment.color + " / " + textFragment.font + " ( " + textFragment.content + " )");
-                    ctx.setStroke(Color.GREEN);
-                    ctx.setLineWidth(0.5);
-                    //ctx.setStroke(null);
-
                     ctx.setFill(textFragment.color);
                     com.sun.javafx.font.PGFont font = (com.sun.javafx.font.PGFont) textFragment.getFont();
                     com.sun.javafx.font.FontStrike strike = font.getStrike(BaseTransform.getTranslateInstance(0, 0));
-
-                   
 
                     for (int glyphIndex = 0; glyphIndex < run.getGlyphCount(); glyphIndex++) {
                        
@@ -418,9 +316,6 @@ public class LayoutHelper {
                         } else {
                             ctx.setFillRule(FillRule.EVEN_ODD);
                         }
-
-                        // com.sun.javafx.geom.RectBounds b = glyph.getBBox();
-                        // ctx.strokeRect(glyphX + b.getMinX(), glyphY + b.getMinY() - b.getHeight(), b.getWidth(), b.getHeight());
 
                         while (!it.isDone()) {
                            
@@ -456,79 +351,22 @@ public class LayoutHelper {
 
                         ctx.setFill(textFragment.color);
                         ctx.fill();
-                       
-                        
-                        //System.err.println("->FILL");
-
                     }
                     
     
                 }
                 if (run.getTextSpan() instanceof ImageFragment) {
-                    System.err.println("ImageFragment!");
                     ImageFragment fragment = (ImageFragment) run.getTextSpan();
     
                     ctx.drawImage(fragment.image, base.getX() + loc.x + fragment.getBounds().getMinX(), base.getY()+ loc.y + fragment.getBounds().getMinY());
-    
-                    //ctx.setStroke(Color.RED);
-                    //ctx.strokeRect(base.getX() + loc.x + fragment.getBounds().getMinX(), base.getY()+ loc.y + fragment.getBounds().getMinY(), fragment.getBounds().getWidth(), fragment.getBounds().getHeight());
                 }
 
             }
         }
 
-        // if (0 == 0) return;
-
-        // for (com.sun.javafx.scene.text.GlyphList gl : layout.getRuns()) {
-        //     com.sun.javafx.geom.Point2D loc = gl.getLocation();
-        //     if (gl.getTextSpan() instanceof ImageFragment) {
-        //         ImageFragment fragment = (ImageFragment) gl.getTextSpan();
-
-        //         ctx.drawImage(fragment.image, base.getX() + loc.x + fragment.getBounds().getMinX(), base.getY()+ loc.y + fragment.getBounds().getMinY());
-
-        //     } else if (gl.getTextSpan() instanceof TextFragment) {
-        //         TextFragment fragment = (TextFragment)gl.getTextSpan();
-        //         ctx.setFill(fragment.color);
-        //         ctx.setFont(fragment.font);
-                
-        //         ctx.fillText(fragment.getText(), base.getX() + loc.x, base.getY() + loc.y);
-
-        //     }
-        // }
-
-    }
-
-    private Point2D computeIndexLocation(int index) {
-        int idx = 0;
-        com.sun.javafx.scene.text.GlyphList lastGl;
-        for (com.sun.javafx.scene.text.GlyphList gl : layout.getRuns()) {
-            int len = gl.getTextSpan().getText().length();
-            com.sun.javafx.geom.Point2D loc = gl.getLocation();
-            if (index >= idx && index < idx + len) {
-                int localIdx = index - idx;
-                float localPosX = gl.getPosX(localIdx);
-                float localPosY = gl.getPosY(localIdx);
-                return new Point2D(loc.x + localPosX, loc.y + localPosY);
-            }
-
-            idx += len;
-            lastGl = gl;
-        }
-
-        // TODO
-        System.err.println("FAIL " + index);
-        return new Point2D(0, 0);
-    }
-
-    private boolean isFullLine(int start, int end, int lineStart, int lineEnd) {
-        return start <= lineStart && end >= lineEnd;
-    }
-    private boolean isPartialLine(int start, int end, int lineStart, int lineEnd) {
-        return start >= lineStart && start <= lineEnd || end >= lineStart && end <= lineEnd;
     }
 
     public Bounds[] getBounds(int start, int end) {
-        System.err.println("####### getBounds(" + start + ", " + end + ")");
         List<com.sun.javafx.geom.RectBounds> range = getRange(start, end);
         return range.stream().map(r -> new BoundingBox(r.getMinX(), r.getMinY(), r.getWidth(), r.getHeight())).toArray(size -> new Bounds[size]);
     }
@@ -582,50 +420,6 @@ public class LayoutHelper {
         }
 
         return result.stream();
-    }
-
-
-    public Bounds[] getBoundsFoo(int start, int end) {
-
-        List<Bounds> result = new ArrayList<>();
-
-        PathElement[] range = layout.getRange(start, end, com.sun.javafx.scene.text.TextLayout.TYPE_TEXT, 0, 0);
-
-        com.sun.javafx.geom.Shape shape = layout.getShape(com.sun.javafx.scene.text.TextLayout.TYPE_TEXT, null);
-        System.err.println(shape);
-
-        for (int i = 0; i < range.length; i+=5) {
-            MoveTo boundsBegin = (MoveTo) range[i + 0];
-            LineTo boundsEnd = (LineTo) range[i + 2];
-
-
-            double height = boundsEnd.getY() - boundsBegin.getY();
-            result.add(new BoundingBox(boundsBegin.getX(), boundsBegin.getY() - height, boundsEnd.getX() - boundsBegin.getX(), height));
-
-
-        }
-
-        System.err.println(Arrays.toString(range));
-
-        // // List<Bounds> result = new ArrayList<>();
-        // for (com.sun.javafx.scene.text.TextLine line : layout.getLines()) {
-        //     int lineStart = line.getStart();
-        //     int lineEnd = lineStart + line.getLength();
-
-        //     if (isFullLine(start, end, lineStart, lineEnd)) {
-        //         // add full line bounds
-        //         com.sun.javafx.geom.RectBounds lineBounds = line.getBounds();
-
-        //         result.add(new BoundingBox(lineBounds.getMinX(), lineBounds.getMinY() , lineBounds.getWidth(), lineBounds.getHeight()));
-
-        //     } else if (isPartialLine(start, end, lineStart, lineEnd)) {
-        //         // add partial line bounds
-
-        //         // line.getRuns()
-
-        //     }
-        // }
-        return result.stream().toArray(size -> new Bounds[size]);
     }
 
 }
