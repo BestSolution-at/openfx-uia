@@ -1079,4 +1079,9 @@ public class ProxyAccessible extends Accessible {
     private long        IItemContainerProvider_FindItemByProperty(long pStartAfter, int propertyId, long pVariant) {
         return 0L;
     }
+    // IMultipleViewProvider
+    private int         IMultipleViewProvider_get_CurrentView() {return 0;}
+    private int[]       IMultipleViewProvider_GetSupportedViews() { return new int[0]; }
+    private String      IMultipleViewProvider_GetViewName(int viewId) { return ""; }
+    private void        IMultipleViewProvider_SetCurrentView(int viewId) {}
 }

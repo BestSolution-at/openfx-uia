@@ -54,7 +54,8 @@ class ProxyAccessible : public IRawElementProviderSimple,
     public IAnnotationProvider,
     public IDragProvider,
     public IDropTargetProvider,
-    public IItemContainerProvider
+    public IItemContainerProvider,
+    public IMultipleViewProvider
 {
 
 public:
@@ -205,6 +206,13 @@ public:
     IFACEMETHODIMP get_DropTargetEffects(SAFEARRAY **pRetVal);
     // IItemContainerProvider
     IFACEMETHODIMP FindItemByProperty(IRawElementProviderSimple *pStartAfter, PROPERTYID propertyID, VARIANT value, IRawElementProviderSimple **pFound);
+    // IMultipleViewProvider
+    IFACEMETHODIMP get_CurrentView(int *pRetVal);
+    IFACEMETHODIMP GetSupportedViews(SAFEARRAY** pRetVal);
+    IFACEMETHODIMP GetViewName(int viewId, BSTR *pRetVal);
+    IFACEMETHODIMP SetCurrentView(int viewId);
+
+
 
     static HRESULT copyVariant(JNIEnv* env, jobject jVariant, VARIANT* pRetVal);
     static HRESULT copyString(JNIEnv* env, jstring jString, BSTR* pbstrVal);

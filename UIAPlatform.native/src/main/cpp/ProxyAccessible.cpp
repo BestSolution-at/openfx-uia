@@ -150,6 +150,11 @@ static jmethodID mid_IDropTargetProvider_get_DropTargetEffect;
 static jmethodID mid_IDropTargetProvider_get_DropTargetEffects;
 // IItemContainerProvider
 static jmethodID mid_IItemContainerProvider_FindItemByProperty;
+// IMultipleViewProvider
+static jmethodID mid_IMultipleViewProvider_get_CurrentView;
+static jmethodID mid_IMultipleViewProvider_GetSupportedViews;
+static jmethodID mid_IMultipleViewProvider_GetViewName;
+static jmethodID mid_IMultipleViewProvider_SetCurrentView;
 
 /* Variant Field IDs */
 static jfieldID fid_vt;
@@ -414,6 +419,9 @@ IFACEMETHODIMP ProxyAccessible::QueryInterface(REFIID riid, void** ppInterface)
     }
     else if (riid == __uuidof(IItemContainerProvider)) {
         *ppInterface = static_cast<IItemContainerProvider*>(this);
+    }
+    else if (riid == __uuidof(IMultipleViewProvider)) {
+        *ppInterface = static_cast<IMultipleViewProvider*>(this);
     }
     else {
         *ppInterface = NULL;
@@ -1332,8 +1340,33 @@ IFACEMETHODIMP ProxyAccessible::FindItemByProperty(IRawElementProviderSimple *pS
     *pFound = static_cast<IRawElementProviderSimple*>(ptr);
     return hr;
 }
-
-
+// IMultipleViewProvider
+IFACEMETHODIMP ProxyAccessible::get_CurrentView(int *pRetVal) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    *pRetVal = (int) env->CallIntMethod(m_jAccessible, mid_IMultipleViewProvider_get_CurrentView);
+    if (CheckAndClearException(env)) return E_FAIL;
+    return S_OK;
+}
+IFACEMETHODIMP ProxyAccessible::GetSupportedViews(SAFEARRAY** pRetVal) {
+    if (pRetVal == NULL) return E_INVALIDARG;
+     return callArrayMethod(mid_IMultipleViewProvider_GetSupportedViews, VT_I4, pRetVal);
+}
+IFACEMETHODIMP ProxyAccessible::GetViewName(int viewId, BSTR *pRetVal) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    jstring str = (jstring)env->CallObjectMethod(m_jAccessible, mid_IMultipleViewProvider_GetViewName, (jint)viewId);
+    if (CheckAndClearException(env)) return E_FAIL;
+    HRESULT res = ProxyAccessible::copyString(env, str, pRetVal);
+    return res;  
+}
+IFACEMETHODIMP ProxyAccessible::SetCurrentView(int viewId) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    env->CallVoidMethod(m_jAccessible, mid_IMultipleViewProvider_SetCurrentView, (jint) viewId);
+    if (CheckAndClearException(env)) return E_FAIL;
+    return S_OK;
+}
 /***********************************************/
 /*                  JNI                        */
 /***********************************************/
@@ -1578,7 +1611,15 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1initIDs
     // IItemContainerProvider
     mid_IItemContainerProvider_FindItemByProperty = env->GetMethodID(jClass, "IItemContainerProvider_FindItemByProperty", "(JIJ)J");
     if (env->ExceptionCheck()) return;
-
+    // IMultipleViewProvider
+    mid_IMultipleViewProvider_get_CurrentView = env->GetMethodID(jClass, "IMultipleViewProvider_get_CurrentView", "()I");
+    if (env->ExceptionCheck()) return;
+    mid_IMultipleViewProvider_GetSupportedViews = env->GetMethodID(jClass, "IMultipleViewProvider_GetSupportedViews", "()[I");
+    if (env->ExceptionCheck()) return;
+    mid_IMultipleViewProvider_GetViewName = env->GetMethodID(jClass, "IMultipleViewProvider_GetViewName", "(I)Ljava/lang/String;");
+    if (env->ExceptionCheck()) return;
+    mid_IMultipleViewProvider_SetCurrentView = env->GetMethodID(jClass, "IMultipleViewProvider_SetCurrentView", "(I)V");
+    if (env->ExceptionCheck()) return;
 
     /* Variant */
     jclass jVariantClass = env->FindClass("com/sun/glass/ui/uia/glass/WinVariant");
