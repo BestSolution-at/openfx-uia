@@ -26,7 +26,8 @@ package javafx.uia;
 
 public interface ITextProvider2 {
     
-    ITextRangeProvider GetCaretRange(boolean isActive);
+    ITextRangeProvider GetCaretRange();
+    boolean GetCaretRangeIsActive();
     ITextRangeProvider RangeFromAnnotation(IUIAElement annotationElement);
 
 }
