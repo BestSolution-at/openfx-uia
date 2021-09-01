@@ -131,6 +131,9 @@ static jmethodID mid_WindowProvider_get_WindowVisualState;
 static jmethodID mid_WindowProvider_SetVisualState;
 static jmethodID mid_WindowProvider_WaitForInputIdle;
 
+// IDockProvider
+static jmethodID mid_DockProvider_get_DockPosition;
+static jmethodID mid_DockProvider_SetDockPosition;
 
 /* Variant Field IDs */
 static jfieldID fid_vt;
@@ -380,6 +383,9 @@ IFACEMETHODIMP ProxyAccessible::QueryInterface(REFIID riid, void** ppInterface)
     }
     else if (riid == __uuidof(IWindowProvider)) {
         *ppInterface = static_cast<IWindowProvider*>(this);
+    }
+    else if (riid == __uuidof(IDockProvider)) {
+        *ppInterface = static_cast<IDockProvider*>(this);
     }
     else {
         *ppInterface = NULL;
@@ -1195,6 +1201,23 @@ IFACEMETHODIMP ProxyAccessible::WaitForInputIdle(int milliseconds, BOOL* pRetVal
     return S_OK;
 }
 
+
+// IDockProvider
+IFACEMETHODIMP ProxyAccessible::get_DockPosition(DockPosition *pRetVal) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    *pRetVal = (DockPosition) env->CallIntMethod(m_jAccessible, mid_DockProvider_get_DockPosition);
+    if (CheckAndClearException(env)) return E_FAIL;
+    return S_OK;
+}
+IFACEMETHODIMP ProxyAccessible::SetDockPosition(DockPosition dockPosition) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    env->CallVoidMethod(m_jAccessible, mid_DockProvider_SetDockPosition, (jint) dockPosition);
+    if (CheckAndClearException(env)) return E_FAIL;
+    return S_OK;
+}
+
 /***********************************************/
 /*                  JNI                        */
 /***********************************************/
@@ -1406,6 +1429,12 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1initIDs
     mid_WindowProvider_WaitForInputIdle = env->GetMethodID(jClass, "WindowProvider_WaitForInputIdle", "(I)Z");
     if (env->ExceptionCheck()) return;
 
+    // IDockProvider
+    mid_DockProvider_get_DockPosition = env->GetMethodID(jClass, "DockProvider_get_DockPosition", "()I");
+    if (env->ExceptionCheck()) return;
+    mid_DockProvider_SetDockPosition = env->GetMethodID(jClass, "DockProvider_SetDockPosition", "(I)V");
+    if (env->ExceptionCheck()) return;
+
 
 
     /* Variant */
@@ -1525,3 +1554,6 @@ JNIEXPORT jboolean JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible_UiaClientsA
 {
     return UiaClientsAreListening() ? JNI_TRUE : JNI_FALSE;
 }
+
+
+

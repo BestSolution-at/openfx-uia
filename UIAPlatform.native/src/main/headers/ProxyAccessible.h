@@ -49,7 +49,8 @@ class ProxyAccessible : public IRawElementProviderSimple,
     public ITransformProvider,
     public IScrollProvider,
     public IScrollItemProvider,
-    public IWindowProvider
+    public IWindowProvider,
+    public IDockProvider
 {
 
 public:
@@ -181,6 +182,9 @@ public:
     IFACEMETHODIMP SetVisualState(WindowVisualState state);
     IFACEMETHODIMP WaitForInputIdle(int milliseconds, BOOL* pRetVal);
 
+    // IDockProvider
+    IFACEMETHODIMP get_DockPosition(DockPosition *pRetVal);
+    IFACEMETHODIMP SetDockPosition(DockPosition dockPosition);
     
 
     static HRESULT copyVariant(JNIEnv* env, jobject jVariant, VARIANT* pRetVal);

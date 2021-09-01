@@ -1058,4 +1058,9 @@ public class ProxyAccessible extends Accessible {
     private boolean WindowProvider_WaitForInputIdle(int s) {return false;}
 
     
+    // IDockProvider
+    private int DockProvider_get_DockPosition() { return 0; }
+    private void DockProvider_SetDockPosition(int dockPosition) {}
+
+
 }
