@@ -28,16 +28,24 @@ package uia.sample;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javafx.application.Application;
+import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListCell;
+import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import uia.sample.samples.CanvasWithVirtualChildren;
+import uia.sample.samples.DocumentSample;
+import uia.sample.samples.SimpleIGridProvider;
+import uia.sample.samples.SimpleITableProvider;
+import uia.sample.samples.SimpleScrollProvider;
 import uia.sample.samples.SimpleTextProvider;
 import uia.sample.samples.SimpleTextProviderWithAttributes;
 import uia.sample.samples.SimpleTextProviderWithChildren;
@@ -64,20 +72,71 @@ public class Simple extends Application {
             new SimpleTextProvider(),
             new SimpleTextProviderWithAttributes(),
             new SimpleTextProviderWithChildren(),
-            new SimpleTextProviderWithChildren2()
+            new SimpleTextProviderWithChildren2(),
+            new DocumentSample(),
+            new SimpleScrollProvider(),
+            new SimpleIGridProvider(),
+            new SimpleITableProvider()
             );
 
         VBox s = new VBox();
         s.setFillWidth(true);
         s.setPadding(new Insets(20));
 
-        s.getChildren().addAll(samples.stream().map(sample -> new SampleListItem(sample)).collect(Collectors.toList()));
+        //s.getChildren().addAll(samples.stream().map(sample -> new SampleListItem(sample)).collect(Collectors.toList()));
+
+        BorderPane sampleArea = new BorderPane();
+        sampleArea.getStyleClass().addAll("sample-area");
+
+        BorderPane contentArea = new BorderPane();
+        contentArea.getStyleClass().addAll("content-area");
+
+        Label title = new Label();
+        title.getStyleClass().add("title");
+
+        sampleArea.setTop(title);
+        sampleArea.setCenter(contentArea);
 
         ScrollPane sp = new ScrollPane();
         sp.setFitToWidth(true);
         sp.setContent(s);
 
-        root.setCenter(sp);
+        BorderPane desc = new BorderPane();
+        desc.setMaxWidth(200);
+
+        ListView<Sample> nav = new ListView<>();
+        nav.setItems(FXCollections.observableArrayList(samples));
+        nav.setCellFactory(list -> {
+            return new ListCell<Sample>() {
+                @Override
+                protected  void updateItem(Sample sample, boolean empty) {
+                    super.updateItem(sample, empty);
+                    if (empty) {
+                        setText("");
+                    } else {
+                        setText(sample.getName());
+                    }
+                }
+            };
+        });
+        nav.getSelectionModel().selectedItemProperty().addListener((obs, ol, ne) -> {
+            if (ne != null) {
+                Node sample = ne.getSample();
+                
+                title.setText(ne.getName());
+                contentArea.setCenter(sample);
+                desc.setCenter(ne.getDescription());
+
+            } else {
+                title.setText("");
+                contentArea.setCenter(new Label("Please select a sample"));
+                desc.setCenter(null);
+            }
+        });
+        root.setLeft(nav);
+        root.setCenter(sampleArea);
+        root.setRight(desc);
+        //root.setCenter(sp);
 
         Scene scene = new Scene(root);
         scene.getStylesheets().add(Simple.class.getResource("/sample.css").toExternalForm());

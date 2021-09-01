@@ -1,0 +1,81 @@
+/*
+ * -----------------------------------------------------------------
+ * Copyright (c) 2021 BestSolution.at EDV Systemhaus GmbH
+ * All Rights Reserved.
+ *
+ * BestSolution.at MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE
+ * SUITABILITY OF THE SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE  OR NON - INFRINGEMENT.
+ * BestSolution.at SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY
+ * LICENSEE AS A RESULT OF USING, MODIFYING OR DISTRIBUTING THIS
+ * SOFTWARE OR ITS DERIVATIVES.
+ *
+ * This software is released under the terms of the
+ *
+ *                  "GNU General Public License, Version 2 
+ *                         with classpath exception"
+ *
+ * and may only be distributed and used under the terms of the
+ * mentioned license. You should have received a copy of the license
+ * along with this software product, if not you can download it from
+ * http://www.gnu.org/licenses/gpl.html
+ * ----------------------------------------------------------------
+ */
+package uia.sample.samples.model;
+
+import java.util.Collections;
+import java.util.List;
+
+import javafx.geometry.Bounds;
+import javafx.uia.IGridItemProvider;
+import javafx.uia.IUIAElement;
+import javafx.uia.IUIAVirtualElement;
+
+public class UIACell extends Cell implements /*IUIAElement,*/ IUIAVirtualElement, IGridItemProvider {
+
+    @Override
+    public int get_Column() {
+        return col;
+    }
+
+    @Override
+    public int get_ColumnSpan() {
+        return colSpan;
+    }
+
+    @Override
+    public int get_Row() {
+        return row;
+    }
+
+    @Override
+    public int get_RowSpan() {
+        return rowSpan;
+    }
+
+    @Override
+    public IUIAElement get_ContainingGrid() {
+        return (UIAGrid) grid;
+    }
+
+    @Override
+    public IUIAElement getParent() {
+        return (UIAGrid) grid;
+    }
+
+    @Override
+    public List<IUIAElement> getChildren() {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public Bounds getBounds() {
+        return grid.canvas.localToScreen(computeCellBounds());
+    }
+
+    @Override
+    public void SetFocus() {
+    }
+    
+}

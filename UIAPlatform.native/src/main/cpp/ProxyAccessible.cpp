@@ -144,6 +144,8 @@ static jfieldID fid_bstrVal;
 static jfieldID fid_pDblVal;
 static jfieldID fid_pFltVal;
 
+static jfieldID fid_pPunkVal;
+
 
 
 /* static */ HRESULT ProxyAccessible::copyString(JNIEnv* env, jstring jString, BSTR* pbstrVal)
@@ -242,6 +244,11 @@ static jfieldID fid_pFltVal;
     case VT_R4 | VT_ARRAY: {
         jarray list = (jarray)env->GetObjectField(jVariant, fid_pFltVal);
         hr = ProxyAccessible::copyList(env, list, &(pRetVal->parray), VT_R4);
+        break;
+    }
+    case VT_UNKNOWN | VT_ARRAY: {
+        jarray list = (jarray)env->GetObjectField(jVariant, fid_pPunkVal);
+        hr = ProxyAccessible::copyList(env, list, &(pRetVal->parray), VT_UNKNOWN);
         break;
     }
     }
@@ -1423,6 +1430,8 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1initIDs
     fid_pDblVal = env->GetFieldID(jVariantClass, "pDblVal", "[D");
     if (env->ExceptionCheck()) return;
     fid_pFltVal = env->GetFieldID(jVariantClass, "pFltVal", "[F");
+    if (env->ExceptionCheck()) return;
+    fid_pPunkVal = env->GetFieldID(jVariantClass, "pPunkVal", "[J");
     if (env->ExceptionCheck()) return;
 }
 

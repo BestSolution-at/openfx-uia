@@ -34,9 +34,15 @@ import java.util.function.BiFunction;
 
 import com.sun.glass.ui.uia.ProxyAccessible;
 
+import javafx.uia.IGridItemProvider;
+import javafx.uia.IGridProvider;
 import javafx.uia.IInitContext;
 import javafx.uia.IInvokeProvider;
 import javafx.uia.IPatternId;
+import javafx.uia.IScrollItemProvider;
+import javafx.uia.IScrollProvider;
+import javafx.uia.ITableItemProvider;
+import javafx.uia.ITableProvider;
 import javafx.uia.ITextProvider;
 import javafx.uia.IToggleProvider;
 import javafx.uia.IUIAElement;
@@ -60,6 +66,15 @@ public class ProviderDescriptor<JavaType, NativeType> {
             register(StandardPatternIds.UIA_WindowPatternId, IWindowProvider.class, NativeIWindowProvider.class, WindowProviderAdapter::new);
             register(StandardPatternIds.UIA_InvokePatternId, IInvokeProvider.class, NativeIInvokeProvider.class, InvokeProviderAdapter::new);
             register(StandardPatternIds.UIA_TextPatternId, ITextProvider.class, NativeITextProvider.class, TextProviderAdapter::new);
+            
+            register(StandardPatternIds.UIA_ScrollPatternId, IScrollProvider.class, NativeIScrollProvider.class, ScrollProviderAdapter::new);
+            register(StandardPatternIds.UIA_ScrollItemPatternId, IScrollItemProvider.class, NativeIScrollItemProvider.class, ScrollItemProviderAdapter::new);
+
+            register(StandardPatternIds.UIA_GridPatternId, IGridProvider.class, NativeIGridProvider.class, GridProviderAdapter::new);
+            register(StandardPatternIds.UIA_GridItemPatternId, IGridItemProvider.class, NativeIGridItemProvider.class, GridItemProviderAdapter::new);
+
+            register(StandardPatternIds.UIA_TablePatternId, ITableProvider.class, NativeITableProvider.class, TableProviderAdapter::new);
+            register(StandardPatternIds.UIA_TableItemPatternId, ITableItemProvider.class, NativeITableItemProvider.class, TableItemProviderAdapter::new);
         }
 
         static <JavaType, NativeType> boolean isAvailable(IPatternId id) {

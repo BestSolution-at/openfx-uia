@@ -15,6 +15,17 @@
     -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.301), 10, 0.5, 2, 2);
 }
 
+.sample-area {
+    -fx-padding: 1em 2em 2em 2em;
+}
+.sample-area > .title {
+    -fx-font-size: 2em;
+}
+
+.sample-area > .content-area {
+    -fx-background-color: white;
+    -fx-effect: dropshadow(gaussian, rgba(0, 0, 0, 0.301), 10, 0.5, 2, 2);
+}
 
 
 .sample-list-item > .detail-area {

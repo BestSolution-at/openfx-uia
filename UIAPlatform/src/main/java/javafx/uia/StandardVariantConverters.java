@@ -24,6 +24,7 @@
  */
 package javafx.uia;
 
+import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -76,6 +77,11 @@ public class StandardVariantConverters {
     public static final IVariantConverter<IUIAElement> UNKNOWN_IUIAElement = createConverter(
         value -> Variant.vt_unknown(ProxyAccessibleRegistry.getInstance().findAccessible(value).getNativeAccessible()),
         variant -> null // variant.getPunkVal() // TODO lookup via native accessible pointer for IUIAElement
+    );
+
+    public static final IVariantConverter<IUIAElement[]> UNKNOWNArray_IUIAElementArray = createConverter(
+        value -> Variant.vt_unknown_array(Arrays.stream(value).mapToLong(element -> ProxyAccessibleRegistry.getInstance().findAccessible(element).getNativeAccessible()).toArray()),
+        variant -> null // TODO punk val backmapping = ?
     );
 
     public static final IVariantConverter<Double> R8_Double = createConverter(value -> Variant.vt_r8(value), variant -> variant.getDblVal());

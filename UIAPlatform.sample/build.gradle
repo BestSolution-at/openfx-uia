@@ -86,3 +86,20 @@ task runWithPlatform(type: JavaExec) {
     systemProperty "glass.platform", "UIA"
     systemProperty "glass.accessible.force", true
 }
+
+task runWithPlatformDbg(type: JavaExec) {
+	group = 'application'
+	description = 'Runs the sample with the glass platfrom configured'
+
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+
+	classpath = sourceSets.main.runtimeClasspath
+	main = 'uia.sample.Simple'
+	systemProperty "java.ext.dirs", "${getJDKExt()};${getPlatformExtPath()}"
+    systemProperty "glass.platform", "UIA"
+    systemProperty "glass.accessible.force", true
+
+    jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,address=5005'
+}

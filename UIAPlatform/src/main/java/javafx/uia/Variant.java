@@ -129,6 +129,13 @@ public class Variant {
         return new Variant(v);
     }
 
+    public static Variant vt_unknown_array(long[] value) {
+        WinVariant v = new WinVariant();
+        v.vt = WinVariant.VT_UNKNOWN | WinVariant.VT_ARRAY;
+        v.pPunkVal = value;
+        return new Variant(v);
+    }
+
     public static Variant vt_r8_array(double[] value) {
         WinVariant v = new WinVariant();
         v.vt = WinVariant.VT_R8 | WinVariant.VT_ARRAY;

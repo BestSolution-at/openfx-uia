@@ -39,6 +39,12 @@ import com.sun.glass.ui.uia.glass.WinVariant;
 import com.sun.glass.ui.uia.provider.NativeITextProvider;
 import com.sun.glass.ui.uia.provider.NativeIToggleProvider;
 import com.sun.glass.ui.uia.provider.NativeIInvokeProvider;
+import com.sun.glass.ui.uia.provider.NativeIScrollProvider;
+import com.sun.glass.ui.uia.provider.NativeIScrollItemProvider;
+import com.sun.glass.ui.uia.provider.NativeITableProvider;
+import com.sun.glass.ui.uia.provider.NativeITableItemProvider;
+import com.sun.glass.ui.uia.provider.NativeIGridProvider;
+import com.sun.glass.ui.uia.provider.NativeIGridItemProvider;
 import com.sun.glass.ui.uia.provider.UIAElementAdapter;
 import com.sun.javafx.tk.quantum.QuantumToolkit;
 
@@ -698,89 +704,154 @@ public class ProxyAccessible extends Accessible {
     /***********************************************/
     private int IGridProvider_get_ColumnCount() {
         return Util.guard(() -> {
-            checkGlass();
-            return glass.get_ColumnCount();
+            final NativeIGridProvider provider = getNativeProvider(NativeIGridProvider.class);
+            if (provider != null) {
+                return provider.get_ColumnCount();
+            } else {
+                checkGlass();
+                return glass.get_ColumnCount();
+            }
         });
     }
     private int IGridProvider_get_RowCount() {
         return Util.guard(() -> {
-            checkGlass();
-            return glass.get_RowCount();
+            final NativeIGridProvider provider = getNativeProvider(NativeIGridProvider.class);
+            if (provider != null) {
+                return provider.get_RowCount();
+            } else {
+                checkGlass();
+                return glass.get_RowCount();
+            }
         });
     }
     private long IGridProvider_GetItem(int row, int column) {
         return Util.guard(() -> {
-            checkGlass();
-        return glass.GetItem(row, column);
-    });
+            final NativeIGridProvider provider = getNativeProvider(NativeIGridProvider.class);
+            if (provider != null) {
+                return provider.GetItem(row, column);
+            } else {
+                checkGlass();
+                return glass.GetItem(row, column);
+            }
+        });
     }
     /***********************************************/
     /*             IGridItemProvider               */
     /***********************************************/
     private int IGridItemProvider_get_Column() {
         return Util.guard(() -> {
-            checkGlass();
-        return glass.get_Column();
-    });
+            final NativeIGridItemProvider provider = getNativeProvider(NativeIGridItemProvider.class);
+            if (provider != null) {
+                return provider.get_Column();
+            } else {
+                checkGlass();
+                return glass.get_Column();
+            }
+        });
     }
     private int IGridItemProvider_get_ColumnSpan() {
         return Util.guard(() -> {
-            checkGlass();
-        return glass.get_ColumnSpan();
-    });
+            final NativeIGridItemProvider provider = getNativeProvider(NativeIGridItemProvider.class);
+            if (provider != null) {
+                return provider.get_ColumnSpan();
+            } else {
+                checkGlass();
+                return glass.get_ColumnSpan();
+            }
+        });
     }
     private long IGridItemProvider_get_ContainingGrid() {
         return Util.guard(() -> {
-            checkGlass();
-        return glass.get_ContainingGrid();
-    });
+            final NativeIGridItemProvider provider = getNativeProvider(NativeIGridItemProvider.class);
+            if (provider != null) {
+                return provider.get_ContainingGrid();
+            } else {
+                checkGlass();
+                return glass.get_ContainingGrid();
+            }
+        });
     }
     private int IGridItemProvider_get_Row() {
         return Util.guard(() -> {
-            checkGlass();
-        return glass.get_Row();
-    });
+            final NativeIGridItemProvider provider = getNativeProvider(NativeIGridItemProvider.class);
+            if (provider != null) {
+                return provider.get_Row();
+            } else {
+                checkGlass();
+                return glass.get_Row();
+            }
+        });
     }
     private int IGridItemProvider_get_RowSpan() {
         return Util.guard(() -> {
-            checkGlass();
-        return glass.get_RowSpan();
-    });
+            final NativeIGridItemProvider provider = getNativeProvider(NativeIGridItemProvider.class);
+            if (provider != null) {
+                return provider.get_RowSpan();
+            } else {
+                checkGlass();
+                return glass.get_RowSpan();
+            }
+        });
     }
     /***********************************************/
     /*               ITableProvider                */
     /***********************************************/
     private long[] ITableProvider_GetColumnHeaders() {
         return Util.guard(() -> {
-            checkGlass();
-        return glass.GetColumnHeaders();
-    });
+            final NativeITableProvider provider = getNativeProvider(NativeITableProvider.class);
+            if (provider != null) {
+                return provider.GetColumnHeaders();
+            } else {
+                checkGlass();
+                return glass.GetColumnHeaders();
+            }
+        });
     }
     private long[] ITableProvider_GetRowHeaders() {
         return Util.guard(() -> {
-            checkGlass();
-        return glass.GetRowHeaders();
-    });
+            final NativeITableProvider provider = getNativeProvider(NativeITableProvider.class);
+            if (provider != null) {
+                return provider.GetRowHeaders();
+            } else {
+                checkGlass();
+                return glass.GetRowHeaders();
+            }
+        });
     }
     private int ITableProvider_get_RowOrColumnMajor() {
         return Util.guard(() -> {
-            checkGlass();
-        return glass.get_RowOrColumnMajor();
-    });
+            final NativeITableProvider provider = getNativeProvider(NativeITableProvider.class);
+            if (provider != null) {
+                return provider.get_RowOrColumnMajor();
+            } else {
+                checkGlass();
+                return glass.get_RowOrColumnMajor();
+            }
+        });
     }
     /***********************************************/
     /*             ITableItemProvider              */
     /***********************************************/
     private long[] ITableItemProvider_GetColumnHeaderItems() {
         return Util.guard(() -> {
-            checkGlass();
-        return glass.GetColumnHeaderItems();
-    });
+            final NativeITableItemProvider provider = getNativeProvider(NativeITableItemProvider.class);
+            if (provider != null) {
+                return provider.GetColumnHeaderItems();
+            } else {
+                checkGlass();
+                return glass.GetColumnHeaderItems();
+            }
+        });
     }
     private long[] ITableItemProvider_GetRowHeaderItems() {
         return Util.guard(() -> {
-            checkGlass();
-            return glass.GetRowHeaderItems();
+            final NativeITableItemProvider provider = getNativeProvider(NativeITableItemProvider.class);
+            if (provider != null) {
+                return provider.GetRowHeaderItems();
+            } else {
+                checkGlass();
+                return glass.GetRowHeaderItems();
+            }
         });
     }
     /***********************************************/
@@ -873,50 +944,90 @@ public class ProxyAccessible extends Accessible {
     /***********************************************/
     private void IScrollProvider_Scroll(int horizontalAmount, int verticalAmount) {
         Util.guard(() -> {
-            checkGlass();
-            glass.Scroll(horizontalAmount, verticalAmount);
+            final NativeIScrollProvider provider = getNativeProvider(NativeIScrollProvider.class);
+            if (provider != null) {
+                provider.Scroll(horizontalAmount, verticalAmount);
+            } else {
+                checkGlass();
+                glass.Scroll(horizontalAmount, verticalAmount);
+            }
         });
     }
     private void IScrollProvider_SetScrollPercent(double horizontalPercent, double verticalPercent) {
         Util.guard(() -> {
-            checkGlass();
-            glass.SetScrollPercent(horizontalPercent, verticalPercent);
+            final NativeIScrollProvider provider = getNativeProvider(NativeIScrollProvider.class);
+            if (provider != null) {
+                provider.SetScrollPercent(horizontalPercent, verticalPercent);
+            } else {
+                checkGlass();
+                glass.SetScrollPercent(horizontalPercent, verticalPercent);
+            }
         });
     }
     private boolean IScrollProvider_get_HorizontallyScrollable() {
         return Util.guard(() -> {
-            checkGlass();
-            return glass.get_HorizontallyScrollable();
+            final NativeIScrollProvider provider = getNativeProvider(NativeIScrollProvider.class);
+            if (provider != null) {
+                return provider.get_HorizontallyScrollable();
+            } else {
+                checkGlass();
+                return glass.get_HorizontallyScrollable();
+            }
         });
     }
     private double IScrollProvider_get_HorizontalScrollPercent() {
         return Util.guard(() -> {
-            checkGlass();
-            return glass.get_HorizontalScrollPercent();
+            final NativeIScrollProvider provider = getNativeProvider(NativeIScrollProvider.class);
+            if (provider != null) {
+                return provider.get_HorizontalScrollPercent();
+            } else {
+                checkGlass();
+                return glass.get_HorizontalScrollPercent();
+            }
         });
     }
     private double IScrollProvider_get_HorizontalViewSize() {
         return Util.guard(() -> {
-            checkGlass();
-            return glass.get_HorizontalViewSize();
+            final NativeIScrollProvider provider = getNativeProvider(NativeIScrollProvider.class);
+            if (provider != null) {
+                return provider.get_HorizontalViewSize();
+            } else {
+                checkGlass();
+                return glass.get_HorizontalViewSize();
+            }
         });
     }
     private boolean IScrollProvider_get_VerticallyScrollable() {
         return Util.guard(() -> {
-            checkGlass();
-            return glass.get_VerticallyScrollable();
+            final NativeIScrollProvider provider = getNativeProvider(NativeIScrollProvider.class);
+            if (provider != null) {
+                return provider.get_VerticallyScrollable();
+            } else {
+                checkGlass();
+                return glass.get_VerticallyScrollable();
+            }
         });
     }
     private double IScrollProvider_get_VerticalScrollPercent() {
         return Util.guard(() -> {
-            checkGlass();
-            return glass.get_VerticalScrollPercent();
+            final NativeIScrollProvider provider = getNativeProvider(NativeIScrollProvider.class);
+            if (provider != null) {
+                return provider.get_VerticalScrollPercent();
+            } else {
+                checkGlass();
+                return glass.get_VerticalScrollPercent();
+            }
         });
     }
     private double IScrollProvider_get_VerticalViewSize() {
         return Util.guard(() -> {
-            checkGlass();
-            return glass.get_VerticalViewSize();
+            final NativeIScrollProvider provider = getNativeProvider(NativeIScrollProvider.class);
+            if (provider != null) {
+                return provider.get_VerticalViewSize();
+            } else {
+                checkGlass();
+                return glass.get_VerticalViewSize();
+            }
         });
     }
     /***********************************************/
@@ -924,8 +1035,13 @@ public class ProxyAccessible extends Accessible {
     /***********************************************/
     private void IScrollItemProvider_ScrollIntoView() {
         Util.guard(() -> {
-            checkGlass();
-            glass.ScrollIntoView();
+            final NativeIScrollItemProvider provider = getNativeProvider(NativeIScrollItemProvider.class);
+            if (provider != null) {
+                provider.ScrollIntoView();
+            } else {
+                checkGlass();
+                glass.ScrollIntoView();
+            }
         });
     }
 
