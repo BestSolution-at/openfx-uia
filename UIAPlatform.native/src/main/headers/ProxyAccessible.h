@@ -53,7 +53,8 @@ class ProxyAccessible : public IRawElementProviderSimple,
     public IDockProvider,
     public IAnnotationProvider,
     public IDragProvider,
-    public IDropTargetProvider
+    public IDropTargetProvider,
+    public IItemContainerProvider
 {
 
 public:
@@ -202,6 +203,8 @@ public:
     // IDropTargetProvider
     IFACEMETHODIMP get_DropTargetEffect(BSTR *pRetVal);
     IFACEMETHODIMP get_DropTargetEffects(SAFEARRAY **pRetVal);
+    // IItemContainerProvider
+    IFACEMETHODIMP FindItemByProperty(IRawElementProviderSimple *pStartAfter, PROPERTYID propertyID, VARIANT value, IRawElementProviderSimple **pFound);
 
     static HRESULT copyVariant(JNIEnv* env, jobject jVariant, VARIANT* pRetVal);
     static HRESULT copyString(JNIEnv* env, jstring jString, BSTR* pbstrVal);

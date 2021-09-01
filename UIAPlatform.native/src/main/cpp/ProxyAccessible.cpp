@@ -148,6 +148,8 @@ static jmethodID mid_IDragProvider_GetGrabbedItems;
 // IDropTargetProvider
 static jmethodID mid_IDropTargetProvider_get_DropTargetEffect;
 static jmethodID mid_IDropTargetProvider_get_DropTargetEffects;
+// IItemContainerProvider
+static jmethodID mid_IItemContainerProvider_FindItemByProperty;
 
 /* Variant Field IDs */
 static jfieldID fid_vt;
@@ -409,6 +411,9 @@ IFACEMETHODIMP ProxyAccessible::QueryInterface(REFIID riid, void** ppInterface)
     }
     else if (riid == __uuidof(IDropTargetProvider)) {
         *ppInterface = static_cast<IDropTargetProvider*>(this);
+    }
+    else if (riid == __uuidof(IItemContainerProvider)) {
+        *ppInterface = static_cast<IItemContainerProvider*>(this);
     }
     else {
         *ppInterface = NULL;
@@ -1319,6 +1324,15 @@ IFACEMETHODIMP ProxyAccessible::get_DropTargetEffects(SAFEARRAY** pRetVal) {
     // TODO need to support BSTR in array copy!!
      return callArrayMethod(mid_IDropTargetProvider_get_DropTargetEffects, VT_BSTR, pRetVal);
 }
+ // IItemContainerProvider
+IFACEMETHODIMP ProxyAccessible::FindItemByProperty(IRawElementProviderSimple *pStartAfter, PROPERTYID propertyID, VARIANT value, IRawElementProviderSimple **pFound) {
+    if (pFound == NULL) return E_INVALIDARG;
+    ProxyAccessible* ptr = NULL;
+    HRESULT hr = callLongMethod(mid_IItemContainerProvider_FindItemByProperty, &ptr);
+    *pFound = static_cast<IRawElementProviderSimple*>(ptr);
+    return hr;
+}
+
 
 /***********************************************/
 /*                  JNI                        */
@@ -1561,7 +1575,9 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1initIDs
     if (env->ExceptionCheck()) return;
     mid_IDropTargetProvider_get_DropTargetEffects = env->GetMethodID(jClass, "IDropTargetProvider_get_DropTargetEffects", "()[Ljava/lang/String;");
     if (env->ExceptionCheck()) return;
-
+    // IItemContainerProvider
+    mid_IItemContainerProvider_FindItemByProperty = env->GetMethodID(jClass, "IItemContainerProvider_FindItemByProperty", "(JIJ)J");
+    if (env->ExceptionCheck()) return;
 
 
     /* Variant */

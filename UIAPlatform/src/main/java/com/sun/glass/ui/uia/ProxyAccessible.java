@@ -1075,4 +1075,8 @@ public class ProxyAccessible extends Accessible {
     // IDropTargetProvider
     private String      IDropTargetProvider_get_DropTargetEffect() { return ""; }
     private String[]    IDropTargetProvider_get_DropTargetEffects() { return new String[0]; }
+    // IItemContainerProvider
+    private long        IItemContainerProvider_FindItemByProperty(long pStartAfter, int propertyId, long pVariant) {
+        return 0L;
+    }
 }
