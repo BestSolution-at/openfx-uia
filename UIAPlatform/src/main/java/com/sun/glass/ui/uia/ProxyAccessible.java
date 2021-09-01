@@ -1067,5 +1067,10 @@ public class ProxyAccessible extends Accessible {
     private String  IAnnotationProvider_get_Author() { return ""; }
     private String  IAnnotationProvider_get_DateTime() { return ""; }
     private long    IAnnotationProvider_get_Target() { return 0L; }
+    // IDragProvider
+    private String      IDragProvider_get_DropEffect() { return ""; }
+    private String[]    IDragProvider_get_DropEffects() { return new String[0]; }
+    private boolean     IDragProvider_get_IsGrabbed() { return false; }
+    private long[]      IDragProvider_GetGrabbedItems() { return null; }
 
 }

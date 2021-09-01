@@ -140,6 +140,11 @@ static jmethodID mid_IAnnotationProvider_get_AnnotationTypeName;
 static jmethodID mid_IAnnotationProvider_get_Author;
 static jmethodID mid_IAnnotationProvider_get_DateTime;
 static jmethodID mid_IAnnotationProvider_get_Target;
+// IDragProvider
+static jmethodID mid_IDragProvider_get_DropEffect;
+static jmethodID mid_IDragProvider_get_DropEffects;
+static jmethodID mid_IDragProvider_get_IsGrabbed;
+static jmethodID mid_IDragProvider_GetGrabbedItems;
 
 /* Variant Field IDs */
 static jfieldID fid_vt;
@@ -395,6 +400,9 @@ IFACEMETHODIMP ProxyAccessible::QueryInterface(REFIID riid, void** ppInterface)
     }
     else if (riid == __uuidof(IAnnotationProvider)) {
         *ppInterface = static_cast<IAnnotationProvider*>(this);
+    }
+    else if (riid == __uuidof(IDragProvider)) {
+        *ppInterface = static_cast<IDragProvider*>(this);
     }
     else {
         *ppInterface = NULL;
@@ -1266,7 +1274,31 @@ IFACEMETHODIMP ProxyAccessible::get_Target(IRawElementProviderSimple** pRetVal)
     *pRetVal = static_cast<IRawElementProviderSimple*>(ptr);
     return hr;
 }
-
+// IDragProvider
+IFACEMETHODIMP ProxyAccessible::get_DropEffect(BSTR *pRetVal) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    jstring str = (jstring)env->CallObjectMethod(m_jAccessible, mid_IDragProvider_get_DropEffect);
+    if (CheckAndClearException(env)) return E_FAIL;
+    HRESULT res = ProxyAccessible::copyString(env, str, pRetVal);
+    return res;
+}
+IFACEMETHODIMP ProxyAccessible::get_DropEffects(SAFEARRAY** pRetVal) {
+    if (pRetVal == NULL) return E_INVALIDARG;
+    // TODO need to support BSTR in array copy!!
+     return callArrayMethod(mid_IDragProvider_GetGrabbedItems, VT_BSTR, pRetVal);
+}
+IFACEMETHODIMP ProxyAccessible::get_IsGrabbed(BOOL* pRetVal) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    *pRetVal = env->CallBooleanMethod(m_jAccessible, mid_IDragProvider_get_IsGrabbed);
+    if (CheckAndClearException(env)) return E_FAIL;
+    return S_OK;
+}
+IFACEMETHODIMP ProxyAccessible::GetGrabbedItems(SAFEARRAY **pRetVal) {
+    if (pRetVal == NULL) return E_INVALIDARG;
+    return callArrayMethod(mid_IDragProvider_GetGrabbedItems, VT_UNKNOWN, pRetVal);
+}
 
 /***********************************************/
 /*                  JNI                        */
@@ -1494,6 +1526,15 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1initIDs
     mid_IAnnotationProvider_get_DateTime = env->GetMethodID(jClass, "IAnnotationProvider_get_DateTime", "()Ljava/lang/String;");
     if (env->ExceptionCheck()) return;
     mid_IAnnotationProvider_get_Target = env->GetMethodID(jClass, "IAnnotationProvider_get_Target", "()J");
+    if (env->ExceptionCheck()) return;
+    // IDragProvider
+    mid_IDragProvider_get_DropEffect = env->GetMethodID(jClass, "IDragProvider_get_DropEffect", "()Ljava/lang/String;");
+    if (env->ExceptionCheck()) return;
+    mid_IDragProvider_get_DropEffects = env->GetMethodID(jClass, "IDragProvider_get_DropEffects", "()[Ljava/lang/String;");
+    if (env->ExceptionCheck()) return;
+    mid_IDragProvider_get_IsGrabbed = env->GetMethodID(jClass, "IDragProvider_get_IsGrabbed", "()Z");
+    if (env->ExceptionCheck()) return;
+    mid_IDragProvider_GetGrabbedItems = env->GetMethodID(jClass, "IDragProvider_GetGrabbedItems", "()[J");
     if (env->ExceptionCheck()) return;
 
     /* Variant */

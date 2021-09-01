@@ -51,7 +51,8 @@ class ProxyAccessible : public IRawElementProviderSimple,
     public IScrollItemProvider,
     public IWindowProvider,
     public IDockProvider,
-    public IAnnotationProvider
+    public IAnnotationProvider,
+    public IDragProvider
 {
 
 public:
@@ -192,7 +193,11 @@ public:
     IFACEMETHODIMP get_Author(BSTR *pRetVal);
     IFACEMETHODIMP get_DateTime(BSTR *pRetVal);
     IFACEMETHODIMP get_Target(IRawElementProviderSimple **pRetVal);
-    
+    // IDragProvider
+    IFACEMETHODIMP get_DropEffect(BSTR *pRetVal);
+    IFACEMETHODIMP get_DropEffects(SAFEARRAY **pRetVal);
+    IFACEMETHODIMP get_IsGrabbed(BOOL* pRetVal);
+    IFACEMETHODIMP GetGrabbedItems(SAFEARRAY **pRetVal);
     
 
     static HRESULT copyVariant(JNIEnv* env, jobject jVariant, VARIANT* pRetVal);
