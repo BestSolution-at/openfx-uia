@@ -1087,4 +1087,9 @@ public class ProxyAccessible extends Accessible {
     // ITextChildProvider
     private long        ITextChildProvider_get_TextContainer() { return 0L; }
     private long        ITextChildProvider_get_TextRange() { return 0L; }
+    // ITextProvider2
+    // XXX GetCaretRange has 2 output arguments!!!
+    private long        ITextProvider2_GetCaretRange() { return 0L; }
+    private boolean     ITextProvider2_GetCaretRangeIsActive() { return false; }
+    private long        ITextProvider2_RangeFromAnnotation(long annotationElement) { return 0L; }
 }

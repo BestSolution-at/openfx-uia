@@ -161,6 +161,11 @@ static jmethodID mid_IMultipleViewProvider_SetCurrentView;
 static jmethodID mid_ITextChildProvider_get_TextContainer;
 static jmethodID mid_ITextChildProvider_get_TextRange;
 
+// ITextProvider2
+static jmethodID mid_ITextProvider2_GetCaretRange;
+static jmethodID mid_ITextProvider2_GetCaretRangeIsActive;
+static jmethodID mid_ITextProvider2_RangeFromAnnotation;
+
 /* Variant Field IDs */
 static jfieldID fid_vt;
 static jfieldID fid_iVal;
@@ -379,6 +384,9 @@ IFACEMETHODIMP ProxyAccessible::QueryInterface(REFIID riid, void** ppInterface)
     }
     else if (riid == __uuidof(ITextProvider)) {
         *ppInterface = static_cast<ITextProvider*>(this);
+    }
+    else if (riid == __uuidof(ITextProvider2)) {
+        *ppInterface = static_cast<ITextProvider2*>(this);
     }
     else if (riid == __uuidof(IGridProvider)) {
         *ppInterface = static_cast<IGridProvider*>(this);
@@ -1391,6 +1399,29 @@ IFACEMETHODIMP ProxyAccessible::get_TextRange(ITextRangeProvider **pRetVal) {
     return hr;
 }
 
+// ITextProvider2
+IFACEMETHODIMP ProxyAccessible::GetCaretRange(BOOL *isActive, ITextRangeProvider **pRetVal) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    if (pRetVal == NULL) return E_INVALIDARG;
+    IUnknown* ptr = NULL;
+
+    // XXX for now we call 2 times into jni because it seems overkill to introduce a new java type as result
+
+    jboolean active = env->CallBooleanMethod(m_jAccessible, mid_ITextProvider2_GetCaretRangeIsActive);
+    *isActive = (active == JNI_TRUE ? TRUE : FALSE);
+
+    HRESULT hr = callLongMethod(mid_ITextProvider2_GetCaretRange, &ptr);
+    *pRetVal = static_cast<ITextRangeProvider*>(ptr);
+    return hr;
+}
+IFACEMETHODIMP ProxyAccessible::RangeFromAnnotation(IRawElementProviderSimple *annotationElement, ITextRangeProvider **pRetVal) {
+    if (pRetVal == NULL) return E_INVALIDARG;
+    IUnknown* ptr = NULL;
+    HRESULT hr = callLongMethod(mid_ITextProvider2_RangeFromAnnotation, &ptr, (jlong) annotationElement);
+    *pRetVal = static_cast<ITextRangeProvider*>(ptr);
+    return hr;
+}
 
 /***********************************************/
 /*                  JNI                        */
@@ -1650,6 +1681,14 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1initIDs
     if (env->ExceptionCheck()) return;
     mid_ITextChildProvider_get_TextRange = env->GetMethodID(jClass, "ITextChildProvider_get_TextRange", "()J");
     if (env->ExceptionCheck()) return;
+    // ITextProvider2
+    mid_ITextProvider2_GetCaretRange = env->GetMethodID(jClass, "ITextProvider2_GetCaretRange", "()J");
+    if (env->ExceptionCheck()) return;
+    mid_ITextProvider2_GetCaretRangeIsActive = env->GetMethodID(jClass, "ITextProvider2_GetCaretRangeIsActive", "()Z");
+    if (env->ExceptionCheck()) return;
+    mid_ITextProvider2_RangeFromAnnotation = env->GetMethodID(jClass, "ITextProvider2_RangeFromAnnotation", "(J)J");
+    if (env->ExceptionCheck()) return;
+
 
     /* Variant */
     jclass jVariantClass = env->FindClass("com/sun/glass/ui/uia/glass/WinVariant");

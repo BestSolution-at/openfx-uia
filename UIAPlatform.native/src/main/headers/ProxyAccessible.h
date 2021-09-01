@@ -40,6 +40,7 @@ class ProxyAccessible : public IRawElementProviderSimple,
     public IRangeValueProvider,
     public IValueProvider,
     public ITextProvider,
+    public ITextProvider2,
     public ITextChildProvider,
     public IGridProvider,
     public IGridItemProvider,
@@ -215,6 +216,9 @@ public:
     // ITextChildProvider
     IFACEMETHODIMP get_TextContainer(IRawElementProviderSimple **pRetVal);
     IFACEMETHODIMP get_TextRange(ITextRangeProvider **pRetVal);
+    // ITextProvider2
+    IFACEMETHODIMP GetCaretRange(BOOL *isActive, ITextRangeProvider **pRetVal);
+    IFACEMETHODIMP RangeFromAnnotation(IRawElementProviderSimple *annotationElement, ITextRangeProvider **pRetVal);
 
 
     static HRESULT copyVariant(JNIEnv* env, jobject jVariant, VARIANT* pRetVal);
