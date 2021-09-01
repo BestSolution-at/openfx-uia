@@ -145,6 +145,9 @@ static jmethodID mid_IDragProvider_get_DropEffect;
 static jmethodID mid_IDragProvider_get_DropEffects;
 static jmethodID mid_IDragProvider_get_IsGrabbed;
 static jmethodID mid_IDragProvider_GetGrabbedItems;
+// IDropTargetProvider
+static jmethodID mid_IDropTargetProvider_get_DropTargetEffect;
+static jmethodID mid_IDropTargetProvider_get_DropTargetEffects;
 
 /* Variant Field IDs */
 static jfieldID fid_vt;
@@ -403,6 +406,9 @@ IFACEMETHODIMP ProxyAccessible::QueryInterface(REFIID riid, void** ppInterface)
     }
     else if (riid == __uuidof(IDragProvider)) {
         *ppInterface = static_cast<IDragProvider*>(this);
+    }
+    else if (riid == __uuidof(IDropTargetProvider)) {
+        *ppInterface = static_cast<IDropTargetProvider*>(this);
     }
     else {
         *ppInterface = NULL;
@@ -1299,6 +1305,20 @@ IFACEMETHODIMP ProxyAccessible::GetGrabbedItems(SAFEARRAY **pRetVal) {
     if (pRetVal == NULL) return E_INVALIDARG;
     return callArrayMethod(mid_IDragProvider_GetGrabbedItems, VT_UNKNOWN, pRetVal);
 }
+// IDropTargetProvider
+IFACEMETHODIMP ProxyAccessible::get_DropTargetEffect(BSTR *pRetVal) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    jstring str = (jstring)env->CallObjectMethod(m_jAccessible, mid_IDropTargetProvider_get_DropTargetEffect);
+    if (CheckAndClearException(env)) return E_FAIL;
+    HRESULT res = ProxyAccessible::copyString(env, str, pRetVal);
+    return res;
+}
+IFACEMETHODIMP ProxyAccessible::get_DropTargetEffects(SAFEARRAY** pRetVal) {
+    if (pRetVal == NULL) return E_INVALIDARG;
+    // TODO need to support BSTR in array copy!!
+     return callArrayMethod(mid_IDropTargetProvider_get_DropTargetEffects, VT_BSTR, pRetVal);
+}
 
 /***********************************************/
 /*                  JNI                        */
@@ -1536,6 +1556,13 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1initIDs
     if (env->ExceptionCheck()) return;
     mid_IDragProvider_GetGrabbedItems = env->GetMethodID(jClass, "IDragProvider_GetGrabbedItems", "()[J");
     if (env->ExceptionCheck()) return;
+    // IDropTargetProvider
+    mid_IDropTargetProvider_get_DropTargetEffect = env->GetMethodID(jClass, "IDropTargetProvider_get_DropTargetEffect", "()Ljava/lang/String;");
+    if (env->ExceptionCheck()) return;
+    mid_IDropTargetProvider_get_DropTargetEffects = env->GetMethodID(jClass, "IDropTargetProvider_get_DropTargetEffects", "()[Ljava/lang/String;");
+    if (env->ExceptionCheck()) return;
+
+
 
     /* Variant */
     jclass jVariantClass = env->FindClass("com/sun/glass/ui/uia/glass/WinVariant");

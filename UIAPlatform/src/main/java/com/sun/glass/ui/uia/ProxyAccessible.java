@@ -1072,5 +1072,7 @@ public class ProxyAccessible extends Accessible {
     private String[]    IDragProvider_get_DropEffects() { return new String[0]; }
     private boolean     IDragProvider_get_IsGrabbed() { return false; }
     private long[]      IDragProvider_GetGrabbedItems() { return null; }
-
+    // IDropTargetProvider
+    private String      IDropTargetProvider_get_DropTargetEffect() { return ""; }
+    private String[]    IDropTargetProvider_get_DropTargetEffects() { return new String[0]; }
 }

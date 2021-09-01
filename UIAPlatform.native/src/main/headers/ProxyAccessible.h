@@ -52,7 +52,8 @@ class ProxyAccessible : public IRawElementProviderSimple,
     public IWindowProvider,
     public IDockProvider,
     public IAnnotationProvider,
-    public IDragProvider
+    public IDragProvider,
+    public IDropTargetProvider
 {
 
 public:
@@ -198,7 +199,9 @@ public:
     IFACEMETHODIMP get_DropEffects(SAFEARRAY **pRetVal);
     IFACEMETHODIMP get_IsGrabbed(BOOL* pRetVal);
     IFACEMETHODIMP GetGrabbedItems(SAFEARRAY **pRetVal);
-    
+    // IDropTargetProvider
+    IFACEMETHODIMP get_DropTargetEffect(BSTR *pRetVal);
+    IFACEMETHODIMP get_DropTargetEffects(SAFEARRAY **pRetVal);
 
     static HRESULT copyVariant(JNIEnv* env, jobject jVariant, VARIANT* pRetVal);
     static HRESULT copyString(JNIEnv* env, jstring jString, BSTR* pbstrVal);
