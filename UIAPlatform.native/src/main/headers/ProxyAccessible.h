@@ -40,6 +40,7 @@ class ProxyAccessible : public IRawElementProviderSimple,
     public IRangeValueProvider,
     public IValueProvider,
     public ITextProvider,
+    public ITextChildProvider,
     public IGridProvider,
     public IGridItemProvider,
     public ITableProvider,
@@ -211,7 +212,9 @@ public:
     IFACEMETHODIMP GetSupportedViews(SAFEARRAY** pRetVal);
     IFACEMETHODIMP GetViewName(int viewId, BSTR *pRetVal);
     IFACEMETHODIMP SetCurrentView(int viewId);
-
+    // ITextChildProvider
+    IFACEMETHODIMP get_TextContainer(IRawElementProviderSimple **pRetVal);
+    IFACEMETHODIMP get_TextRange(ITextRangeProvider **pRetVal);
 
 
     static HRESULT copyVariant(JNIEnv* env, jobject jVariant, VARIANT* pRetVal);
@@ -222,7 +225,7 @@ private:
     virtual ~ProxyAccessible();
 
     /* Call the method specified by 'mid', AddRef the returning ptr (expects result to be IUnkonwn) */
-    virtual HRESULT callLongMethod(jmethodID mid, ProxyAccessible** pRetVal, ...);
+    virtual HRESULT callLongMethod(jmethodID mid, IUnknown** pRetVal, ...);
 
     /* Call the method specified by 'mid' and converts the returning jarray to a SAFEARRAY */
     virtual HRESULT callArrayMethod(jmethodID mid, VARTYPE vt, SAFEARRAY** pRetVal);

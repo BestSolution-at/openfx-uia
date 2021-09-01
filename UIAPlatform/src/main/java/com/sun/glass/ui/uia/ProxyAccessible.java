@@ -1084,4 +1084,7 @@ public class ProxyAccessible extends Accessible {
     private int[]       IMultipleViewProvider_GetSupportedViews() { return new int[0]; }
     private String      IMultipleViewProvider_GetViewName(int viewId) { return ""; }
     private void        IMultipleViewProvider_SetCurrentView(int viewId) {}
+    // ITextChildProvider
+    private long        ITextChildProvider_get_TextContainer() { return 0L; }
+    private long        ITextChildProvider_get_TextRange() { return 0L; }
 }

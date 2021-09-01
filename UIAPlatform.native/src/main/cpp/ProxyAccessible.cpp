@@ -28,6 +28,7 @@
 #include "ProxyAccessible.h"
 #include "GlassTextRangeProvider.h"
 #include "GlassCounter.h"
+#include "ProxyTextRangeProvider.h"
 
  /* WinAccessible Method IDs */
 static jmethodID mid_IRawElementProviderSimple_GetPatternProvider;
@@ -156,6 +157,10 @@ static jmethodID mid_IMultipleViewProvider_GetSupportedViews;
 static jmethodID mid_IMultipleViewProvider_GetViewName;
 static jmethodID mid_IMultipleViewProvider_SetCurrentView;
 
+// ITextChildProvider
+static jmethodID mid_ITextChildProvider_get_TextContainer;
+static jmethodID mid_ITextChildProvider_get_TextRange;
+
 /* Variant Field IDs */
 static jfieldID fid_vt;
 static jfieldID fid_iVal;
@@ -280,7 +285,7 @@ static jfieldID fid_pPunkVal;
     return hr;
 }
 
-HRESULT ProxyAccessible::callLongMethod(jmethodID mid, ProxyAccessible** pRetVal, ...)
+HRESULT ProxyAccessible::callLongMethod(jmethodID mid, IUnknown** pRetVal, ...)
 {
     va_list vl;
     va_start(vl, pRetVal);
@@ -291,7 +296,7 @@ HRESULT ProxyAccessible::callLongMethod(jmethodID mid, ProxyAccessible** pRetVal
     if (CheckAndClearException(env)) return E_FAIL;
 
     /* AddRef the result */
-    ProxyAccessible* ga = reinterpret_cast<ProxyAccessible*>(ptr);
+    IUnknown* ga = reinterpret_cast<IUnknown*>(ptr);
     if (ga) ga->AddRef();
     *pRetVal = ga;
     return S_OK;
@@ -423,6 +428,9 @@ IFACEMETHODIMP ProxyAccessible::QueryInterface(REFIID riid, void** ppInterface)
     else if (riid == __uuidof(IMultipleViewProvider)) {
         *ppInterface = static_cast<IMultipleViewProvider*>(this);
     }
+    else if (riid == __uuidof(ITextChildProvider)) {
+        *ppInterface = static_cast<ITextChildProvider*>(this);
+    }
     else {
         *ppInterface = NULL;
         return E_NOINTERFACE;
@@ -466,7 +474,7 @@ IFACEMETHODIMP ProxyAccessible::get_ProviderOptions(ProviderOptions* pRetVal)
 IFACEMETHODIMP ProxyAccessible::GetPatternProvider(PATTERNID patternId, IUnknown** pRetVal)
 {
     if (pRetVal == NULL) return E_INVALIDARG;
-    ProxyAccessible* ptr = NULL;
+    IUnknown* ptr = NULL;
     HRESULT hr = callLongMethod(mid_IRawElementProviderSimple_GetPatternProvider, &ptr, patternId);
     *pRetVal = reinterpret_cast<IUnknown*>(ptr);
     return hr;
@@ -508,7 +516,7 @@ IFACEMETHODIMP ProxyAccessible::get_BoundingRectangle(UiaRect* pRetVal)
 IFACEMETHODIMP ProxyAccessible::get_FragmentRoot(IRawElementProviderFragmentRoot** pRetVal)
 {
     if (pRetVal == NULL) return E_INVALIDARG;
-    ProxyAccessible* ptr = NULL;
+    IUnknown* ptr = NULL;
     HRESULT hr = callLongMethod(mid_IRawElementProviderFragment_get_FragmentRoot, &ptr);
     *pRetVal = static_cast<IRawElementProviderFragmentRoot*>(ptr);
     return hr;
@@ -529,7 +537,7 @@ IFACEMETHODIMP ProxyAccessible::GetRuntimeId(SAFEARRAY** pRetVal)
 IFACEMETHODIMP ProxyAccessible::Navigate(NavigateDirection direction, IRawElementProviderFragment** pRetVal)
 {
     if (pRetVal == NULL) return E_INVALIDARG;
-    ProxyAccessible* ptr = NULL;
+    IUnknown* ptr = NULL;
     HRESULT hr = callLongMethod(mid_IRawElementProviderFragment_Navigate, &ptr, direction);
     *pRetVal = static_cast<IRawElementProviderFragment*>(ptr);
     return hr;
@@ -550,7 +558,7 @@ IFACEMETHODIMP ProxyAccessible::SetFocus()
 IFACEMETHODIMP ProxyAccessible::ElementProviderFromPoint(double x, double y, IRawElementProviderFragment** pRetVal)
 {
     if (pRetVal == NULL) return E_INVALIDARG;
-    ProxyAccessible* ptr = NULL;
+    IUnknown* ptr = NULL;
     HRESULT hr = callLongMethod(mid_IRawElementProviderFragmentRoot_ElementProviderFromPoint, &ptr, x, y);
     *pRetVal = static_cast<IRawElementProviderFragment*>(ptr);
     return hr;
@@ -559,7 +567,7 @@ IFACEMETHODIMP ProxyAccessible::ElementProviderFromPoint(double x, double y, IRa
 IFACEMETHODIMP ProxyAccessible::GetFocus(IRawElementProviderFragment** pRetVal)
 {
     if (pRetVal == NULL) return E_INVALIDARG;
-    ProxyAccessible* ptr = NULL;
+    IUnknown* ptr = NULL;
     HRESULT hr = callLongMethod(mid_IRawElementProviderFragmentRoot_GetFocus, &ptr);
     *pRetVal = static_cast<IRawElementProviderFragment*>(ptr);
     return hr;
@@ -684,7 +692,7 @@ IFACEMETHODIMP ProxyAccessible::get_IsSelected(BOOL* pRetVal)
 IFACEMETHODIMP ProxyAccessible::get_SelectionContainer(IRawElementProviderSimple** pRetVal)
 {
     if (pRetVal == NULL) return E_INVALIDARG;
-    ProxyAccessible* ptr = NULL;
+    IUnknown* ptr = NULL;
     HRESULT hr = callLongMethod(mid_ISelectionItemProvider_get_SelectionContainer, &ptr);
     *pRetVal = static_cast<IRawElementProviderSimple*>(ptr);
     return hr;
@@ -879,7 +887,7 @@ IFACEMETHODIMP ProxyAccessible::get_RowCount(int* pRetVal)
 IFACEMETHODIMP ProxyAccessible::GetItem(int row, int column, IRawElementProviderSimple** pRetVal)
 {
     if (pRetVal == NULL) return E_INVALIDARG;
-    ProxyAccessible* ptr = NULL;
+    IUnknown* ptr = NULL;
     HRESULT hr = callLongMethod(mid_IGridProvider_GetItem, &ptr, row, column);
     *pRetVal = static_cast<IRawElementProviderSimple*>(ptr);
     return hr;
@@ -909,7 +917,7 @@ IFACEMETHODIMP ProxyAccessible::get_ColumnSpan(int* pRetVal)
 IFACEMETHODIMP ProxyAccessible::get_ContainingGrid(IRawElementProviderSimple** pRetVal)
 {
     if (pRetVal == NULL) return E_INVALIDARG;
-    ProxyAccessible* ptr = NULL;
+    IUnknown* ptr = NULL;
     HRESULT hr = callLongMethod(mid_IGridItemProvider_get_ContainingGrid, &ptr);
     *pRetVal = static_cast<IRawElementProviderSimple*>(ptr);
     return hr;
@@ -1288,7 +1296,7 @@ IFACEMETHODIMP ProxyAccessible::get_DateTime(BSTR *pRetVal) {
 IFACEMETHODIMP ProxyAccessible::get_Target(IRawElementProviderSimple** pRetVal)
 {
     if (pRetVal == NULL) return E_INVALIDARG;
-    ProxyAccessible* ptr = NULL;
+    IUnknown* ptr = NULL;
     HRESULT hr = callLongMethod(mid_IAnnotationProvider_get_Target, &ptr);
     *pRetVal = static_cast<IRawElementProviderSimple*>(ptr);
     return hr;
@@ -1335,7 +1343,7 @@ IFACEMETHODIMP ProxyAccessible::get_DropTargetEffects(SAFEARRAY** pRetVal) {
  // IItemContainerProvider
 IFACEMETHODIMP ProxyAccessible::FindItemByProperty(IRawElementProviderSimple *pStartAfter, PROPERTYID propertyID, VARIANT value, IRawElementProviderSimple **pFound) {
     if (pFound == NULL) return E_INVALIDARG;
-    ProxyAccessible* ptr = NULL;
+    IUnknown* ptr = NULL;
     HRESULT hr = callLongMethod(mid_IItemContainerProvider_FindItemByProperty, &ptr);
     *pFound = static_cast<IRawElementProviderSimple*>(ptr);
     return hr;
@@ -1367,6 +1375,23 @@ IFACEMETHODIMP ProxyAccessible::SetCurrentView(int viewId) {
     if (CheckAndClearException(env)) return E_FAIL;
     return S_OK;
 }
+// ITextChildProvider
+IFACEMETHODIMP ProxyAccessible::get_TextContainer(IRawElementProviderSimple **pRetVal) {
+    if (pRetVal == NULL) return E_INVALIDARG;
+    IUnknown* ptr = NULL;
+    HRESULT hr = callLongMethod(mid_IItemContainerProvider_FindItemByProperty, &ptr);
+    *pRetVal = static_cast<IRawElementProviderSimple*>(ptr);
+    return hr;
+}
+IFACEMETHODIMP ProxyAccessible::get_TextRange(ITextRangeProvider **pRetVal) {
+    if (pRetVal == NULL) return E_INVALIDARG;
+    IUnknown* ptr = NULL;
+    HRESULT hr = callLongMethod(mid_IItemContainerProvider_FindItemByProperty, &ptr);
+    *pRetVal = static_cast<ITextRangeProvider*>(ptr);
+    return hr;
+}
+
+
 /***********************************************/
 /*                  JNI                        */
 /***********************************************/
@@ -1619,6 +1644,11 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1initIDs
     mid_IMultipleViewProvider_GetViewName = env->GetMethodID(jClass, "IMultipleViewProvider_GetViewName", "(I)Ljava/lang/String;");
     if (env->ExceptionCheck()) return;
     mid_IMultipleViewProvider_SetCurrentView = env->GetMethodID(jClass, "IMultipleViewProvider_SetCurrentView", "(I)V");
+    if (env->ExceptionCheck()) return;
+    // ITextChildProvider
+    mid_ITextChildProvider_get_TextContainer = env->GetMethodID(jClass, "ITextChildProvider_get_TextContainer", "()J");
+    if (env->ExceptionCheck()) return;
+    mid_ITextChildProvider_get_TextRange = env->GetMethodID(jClass, "ITextChildProvider_get_TextRange", "()J");
     if (env->ExceptionCheck()) return;
 
     /* Variant */
