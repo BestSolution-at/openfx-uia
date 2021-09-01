@@ -50,7 +50,8 @@ class ProxyAccessible : public IRawElementProviderSimple,
     public IScrollProvider,
     public IScrollItemProvider,
     public IWindowProvider,
-    public IDockProvider
+    public IDockProvider,
+    public IAnnotationProvider
 {
 
 public:
@@ -185,6 +186,13 @@ public:
     // IDockProvider
     IFACEMETHODIMP get_DockPosition(DockPosition *pRetVal);
     IFACEMETHODIMP SetDockPosition(DockPosition dockPosition);
+    // IAnnotationProvider
+    IFACEMETHODIMP get_AnnotationTypeId(int *pRetVal);
+    IFACEMETHODIMP get_AnnotationTypeName(BSTR *pRetVal);
+    IFACEMETHODIMP get_Author(BSTR *pRetVal);
+    IFACEMETHODIMP get_DateTime(BSTR *pRetVal);
+    IFACEMETHODIMP get_Target(IRawElementProviderSimple **pRetVal);
+    
     
 
     static HRESULT copyVariant(JNIEnv* env, jobject jVariant, VARIANT* pRetVal);

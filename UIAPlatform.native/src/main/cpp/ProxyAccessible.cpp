@@ -134,6 +134,12 @@ static jmethodID mid_WindowProvider_WaitForInputIdle;
 // IDockProvider
 static jmethodID mid_DockProvider_get_DockPosition;
 static jmethodID mid_DockProvider_SetDockPosition;
+// IAnnotationProvider
+static jmethodID mid_IAnnotationProvider_get_AnnotationTypeId;
+static jmethodID mid_IAnnotationProvider_get_AnnotationTypeName;
+static jmethodID mid_IAnnotationProvider_get_Author;
+static jmethodID mid_IAnnotationProvider_get_DateTime;
+static jmethodID mid_IAnnotationProvider_get_Target;
 
 /* Variant Field IDs */
 static jfieldID fid_vt;
@@ -386,6 +392,9 @@ IFACEMETHODIMP ProxyAccessible::QueryInterface(REFIID riid, void** ppInterface)
     }
     else if (riid == __uuidof(IDockProvider)) {
         *ppInterface = static_cast<IDockProvider*>(this);
+    }
+    else if (riid == __uuidof(IAnnotationProvider)) {
+        *ppInterface = static_cast<IAnnotationProvider*>(this);
     }
     else {
         *ppInterface = NULL;
@@ -1217,6 +1226,47 @@ IFACEMETHODIMP ProxyAccessible::SetDockPosition(DockPosition dockPosition) {
     if (CheckAndClearException(env)) return E_FAIL;
     return S_OK;
 }
+// IAnnotationProvider
+IFACEMETHODIMP ProxyAccessible::get_AnnotationTypeId(int *pRetVal) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    *pRetVal = env->CallIntMethod(m_jAccessible, mid_IAnnotationProvider_get_AnnotationTypeId);
+    if (CheckAndClearException(env)) return E_FAIL;
+    return S_OK;
+}
+IFACEMETHODIMP ProxyAccessible::get_AnnotationTypeName(BSTR *pRetVal) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    jstring str = (jstring)env->CallObjectMethod(m_jAccessible, mid_IAnnotationProvider_get_AnnotationTypeName);
+    if (CheckAndClearException(env)) return E_FAIL;
+    HRESULT res = ProxyAccessible::copyString(env, str, pRetVal);
+    return res;
+}
+IFACEMETHODIMP ProxyAccessible::get_Author(BSTR *pRetVal) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    jstring str = (jstring)env->CallObjectMethod(m_jAccessible, mid_IAnnotationProvider_get_Author);
+    if (CheckAndClearException(env)) return E_FAIL;
+    HRESULT res = ProxyAccessible::copyString(env, str, pRetVal);
+    return res;
+}
+IFACEMETHODIMP ProxyAccessible::get_DateTime(BSTR *pRetVal) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    jstring str = (jstring)env->CallObjectMethod(m_jAccessible, mid_IAnnotationProvider_get_DateTime);
+    if (CheckAndClearException(env)) return E_FAIL;
+    HRESULT res = ProxyAccessible::copyString(env, str, pRetVal);
+    return res;
+}
+IFACEMETHODIMP ProxyAccessible::get_Target(IRawElementProviderSimple** pRetVal)
+{
+    if (pRetVal == NULL) return E_INVALIDARG;
+    ProxyAccessible* ptr = NULL;
+    HRESULT hr = callLongMethod(mid_IAnnotationProvider_get_Target, &ptr);
+    *pRetVal = static_cast<IRawElementProviderSimple*>(ptr);
+    return hr;
+}
+
 
 /***********************************************/
 /*                  JNI                        */
@@ -1434,8 +1484,17 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1initIDs
     if (env->ExceptionCheck()) return;
     mid_DockProvider_SetDockPosition = env->GetMethodID(jClass, "DockProvider_SetDockPosition", "(I)V");
     if (env->ExceptionCheck()) return;
-
-
+    // IAnnotationProvider
+    mid_IAnnotationProvider_get_AnnotationTypeId = env->GetMethodID(jClass, "IAnnotationProvider_get_AnnotationTypeId", "()I");
+    if (env->ExceptionCheck()) return;
+    mid_IAnnotationProvider_get_AnnotationTypeName = env->GetMethodID(jClass, "IAnnotationProvider_get_AnnotationTypeName", "()Ljava/lang/String;");
+    if (env->ExceptionCheck()) return;
+    mid_IAnnotationProvider_get_Author = env->GetMethodID(jClass, "IAnnotationProvider_get_Author", "()Ljava/lang/String;");
+    if (env->ExceptionCheck()) return;
+    mid_IAnnotationProvider_get_DateTime = env->GetMethodID(jClass, "IAnnotationProvider_get_DateTime", "()Ljava/lang/String;");
+    if (env->ExceptionCheck()) return;
+    mid_IAnnotationProvider_get_Target = env->GetMethodID(jClass, "IAnnotationProvider_get_Target", "()J");
+    if (env->ExceptionCheck()) return;
 
     /* Variant */
     jclass jVariantClass = env->FindClass("com/sun/glass/ui/uia/glass/WinVariant");

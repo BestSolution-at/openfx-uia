@@ -1059,8 +1059,13 @@ public class ProxyAccessible extends Accessible {
 
     
     // IDockProvider
-    private int DockProvider_get_DockPosition() { return 0; }
-    private void DockProvider_SetDockPosition(int dockPosition) {}
-
+    private int     DockProvider_get_DockPosition() { return 0; }
+    private void    DockProvider_SetDockPosition(int dockPosition) {}
+    // IAnnotationProvider
+    private int     IAnnotationProvider_get_AnnotationTypeId() { return 0; }
+    private String  IAnnotationProvider_get_AnnotationTypeName()  { return ""; }
+    private String  IAnnotationProvider_get_Author() { return ""; }
+    private String  IAnnotationProvider_get_DateTime() { return ""; }
+    private long    IAnnotationProvider_get_Target() { return 0L; }
 
 }
