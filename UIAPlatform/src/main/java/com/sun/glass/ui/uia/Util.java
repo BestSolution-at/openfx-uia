@@ -25,6 +25,7 @@
 package com.sun.glass.ui.uia;
 
 import java.lang.Runnable;
+import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
@@ -49,6 +50,14 @@ public class Util {
             return -1;
         }
     }
+    static int guard(IntSupplier code, int errorValue) {
+        try {
+            return code.getAsInt();
+        } catch (Throwable t) {
+            t.printStackTrace();
+            return errorValue;
+        }
+    }
     static long guard(LongSupplier code) {
         try {
             return code.getAsLong();
@@ -61,6 +70,15 @@ public class Util {
     static long guard(LongSupplier code, long onFail) {
         try {
             return code.getAsLong();
+        } catch (Throwable t) {
+            t.printStackTrace();
+            return onFail;
+        }
+    }
+
+    static double guard(DoubleSupplier code, double onFail) {
+        try {
+            return code.getAsDouble();
         } catch (Throwable t) {
             t.printStackTrace();
             return onFail;
@@ -116,5 +134,7 @@ public class Util {
             return null;
         }
     }
+
+
 
 }

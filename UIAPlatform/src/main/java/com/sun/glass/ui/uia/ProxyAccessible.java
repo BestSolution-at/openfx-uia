@@ -31,6 +31,11 @@ import java.nio.file.Path;
 import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.ToDoubleFunction;
+import java.util.function.ToIntFunction;
+import java.util.function.ToLongFunction;
 
 import com.sun.glass.ui.Accessible;
 import com.sun.glass.ui.View;
@@ -506,15 +511,7 @@ public class ProxyAccessible extends Accessible {
     /*             IInvokeProvider                 */
     /***********************************************/
     private void IInvokeProvider_Invoke() {
-        Util.guard(() -> {
-            NativeIInvokeProvider provider = getNativeProvider(NativeIInvokeProvider.class);
-            if (provider != null) {
-                provider.Invoke();
-            } else {
-                checkGlass();
-                glass.Invoke();
-            }
-        });
+        callProvider(NativeIInvokeProvider.class, NativeIInvokeProvider::Invoke, WinAccessible::Invoke);
     }
     /***********************************************/
     /*           ISelectionProvider                */
@@ -635,250 +632,82 @@ public class ProxyAccessible extends Accessible {
     /*              ITextProvider                  */
     /***********************************************/
     private long[] ITextProvider_GetVisibleRanges() {
-        return Util.guard(() -> {
-            NativeITextProvider textProvider = getNativeProvider(NativeITextProvider.class);
-            if (textProvider != null) {
-                return textProvider.GetVisibleRanges();
-            } else {
-                checkGlass();
-                return glass.GetVisibleRanges();
-            }
-        });
+        return callProviderLongArray(NativeITextProvider.class, NativeITextProvider::GetVisibleRanges, WinAccessible::GetVisibleRanges, new long[0]);
     }
     private long[] ITextProvider_GetSelection() {
-        return Util.guard(() -> {
-            NativeITextProvider textProvider = getNativeProvider(NativeITextProvider.class);
-            if (textProvider != null) {
-                return textProvider.GetSelection();
-            } else {
-                checkGlass();
-                return glass.GetSelection();
-            }
-        });
+        return callProviderLongArray(NativeITextProvider.class, NativeITextProvider::GetSelection, WinAccessible::GetSelection, new long[0]);
     }
     private long ITextProvider_RangeFromChild(long childElement) {
-        return Util.guard(() -> {
-            NativeITextProvider textProvider = getNativeProvider(NativeITextProvider.class);
-            if (textProvider != null) {
-                return textProvider.RangeFromChild(childElement);
-            } else {
-                checkGlass();
-                return glass.RangeFromChild(childElement);
-            }
-        });
+        return callProviderLong(NativeITextProvider.class, p -> p.RangeFromChild(childElement), g -> g.RangeFromChild(childElement), 0);
     }
     private long ITextProvider_RangeFromPoint(double x, double y) {
-        return Util.guard(() -> {
-            NativeITextProvider textProvider = getNativeProvider(NativeITextProvider.class);
-            if (textProvider != null) {
-                return textProvider.RangeFromPoint(x, y);
-            } else {
-                checkGlass();
-                return glass.RangeFromPoint(x, y);
-            }
-        });
+        return callProviderLong(NativeITextProvider.class, p -> p.RangeFromPoint(x, y), g -> g.RangeFromPoint(x, y), 0);
     }
     private long ITextProvider_get_DocumentRange() {
-        return Util.guard(() -> {
-            NativeITextProvider textProvider = getNativeProvider(NativeITextProvider.class);
-            if (textProvider != null) {
-                return textProvider.get_DocumentRange();
-            } else {
-                checkGlass();
-                return glass.get_DocumentRange();
-            }
-        });
+        return callProviderLong(NativeITextProvider.class, NativeITextProvider::get_DocumentRange, WinAccessible::get_DocumentRange, 0);
     }
     private int ITextProvider_get_SupportedTextSelection() {
-        return Util.guard(() -> {
-            NativeITextProvider textProvider = getNativeProvider(NativeITextProvider.class);
-            if (textProvider != null) {
-                return textProvider.get_SupportedTextSelection();
-            } else {
-                checkGlass();
-                return glass.get_SupportedTextSelection();
-            }
-        });
+        return callProviderInt(NativeITextProvider.class, NativeITextProvider::get_SupportedTextSelection, WinAccessible::get_SupportedTextSelection, 0);
     }
      /***********************************************/
     /*             IGridProvider                   */
     /***********************************************/
     private int IGridProvider_get_ColumnCount() {
-        return Util.guard(() -> {
-            final NativeIGridProvider provider = getNativeProvider(NativeIGridProvider.class);
-            if (provider != null) {
-                return provider.get_ColumnCount();
-            } else {
-                checkGlass();
-                return glass.get_ColumnCount();
-            }
-        });
+        return callProviderInt(NativeIGridProvider.class, NativeIGridProvider::get_ColumnCount, WinAccessible::get_ColumnCount, 0);
     }
     private int IGridProvider_get_RowCount() {
-        return Util.guard(() -> {
-            final NativeIGridProvider provider = getNativeProvider(NativeIGridProvider.class);
-            if (provider != null) {
-                return provider.get_RowCount();
-            } else {
-                checkGlass();
-                return glass.get_RowCount();
-            }
-        });
+        return callProviderInt(NativeIGridProvider.class, NativeIGridProvider::get_RowCount, WinAccessible::get_RowCount, 0);
     }
     private long IGridProvider_GetItem(int row, int column) {
-        return Util.guard(() -> {
-            final NativeIGridProvider provider = getNativeProvider(NativeIGridProvider.class);
-            if (provider != null) {
-                return provider.GetItem(row, column);
-            } else {
-                checkGlass();
-                return glass.GetItem(row, column);
-            }
-        });
+        return callProviderLong(NativeIGridProvider.class, p -> p.GetItem(row, column), g -> g.GetItem(row, column), 0);
     }
     /***********************************************/
     /*             IGridItemProvider               */
     /***********************************************/
     private int IGridItemProvider_get_Column() {
-        return Util.guard(() -> {
-            final NativeIGridItemProvider provider = getNativeProvider(NativeIGridItemProvider.class);
-            if (provider != null) {
-                return provider.get_Column();
-            } else {
-                checkGlass();
-                return glass.get_Column();
-            }
-        });
+        return callProviderInt(NativeIGridItemProvider.class, NativeIGridItemProvider::get_Column, WinAccessible::get_Column, 0);
     }
     private int IGridItemProvider_get_ColumnSpan() {
-        return Util.guard(() -> {
-            final NativeIGridItemProvider provider = getNativeProvider(NativeIGridItemProvider.class);
-            if (provider != null) {
-                return provider.get_ColumnSpan();
-            } else {
-                checkGlass();
-                return glass.get_ColumnSpan();
-            }
-        });
+        return callProviderInt(NativeIGridItemProvider.class, NativeIGridItemProvider::get_ColumnSpan, WinAccessible::get_ColumnSpan, 0);
     }
     private long IGridItemProvider_get_ContainingGrid() {
-        return Util.guard(() -> {
-            final NativeIGridItemProvider provider = getNativeProvider(NativeIGridItemProvider.class);
-            if (provider != null) {
-                return provider.get_ContainingGrid();
-            } else {
-                checkGlass();
-                return glass.get_ContainingGrid();
-            }
-        });
+        return callProviderLong(NativeIGridItemProvider.class, NativeIGridItemProvider::get_ContainingGrid, WinAccessible::get_ContainingGrid, 0);
     }
     private int IGridItemProvider_get_Row() {
-        return Util.guard(() -> {
-            final NativeIGridItemProvider provider = getNativeProvider(NativeIGridItemProvider.class);
-            if (provider != null) {
-                return provider.get_Row();
-            } else {
-                checkGlass();
-                return glass.get_Row();
-            }
-        });
+        return callProviderInt(NativeIGridItemProvider.class, NativeIGridItemProvider::get_Row, WinAccessible::get_Row, 0);
     }
     private int IGridItemProvider_get_RowSpan() {
-        return Util.guard(() -> {
-            final NativeIGridItemProvider provider = getNativeProvider(NativeIGridItemProvider.class);
-            if (provider != null) {
-                return provider.get_RowSpan();
-            } else {
-                checkGlass();
-                return glass.get_RowSpan();
-            }
-        });
+        return callProviderInt(NativeIGridItemProvider.class, NativeIGridItemProvider::get_RowSpan, WinAccessible::get_RowSpan, 0);
     }
     /***********************************************/
     /*               ITableProvider                */
     /***********************************************/
     private long[] ITableProvider_GetColumnHeaders() {
-        return Util.guard(() -> {
-            final NativeITableProvider provider = getNativeProvider(NativeITableProvider.class);
-            if (provider != null) {
-                return provider.GetColumnHeaders();
-            } else {
-                checkGlass();
-                return glass.GetColumnHeaders();
-            }
-        });
+        return callProviderLongArray(NativeITableProvider.class, NativeITableProvider::GetColumnHeaders, WinAccessible::GetColumnHeaders, new long[0]);
     }
     private long[] ITableProvider_GetRowHeaders() {
-        return Util.guard(() -> {
-            final NativeITableProvider provider = getNativeProvider(NativeITableProvider.class);
-            if (provider != null) {
-                return provider.GetRowHeaders();
-            } else {
-                checkGlass();
-                return glass.GetRowHeaders();
-            }
-        });
+        return callProviderLongArray(NativeITableProvider.class, NativeITableProvider::GetRowHeaders, WinAccessible::GetRowHeaders, new long[0]);
     }
     private int ITableProvider_get_RowOrColumnMajor() {
-        return Util.guard(() -> {
-            final NativeITableProvider provider = getNativeProvider(NativeITableProvider.class);
-            if (provider != null) {
-                return provider.get_RowOrColumnMajor();
-            } else {
-                checkGlass();
-                return glass.get_RowOrColumnMajor();
-            }
-        });
+        return callProviderInt(NativeITableProvider.class, NativeITableProvider::get_RowOrColumnMajor, WinAccessible::get_RowOrColumnMajor, 0);
     }
     /***********************************************/
     /*             ITableItemProvider              */
     /***********************************************/
     private long[] ITableItemProvider_GetColumnHeaderItems() {
-        return Util.guard(() -> {
-            final NativeITableItemProvider provider = getNativeProvider(NativeITableItemProvider.class);
-            if (provider != null) {
-                return provider.GetColumnHeaderItems();
-            } else {
-                checkGlass();
-                return glass.GetColumnHeaderItems();
-            }
-        });
+        return callProviderLongArray(NativeITableItemProvider.class, NativeITableItemProvider::GetColumnHeaderItems, WinAccessible::GetColumnHeaderItems, new long[0]);
     }
     private long[] ITableItemProvider_GetRowHeaderItems() {
-        return Util.guard(() -> {
-            final NativeITableItemProvider provider = getNativeProvider(NativeITableItemProvider.class);
-            if (provider != null) {
-                return provider.GetRowHeaderItems();
-            } else {
-                checkGlass();
-                return glass.GetRowHeaderItems();
-            }
-        });
+        return callProviderLongArray(NativeITableItemProvider.class, NativeITableItemProvider::GetRowHeaderItems, WinAccessible::GetRowHeaderItems, new long[0]);
     }
     /***********************************************/
     /*             IToggleProvider                 */
     /***********************************************/
     private void IToggleProvider_Toggle() {
-        Util.guard(() -> {
-            NativeIToggleProvider provider = getNativeProvider(NativeIToggleProvider.class);
-            if (provider != null) {
-                provider.Toggle();
-            } else {
-                checkGlass();
-                glass.Toggle();
-            }
-        });
+        callProvider(NativeIToggleProvider.class, NativeIToggleProvider::Toggle, WinAccessible::Toggle);
     }
     private int IToggleProvider_get_ToggleState() {
-        return Util.guard(() -> {
-            NativeIToggleProvider provider = getNativeProvider(NativeIToggleProvider.class);
-            if (provider != null) {
-                return provider.get_ToggleState();
-            } else {
-                checkGlass();
-                return glass.get_ToggleState();
-            }
-        });
+        return callProviderInt(NativeIToggleProvider.class, NativeIToggleProvider::get_ToggleState, WinAccessible::get_ToggleState, 0);
     }
     /***********************************************/
     /*             IExpandCollapseProvider         */
@@ -944,106 +773,34 @@ public class ProxyAccessible extends Accessible {
     /*             IScrollProvider                 */
     /***********************************************/
     private void IScrollProvider_Scroll(int horizontalAmount, int verticalAmount) {
-        Util.guard(() -> {
-            final NativeIScrollProvider provider = getNativeProvider(NativeIScrollProvider.class);
-            if (provider != null) {
-                provider.Scroll(horizontalAmount, verticalAmount);
-            } else {
-                checkGlass();
-                glass.Scroll(horizontalAmount, verticalAmount);
-            }
-        });
+        callProvider(NativeIScrollProvider.class, p -> p.Scroll(horizontalAmount, verticalAmount), g -> g.Scroll(horizontalAmount, verticalAmount));
     }
     private void IScrollProvider_SetScrollPercent(double horizontalPercent, double verticalPercent) {
-        Util.guard(() -> {
-            final NativeIScrollProvider provider = getNativeProvider(NativeIScrollProvider.class);
-            if (provider != null) {
-                provider.SetScrollPercent(horizontalPercent, verticalPercent);
-            } else {
-                checkGlass();
-                glass.SetScrollPercent(horizontalPercent, verticalPercent);
-            }
-        });
+        callProvider(NativeIScrollProvider.class, p -> p.SetScrollPercent(horizontalPercent, verticalPercent), g -> g.SetScrollPercent(horizontalPercent, verticalPercent));
     }
     private boolean IScrollProvider_get_HorizontallyScrollable() {
-        return Util.guard(() -> {
-            final NativeIScrollProvider provider = getNativeProvider(NativeIScrollProvider.class);
-            if (provider != null) {
-                return provider.get_HorizontallyScrollable();
-            } else {
-                checkGlass();
-                return glass.get_HorizontallyScrollable();
-            }
-        });
+        return callProviderBoolean(NativeIScrollProvider.class, NativeIScrollProvider::get_HorizontallyScrollable, WinAccessible::get_HorizontallyScrollable, false);
     }
     private double IScrollProvider_get_HorizontalScrollPercent() {
-        return Util.guard(() -> {
-            final NativeIScrollProvider provider = getNativeProvider(NativeIScrollProvider.class);
-            if (provider != null) {
-                return provider.get_HorizontalScrollPercent();
-            } else {
-                checkGlass();
-                return glass.get_HorizontalScrollPercent();
-            }
-        });
+        return callProviderDouble(NativeIScrollProvider.class, NativeIScrollProvider::get_HorizontalScrollPercent, WinAccessible::get_HorizontalScrollPercent, 0);
     }
     private double IScrollProvider_get_HorizontalViewSize() {
-        return Util.guard(() -> {
-            final NativeIScrollProvider provider = getNativeProvider(NativeIScrollProvider.class);
-            if (provider != null) {
-                return provider.get_HorizontalViewSize();
-            } else {
-                checkGlass();
-                return glass.get_HorizontalViewSize();
-            }
-        });
+        return callProviderDouble(NativeIScrollProvider.class, NativeIScrollProvider::get_HorizontalViewSize, WinAccessible::get_HorizontalViewSize, 0);
     }
     private boolean IScrollProvider_get_VerticallyScrollable() {
-        return Util.guard(() -> {
-            final NativeIScrollProvider provider = getNativeProvider(NativeIScrollProvider.class);
-            if (provider != null) {
-                return provider.get_VerticallyScrollable();
-            } else {
-                checkGlass();
-                return glass.get_VerticallyScrollable();
-            }
-        });
+        return callProviderBoolean(NativeIScrollProvider.class, NativeIScrollProvider::get_VerticallyScrollable, WinAccessible::get_VerticallyScrollable, false);
     }
     private double IScrollProvider_get_VerticalScrollPercent() {
-        return Util.guard(() -> {
-            final NativeIScrollProvider provider = getNativeProvider(NativeIScrollProvider.class);
-            if (provider != null) {
-                return provider.get_VerticalScrollPercent();
-            } else {
-                checkGlass();
-                return glass.get_VerticalScrollPercent();
-            }
-        });
+        return callProviderDouble(NativeIScrollProvider.class, NativeIScrollProvider::get_VerticalScrollPercent, WinAccessible::get_VerticalScrollPercent, 0);
     }
     private double IScrollProvider_get_VerticalViewSize() {
-        return Util.guard(() -> {
-            final NativeIScrollProvider provider = getNativeProvider(NativeIScrollProvider.class);
-            if (provider != null) {
-                return provider.get_VerticalViewSize();
-            } else {
-                checkGlass();
-                return glass.get_VerticalViewSize();
-            }
-        });
+        return callProviderDouble(NativeIScrollProvider.class, NativeIScrollProvider::get_VerticalViewSize, WinAccessible::get_VerticalViewSize, 0);
     }
     /***********************************************/
     /*             IScrollItemProvider             */
     /***********************************************/
     private void IScrollItemProvider_ScrollIntoView() {
-        Util.guard(() -> {
-            final NativeIScrollItemProvider provider = getNativeProvider(NativeIScrollItemProvider.class);
-            if (provider != null) {
-                provider.ScrollIntoView();
-            } else {
-                checkGlass();
-                glass.ScrollIntoView();
-            }
-        });
+        callProvider(NativeIScrollItemProvider.class, NativeIScrollItemProvider::ScrollIntoView, WinAccessible::ScrollIntoView);
     }
 
 
@@ -1085,30 +842,124 @@ public class ProxyAccessible extends Accessible {
     private int[]       IMultipleViewProvider_GetSupportedViews() { return new int[0]; }
     private String      IMultipleViewProvider_GetViewName(int viewId) { return ""; }
     private void        IMultipleViewProvider_SetCurrentView(int viewId) {}
+
     // ITextChildProvider
     private long ITextChildProvider_get_TextContainer() {
-        return Util.guard(() -> {
-            final NativeITextChildProvider provider = getNativeProvider(NativeITextChildProvider.class);
-            if (provider != null) {
-                return provider.get_TextContainer();
-            } else {
-                return 0L;
-            }
-        });
+        return callProviderLong(NativeITextChildProvider.class, NativeITextChildProvider::get_TextContainer, 0L, 0L);
     }
     private long ITextChildProvider_get_TextRange() {
-        return Util.guard(() -> {
-            final NativeITextChildProvider provider = getNativeProvider(NativeITextChildProvider.class);
-            if (provider != null) {
-                return provider.get_TextRange();
-            } else {
-                return 0L;
-            }
-        });
+        return callProviderLong(NativeITextChildProvider.class, NativeITextChildProvider::get_TextRange, 0L, 0L);
     }
+
     // ITextProvider2
     // XXX GetCaretRange has 2 output arguments!!!
     private long        ITextProvider2_GetCaretRange() { return 0L; }
     private boolean     ITextProvider2_GetCaretRangeIsActive() { return false; }
     private long        ITextProvider2_RangeFromAnnotation(long annotationElement) { return 0L; }
+
+
+
+    // Utility functions
+    <P> void callProvider(Class<P> providerType, Consumer<P> method, Consumer<WinAccessible> glassMethod) {
+        Util.guard(() -> {
+            P provider = getNativeProvider(providerType);
+            if (provider != null) {
+                method.accept(provider);
+            } else {
+                checkGlass();
+                glassMethod.accept(glass);
+            }
+        });
+    }
+
+    <P, R> R callProvider(Class<P> providerType, Function<P, R> method, Function<WinAccessible, R> glassMethod, R errorValue) {
+        return Util.guard(() -> {
+            P provider = getNativeProvider(providerType);
+            if (provider != null) {
+                return method.apply(provider);
+            } else {
+                checkGlass();
+                return glassMethod.apply(glass);
+            }
+        });
+    }
+
+    <P> long callProviderLong(Class<P> providerType, ToLongFunction<P> method, ToLongFunction<WinAccessible> glassMethod, long errorValue) {
+        return Util.guard(() -> {
+            P provider = getNativeProvider(providerType);
+            if (provider != null) {
+                return method.applyAsLong(provider);
+            } else {
+                checkGlass();
+                return glassMethod.applyAsLong(glass);
+            }
+        }, errorValue);
+    }
+    <P> long callProviderLong(Class<P> providerType, ToLongFunction<P> method, long noProviderValue, long errorValue) {
+        return Util.guard(() -> {
+            P provider = getNativeProvider(providerType);
+            if (provider != null) {
+                return method.applyAsLong(provider);
+            } else {
+                return noProviderValue;
+            } 
+        }, errorValue);
+    }
+    @FunctionalInterface
+    static interface ToLongArrayFunction<T> {
+        long[] applyAsLongArray(T value);
+    }
+    <P> long[] callProviderLongArray(Class<P> providerType, ToLongArrayFunction<P> method, ToLongArrayFunction<WinAccessible> alternative, long[] errorValue) {
+        return Util.guard(() -> {
+            P provider = getNativeProvider(providerType);
+            if (provider != null) {
+                return method.applyAsLongArray(provider);
+            } else {
+                checkGlass();
+                return alternative.applyAsLongArray(glass);
+            }
+        }, errorValue);
+    }
+
+    <P> int callProviderInt(Class<P> providerType, ToIntFunction<P> method, ToIntFunction<WinAccessible> glassMethod, int errorValue) {
+        return Util.guard(() -> {
+            P provider = getNativeProvider(providerType);
+            if (provider != null) {
+                return method.applyAsInt(provider);
+            } else {
+                checkGlass();
+                return glassMethod.applyAsInt(glass);
+            } 
+        }, errorValue);
+    }
+
+    <P> double callProviderDouble(Class<P> providerType, ToDoubleFunction<P> method, ToDoubleFunction<WinAccessible> glassMethod, double errorValue) {
+        return Util.guard(() -> {
+            P provider = getNativeProvider(providerType);
+            if (provider != null) {
+                return method.applyAsDouble(provider);
+            } else {
+                checkGlass();
+                return glassMethod.applyAsDouble(glass);
+            } 
+        }, errorValue);
+    }
+
+    @FunctionalInterface
+    static interface ToBooleanFunction<T> {
+        boolean applyAsBoolean(T value);
+    }
+    <P> boolean callProviderBoolean(Class<P> providerType, ToBooleanFunction<P> method, ToBooleanFunction<WinAccessible> alternative, boolean errorValue) {
+        return Util.guard(() -> {
+            P provider = getNativeProvider(providerType);
+            if (provider != null) {
+                return method.applyAsBoolean(provider);
+            } else {
+                checkGlass();
+                return alternative.applyAsBoolean(glass);
+            } 
+        }, errorValue);
+    }
+
+
 }
