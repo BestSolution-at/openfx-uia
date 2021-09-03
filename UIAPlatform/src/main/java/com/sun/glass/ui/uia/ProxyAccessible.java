@@ -37,6 +37,7 @@ import com.sun.glass.ui.View;
 import com.sun.glass.ui.uia.glass.WinAccessible;
 import com.sun.glass.ui.uia.glass.WinVariant;
 import com.sun.glass.ui.uia.provider.NativeITextProvider;
+import com.sun.glass.ui.uia.provider.NativeITextChildProvider;
 import com.sun.glass.ui.uia.provider.NativeIToggleProvider;
 import com.sun.glass.ui.uia.provider.NativeIInvokeProvider;
 import com.sun.glass.ui.uia.provider.NativeIScrollProvider;
@@ -1085,8 +1086,26 @@ public class ProxyAccessible extends Accessible {
     private String      IMultipleViewProvider_GetViewName(int viewId) { return ""; }
     private void        IMultipleViewProvider_SetCurrentView(int viewId) {}
     // ITextChildProvider
-    private long        ITextChildProvider_get_TextContainer() { return 0L; }
-    private long        ITextChildProvider_get_TextRange() { return 0L; }
+    private long ITextChildProvider_get_TextContainer() {
+        return Util.guard(() -> {
+            final NativeITextChildProvider provider = getNativeProvider(NativeITextChildProvider.class);
+            if (provider != null) {
+                return provider.get_TextContainer();
+            } else {
+                return 0L;
+            }
+        });
+    }
+    private long ITextChildProvider_get_TextRange() {
+        return Util.guard(() -> {
+            final NativeITextChildProvider provider = getNativeProvider(NativeITextChildProvider.class);
+            if (provider != null) {
+                return provider.get_TextRange();
+            } else {
+                return 0L;
+            }
+        });
+    }
     // ITextProvider2
     // XXX GetCaretRange has 2 output arguments!!!
     private long        ITextProvider2_GetCaretRange() { return 0L; }

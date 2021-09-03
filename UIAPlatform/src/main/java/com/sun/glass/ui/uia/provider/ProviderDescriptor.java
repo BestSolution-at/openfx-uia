@@ -43,6 +43,7 @@ import javafx.uia.IScrollItemProvider;
 import javafx.uia.IScrollProvider;
 import javafx.uia.ITableItemProvider;
 import javafx.uia.ITableProvider;
+import javafx.uia.ITextChildProvider;
 import javafx.uia.ITextProvider;
 import javafx.uia.IToggleProvider;
 import javafx.uia.IUIAElement;
@@ -67,6 +68,8 @@ public class ProviderDescriptor<JavaType, NativeType> {
             register(StandardPatternIds.UIA_InvokePatternId, IInvokeProvider.class, NativeIInvokeProvider.class, InvokeProviderAdapter::new);
             register(StandardPatternIds.UIA_TextPatternId, ITextProvider.class, NativeITextProvider.class, TextProviderAdapter::new);
             
+            register(StandardPatternIds.UIA_TextChildPatternId, ITextChildProvider.class, NativeITextChildProvider.class, TextChildProviderAdapter::new);
+
             register(StandardPatternIds.UIA_ScrollPatternId, IScrollProvider.class, NativeIScrollProvider.class, ScrollProviderAdapter::new);
             register(StandardPatternIds.UIA_ScrollItemPatternId, IScrollItemProvider.class, NativeIScrollItemProvider.class, ScrollItemProviderAdapter::new);
 
