@@ -92,6 +92,12 @@ public class ProxyTextRangeProvider {
     };
 
     public ProxyTextRangeProvider(ProxyAccessible accessible, ITextRangeProvider impl) {
+
+        if (impl == null) {
+            System.err.println("ProxyTextRangeProvider cannot be created without an ITextRangeProvider");
+            throw new NullPointerException("impl is null!");
+        }
+
         this.accessible = accessible;
         this.impl = impl;
         peer = _createTextRangeProvider(accessible.getNativeAccessible());

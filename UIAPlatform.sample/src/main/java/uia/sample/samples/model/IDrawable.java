@@ -24,8 +24,11 @@
  */
 package uia.sample.samples.model;
 
+import javafx.geometry.Bounds;
 import javafx.scene.canvas.GraphicsContext;
 
 public interface IDrawable {
+    Bounds getRenderBounds();
+    void layout(double x, double y);
     void render(GraphicsContext gc);
 }

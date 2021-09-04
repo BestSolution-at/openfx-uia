@@ -24,49 +24,18 @@
  */
 package uia.sample.samples;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import javafx.geometry.Bounds;
-import javafx.geometry.Point2D;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Label;
-import javafx.uia.IUIAElement;
-import javafx.uia.IUIAVirtualRootElement;
 import javafx.uia.UIA;
 import uia.sample.Sample;
+import uia.sample.samples.model.UIACanvas;
 import uia.sample.samples.model.UIACell;
 import uia.sample.samples.model.UIAGrid;
 
 public class SimpleIGridProvider implements Sample {
 
-    class UIACanvas implements /*IUIAElement,*/ IUIAVirtualRootElement {
-
-        List<IUIAElement> children = new ArrayList<>();
-
-        @Override
-        public List<IUIAElement> getChildren() {
-            return children;
-        }
-
-        @Override
-        public IUIAElement getChildFromPoint(Point2D point) {
-            return null;
-        }
-
-        @Override
-        public Bounds getBounds() {
-            return canvas.localToScreen(canvas.getBoundsInLocal());
-        }
-
-        @Override
-        public void SetFocus() {
-        }
-        
-    }
-    
 
     Node sample;
 
@@ -109,14 +78,15 @@ public class SimpleIGridProvider implements Sample {
                 cell.col = c;
                 cell.rowSpan = (c == 1 && r == 2) ? 2 : 1;
                 cell.colSpan = (c == 1 && r == 4) ? 2 : 1;
-                grid.cells.add(cell);
+                grid.addCell(cell);
             }
         }
         
-        root.children.add(grid);
-        grid.parent = root;
+        root.addChild(grid);
 
+        root.layout();
 
+        // grid.layout(0, 0);
         grid.render(canvas.getGraphicsContext2D());
 
         sample = canvas;

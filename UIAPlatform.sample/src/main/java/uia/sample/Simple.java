@@ -42,7 +42,7 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import uia.sample.samples.CanvasWithVirtualChildren;
-import uia.sample.samples.DocumentSample;
+import uia.sample.samples.DocumentModelSample;
 import uia.sample.samples.SimpleIGridProvider;
 import uia.sample.samples.SimpleITableProvider;
 import uia.sample.samples.SimpleScrollProvider;
@@ -73,7 +73,7 @@ public class Simple extends Application {
             new SimpleTextProviderWithAttributes(),
             new SimpleTextProviderWithChildren(),
             new SimpleTextProviderWithChildren2(),
-            new DocumentSample(),
+            new DocumentModelSample(),
             new SimpleScrollProvider(),
             new SimpleIGridProvider(),
             new SimpleITableProvider()

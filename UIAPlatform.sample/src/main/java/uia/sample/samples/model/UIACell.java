@@ -29,10 +29,22 @@ import java.util.List;
 
 import javafx.geometry.Bounds;
 import javafx.uia.IGridItemProvider;
+import javafx.uia.IInitContext;
+import javafx.uia.ITextChildProvider;
+import javafx.uia.ITextRangeProvider;
 import javafx.uia.IUIAElement;
 import javafx.uia.IUIAVirtualElement;
 
-public class UIACell extends Cell implements /*IUIAElement,*/ IUIAVirtualElement, IGridItemProvider {
+public class UIACell extends Cell implements /*IUIAElement,*/ IUIAVirtualElement, IGridItemProvider, ITextChildProvider {
+
+    @Override
+    public void initialize(IInitContext init) {
+        init.addNameProperty(this::getName);
+    }
+
+    String getName() {
+        return getContent();
+    }
 
     @Override
     public int get_Column() {
@@ -71,11 +83,29 @@ public class UIACell extends Cell implements /*IUIAElement,*/ IUIAVirtualElement
 
     @Override
     public Bounds getBounds() {
-        return grid.canvas.localToScreen(computeCellBounds());
+        return UIACanvas.getCanvas(this).localToScreen(getLayoutBounds());
     }
 
     @Override
     public void SetFocus() {
+    }
+
+
+    @Override
+    public IUIAElement get_TextContainer() {
+        return getDocument();
+    }
+
+    @Override
+    public ITextRangeProvider get_TextRange() {
+        return new UIATextRange(getDocument(), getBegin(), getEnd());
+    }
+
+    private UIADocument getDocument() {
+        return parents().filter(p -> p instanceof UIADocument)
+        .map(p -> (UIADocument) p)
+        .findFirst()
+        .orElse(null);
     }
     
 }

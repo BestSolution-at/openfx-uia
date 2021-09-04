@@ -55,12 +55,12 @@ public class UIATableCell extends UIACell implements ITableItemProvider {
     public void initialize(IInitContext init) {
         super.initialize(init);
 
-        init.addNameProperty(this::getName);
+        //init.addNameProperty(this::getName);
     }
     
-    public String getName() {
-        return "Cell " + col + ", " + row;
-    }
+    // public String getName() {
+    //     return "Cell " + col + ", " + row;
+    // }
 
     @Override
     public ControlType getControlType() {

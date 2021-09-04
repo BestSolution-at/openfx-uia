@@ -34,11 +34,9 @@ import javafx.uia.IUIAVirtualElement;
 
 public class UIAGrid extends Grid implements /*IUIAElement,*/ IUIAVirtualElement, IGridProvider {
 
-    public IUIAElement parent;
-
     @Override
     public IUIAElement getParent() {
-        return parent;
+        return parents().filter(p -> p instanceof IUIAElement).map(p -> (IUIAElement) p).findFirst().orElse(null);
     }
 
     @Override
@@ -48,7 +46,7 @@ public class UIAGrid extends Grid implements /*IUIAElement,*/ IUIAVirtualElement
 
     @Override
     public Bounds getBounds() {
-        return canvas.localToScreen(computeGridBounds());
+        return UIACanvas.getCanvas(this).localToScreen(getLayoutBounds());
     }
 
     @Override

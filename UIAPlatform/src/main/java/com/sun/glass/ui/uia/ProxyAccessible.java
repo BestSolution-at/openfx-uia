@@ -112,6 +112,12 @@ public class ProxyAccessible extends Accessible {
 
     // this is the *virtual* Accessible
     ProxyAccessible(ProxyAccessible context, IUIAElement uiaElement) {
+
+        if (uiaElement == null) {
+            System.err.println("virtual ProxyAccessible cannot be created without an uiaElement");
+            throw new NullPointerException("uiaElement is null!");
+        }
+
         this.num = next++;
         if (context.glass != null) {
             glassRoot = context.glass;
@@ -351,6 +357,7 @@ public class ProxyAccessible extends Accessible {
 
     private void checkGlass() {
         if (glass == null) {
+            System.err.println("Glass is null in " + this);
             new NullPointerException("glass is null").printStackTrace();
         }
     }
@@ -363,6 +370,7 @@ public class ProxyAccessible extends Accessible {
             if (uiaElementAdapter != null) {
                 return uiaElementAdapter.GetPatternProvider(patternId);
             } else {
+                checkGlass();
                 return glass.GetPatternProvider(patternId);
             }
         });
@@ -372,6 +380,7 @@ public class ProxyAccessible extends Accessible {
             if (uiaElementAdapter != null) {
                 return uiaElementAdapter.get_HostRawElementProvider();
             } else {
+                checkGlass();
                 return glass.get_HostRawElementProvider();
             }
         });
@@ -381,6 +390,7 @@ public class ProxyAccessible extends Accessible {
             if (uiaElementAdapter != null) {
                 return uiaElementAdapter.GetPropertyValue(propertyId);
             } else {
+                checkGlass();
                 return glass.GetPropertyValue(propertyId);
             }
         });

@@ -31,7 +31,7 @@ public interface ITextChildProvider {
     
     class TextChildProviderContext {
 
-		public TextChildProviderContext(IInitContext init, ITextProvider provider) {
+		public TextChildProviderContext(IInitContext init, ITextChildProvider provider) {
             // empty for now
 		}
 	}

@@ -1,0 +1,495 @@
+package uia.sample.samples.model;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import com.sun.javafx.geom.BaseBounds;
+import com.sun.javafx.geom.RectBounds;
+
+import javafx.geometry.BoundingBox;
+import javafx.geometry.Bounds;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.FillRule;
+import javafx.scene.text.Font;
+
+
+@SuppressWarnings("restriction")
+public class Text extends BaseModel {
+
+    public static interface IFragment {
+        String getContent();
+        com.sun.javafx.scene.text.TextSpan getTextSpan();
+    }
+
+    public static class TextFragment implements IFragment {
+        protected String content;
+        protected Font font;
+        protected Color color;
+
+        protected int begin;
+        protected int end;
+
+        class Span implements com.sun.javafx.scene.text.TextSpan {
+            @Override
+            public RectBounds getBounds() {
+                return null;
+            }
+
+            @Override
+            @SuppressWarnings("deprecation")
+            public Object getFont() {
+                return font.impl_getNativeFont();
+            }
+
+            @Override
+            public String getText() {
+                return content;
+            }
+            public TextFragment getFragment() {
+                return TextFragment.this;
+            }
+        }
+
+        private Span span = new Span();
+
+        public TextFragment(String content, Font font, Color color) {
+            this.content = content;
+            this.font = font;
+            this.color = color;
+        }
+
+        @Override
+        public String getContent() {
+            return content;
+        }
+
+        @Override
+        public com.sun.javafx.scene.text.TextSpan getTextSpan() {
+            return span;
+        }
+    }
+
+    public static class EmbedFragment implements IFragment {
+        protected IModel embed;
+
+        protected int begin;
+        protected int end;
+
+        class Span implements com.sun.javafx.scene.text.TextSpan {
+            @Override
+            public RectBounds getBounds() {
+                return convert(embed.getLocalBounds());
+            }
+            @Override
+            public Object getFont() {
+                return null;
+            }
+            @Override
+            public String getText() {
+                return "\uFFFC";
+            }
+            public EmbedFragment getFragment() {
+                return EmbedFragment.this;
+            }
+        }
+
+        private Span span = new Span();
+
+        public EmbedFragment(IModel embed) {
+            this.embed = embed;
+        }
+
+        @Override
+        public String getContent() {
+            return embed.getContent();
+        }
+
+        @Override
+        public com.sun.javafx.scene.text.TextSpan getTextSpan() {
+            return span;
+        }
+    }
+
+    private List<IFragment> content = new ArrayList<>();
+
+    public void addText(String text, Font font, Color color) {
+        content.add(new TextFragment(text, font, color));
+    }
+    public void addEmbed(IModel model) {
+        content.add(new EmbedFragment(model));
+        addChild(model);
+    }
+
+    @Override
+    public int computeIndices(int curBegin) {
+        int length = 0;
+        begin = curBegin;
+
+        for (IFragment fragment : content) {
+            if (fragment instanceof TextFragment) {
+                TextFragment textFragment = (TextFragment) fragment;
+                textFragment.begin = begin + length;
+                length += textFragment.content.length();
+                textFragment.end = begin + length;
+            } else if (fragment instanceof EmbedFragment) {
+                EmbedFragment embedFragment = (EmbedFragment) fragment;
+                length += embedFragment.embed.computeIndices(begin + length);
+            }
+        }
+
+        end = begin + length;
+
+        return length;
+    }
+
+    private com.sun.javafx.scene.text.TextLayout textLayout;
+
+    @Override
+    public void layout() {
+        // first layout embeds
+        content.stream()
+            .filter(fragment -> fragment instanceof EmbedFragment)
+            .map(fragment -> (EmbedFragment) fragment)
+            .forEach(embed -> embed.embed.layout());
+        
+        textLayout = com.sun.javafx.tk.Toolkit.getToolkit().getTextLayoutFactory().createLayout();
+        
+        if (layoutW != 0) {
+            textLayout.setWrapWidth((float) layoutW);
+        }
+        
+        textLayout.setContent(content.stream().map(IFragment::getTextSpan).toArray(size -> new com.sun.javafx.scene.text.TextSpan[size]));
+        
+        BaseBounds b = textLayout.getBounds();
+
+        layoutW = b.getWidth();
+        layoutH = b.getHeight();
+
+        // ugly ascent fix
+        //layoutY -= b.getMinY();
+
+        // position embeds
+
+
+        for (com.sun.javafx.scene.text.TextLine line : textLayout.getLines()) {
+            com.sun.javafx.text.TextLine intLine = (com.sun.javafx.text.TextLine) line;
+            for (com.sun.javafx.text.TextRun run : intLine.getRuns()) {
+                if (run.getTextSpan() instanceof EmbedFragment.Span) {
+                    EmbedFragment frag = ((EmbedFragment.Span) run.getTextSpan()).getFragment();
+                    com.sun.javafx.geom.Point2D loc = run.getLocation();
+                    ((BaseModel) frag.embed).layoutX = loc.x;
+                    ((BaseModel) frag.embed).layoutY = loc.y;
+                }
+            }
+        }
+        
+
+    }
+
+    @Override
+    public void render(GraphicsContext gc) {
+        
+        gc.setStroke(Color.RED);
+        //gc.strokeRect(layoutX, layoutY, layoutW, layoutH);
+        //gc.strokeRect(layoutX + bounds.getMinX(), layoutY + bounds.getMinY(), bounds.getWidth(), bounds.getHeight());
+
+        // render text
+        renderText(gc);
+
+        // render embeds
+        getModelChildren().forEach(child -> child.render(gc));
+
+
+    }
+
+    private void renderText(GraphicsContext ctx) {
+        for (com.sun.javafx.scene.text.TextLine line : textLayout.getLines()) {
+            for (com.sun.javafx.scene.text.GlyphList run : line.getRuns()) {
+                com.sun.javafx.geom.Point2D loc = run.getLocation();
+
+                if (run.getTextSpan() instanceof TextFragment.Span) {
+                    TextFragment textFragment = ((TextFragment.Span) run.getTextSpan()).getFragment();
+                    ctx.setFill(textFragment.color);
+                    com.sun.javafx.font.PGFont font = (com.sun.javafx.font.PGFont) run.getTextSpan().getFont();
+                    com.sun.javafx.font.FontStrike strike = font.getStrike(com.sun.javafx.geom.transform.BaseTransform.getTranslateInstance(0, 0));
+
+                    for (int glyphIndex = 0; glyphIndex < run.getGlyphCount(); glyphIndex++) {
+                        float posX = run.getPosX(glyphIndex);
+                        float posY = run.getPosY(glyphIndex);
+                        int glyphCode = run.getGlyphCode(glyphIndex);
+
+                        com.sun.javafx.font.Glyph glyph = strike.getGlyph(glyphCode);
+                        com.sun.javafx.geom.Shape shape = glyph.getShape();
+                        
+                        com.sun.javafx.geom.PathIterator it = shape.getPathIterator(com.sun.javafx.geom.transform.BaseTransform.IDENTITY_TRANSFORM);
+                        
+                        float[] buf = new float[6];
+
+                        double glyphX = computeParentLayoutX() + layoutX + loc.x + posX;
+                        double glyphY = computeParentLayoutY() + layoutY + loc.y + posY;
+                        
+                        ctx.beginPath();
+
+                        if (it.getWindingRule() == com.sun.javafx.geom.PathIterator.WIND_NON_ZERO) {
+                            ctx.setFillRule(FillRule.NON_ZERO);
+                        } else {
+                            ctx.setFillRule(FillRule.EVEN_ODD);
+                        }
+
+                        while (!it.isDone()) {
+                           
+                            int type = it.currentSegment(buf);
+                            switch (type) {
+
+                                case com.sun.javafx.geom.PathIterator.SEG_MOVETO:
+                                ctx.moveTo(glyphX + buf[0], glyphY + buf[1]);
+
+                                break;
+
+                                case com.sun.javafx.geom.PathIterator.SEG_LINETO:
+                                ctx.lineTo(glyphX + buf[0], glyphY + buf[1]);
+                                break;
+
+                                case com.sun.javafx.geom.PathIterator.SEG_QUADTO:
+                                ctx.quadraticCurveTo(glyphX + buf[0], glyphY + buf[1], glyphX + buf[2], glyphY + buf[3]);
+                                break;
+
+                                case com.sun.javafx.geom.PathIterator.SEG_CUBICTO:
+                                ctx.bezierCurveTo(glyphX + buf[0], glyphY + buf[1], glyphX + buf[2], glyphY + buf[3], glyphX + buf[4], glyphY + buf[5]);
+                                break;
+
+                                case com.sun.javafx.geom.PathIterator.SEG_CLOSE:
+                                ctx.closePath();
+                                break;
+
+                                
+                            }
+
+                            it.next();
+                        }
+
+                        ctx.setFill(textFragment.color);
+                        ctx.fill();
+                    }
+                    
+    
+                }
+                // if (run.getTextSpan() instanceof ImageFragment) {
+                //     ImageFragment fragment = (ImageFragment) run.getTextSpan();
+    
+                //     ctx.drawImage(fragment.image, base.getX() + loc.x + fragment.getBounds().getMinX(), base.getY()+ loc.y + fragment.getBounds().getMinY());
+                // }
+
+                // if (run.getTextSpan() instanceof DrawableFragment) {
+                //     DrawableFragment fragment = (DrawableFragment) run.getTextSpan();
+
+                //     fragment.getDrawable().layout(base.getX() + loc.x + fragment.getBounds().getMinX(), base.getY()+ loc.y + fragment.getBounds().getMinY());
+                //     fragment.getDrawable().render(ctx);
+                // }
+            }
+        }
+    }
+
+
+    @Override
+    public String getContent() {
+        return content.stream().map(IFragment::getContent).collect(Collectors.joining());
+    }
+
+
+
+    private static RectBounds convert(Bounds bounds) {
+        return new RectBounds((float) bounds.getMinX(), (float) bounds.getMinY(), (float) bounds.getMaxX(), (float) bounds.getMaxY());
+    }
+
+
+
+
+    @Override
+    public List<Bounds> getTextBounds(int begin, int end) {
+        if (getBegin() <= end && getEnd() >= begin) {
+            List<Bounds> result = new ArrayList<>();
+
+            System.err.println("OVERLAP " + getContent());
+
+            double baseY = computeParentLayoutY() + layoutY - getLocalBounds().getMinY();
+            double baseX = computeParentLayoutX() + layoutX;
+
+            double lineY = 0;
+            double lineHeight;
+
+            TextFragment lastRun = null;
+            com.sun.javafx.text.TextRun lastRun2 = null;
+            int sameRunBuf = 0;
+
+            for (com.sun.javafx.scene.text.TextLine line : textLayout.getLines()) {
+                RectBounds lineBounds = line.getBounds();
+                lineHeight = lineBounds.getHeight();
+                float lineX = lineBounds.getMinX();
+                for (com.sun.javafx.scene.text.GlyphList run : line.getRuns()) {
+                    com.sun.javafx.text.TextRun run1 = (com.sun.javafx.text.TextRun) run;       
+                    if (run.getTextSpan() instanceof TextFragment.Span) {
+                        TextFragment text = ((TextFragment.Span) run.getTextSpan()).getFragment();
+                        System.err.println("text: " + text + ", lastRun = " + lastRun);
+                        if (text == lastRun) {
+                            sameRunBuf += lastRun2.getLength();
+                        } else {
+                            sameRunBuf = 0;
+                        }
+                      
+                        float left = -1;
+                        float right = -1;
+
+                        for (int glyphIndex = 0; glyphIndex < run.getGlyphCount(); glyphIndex++) {
+                            int realIdx = sameRunBuf + text.begin + glyphIndex;
+                            if (realIdx >= begin && realIdx <= end) {
+                                // add glyph
+                                if (left == -1) left = lineX + run1.getXAtOffset(glyphIndex, true);
+                                right = lineX + run1.getXAtOffset(glyphIndex, true);
+                            }
+                            
+                        }
+
+                        if (sameRunBuf + text.begin + run.getGlyphCount() <= end) {
+                            right = lineX + run1.getWidth(); 
+                        }
+
+
+                        if (left != -1 && right != -1) {
+                            result.add(new BoundingBox(baseX + left, baseY + lineY + run1.getAscent(), right - left, lineHeight));
+                        }
+
+
+                        lastRun = text;
+                        lastRun2 = run1;
+                    }
+
+                    if (run.getTextSpan() instanceof EmbedFragment.Span) {
+                        EmbedFragment embed = ((EmbedFragment.Span) run.getTextSpan()).getFragment();
+                        embed.embed.getBegin();
+                        embed.embed.getEnd();
+                        System.err.println(" >> ");
+                        result.addAll(embed.embed.getTextBounds(begin, end));
+                    }
+
+                    lineX += run1.getWidth();
+                }
+                lineY += lineHeight;
+            }
+
+            return result;
+        }
+        return Collections.emptyList();
+    }
+
+
+
+    public List<com.sun.javafx.geom.RectBounds> getRange(int start, int end) {
+        float x = 0;
+        float y = 0;
+        float spacing = 0;
+
+        int lineCount = textLayout.getLines().length;
+        List<com.sun.javafx.geom.RectBounds> result = new ArrayList<>();
+        float lineY = 0;
+
+        for  (int lineIndex = 0; lineIndex < lineCount; lineIndex++) {
+            
+            com.sun.javafx.text.TextLine line = (com.sun.javafx.text.TextLine) textLayout.getLines()[lineIndex];
+            com.sun.javafx.geom.RectBounds lineBounds = line.getBounds();
+            int lineStart = line.getStart();
+            if (lineStart >= end) break;
+            int lineEnd = lineStart + line.getLength();
+            if (start > lineEnd) {
+                lineY += lineBounds.getHeight() + spacing;
+                continue;
+            }
+
+            /* The list of runs in the line is visually ordered.
+            * Thus, finding the run that includes the selection end offset
+            * does not mean that all selected runs have being visited.
+            * Instead, this implementation first computes the number of selected
+            * characters in the current line, then iterates over the runs consuming
+            * selected characters till all of them are found.
+            */
+            com.sun.javafx.text.TextRun[] runs = line.getRuns();
+            int count = Math.min(lineEnd, end) - Math.max(lineStart, start);
+            int runIndex = 0;
+            float left = -1;
+            float right = -1;
+            float lineX = lineBounds.getMinX();
+            while (count > 0 && runIndex < runs.length) {
+                com.sun.javafx.text.TextRun run = runs[runIndex];
+                int runStart = run.getStart();
+                int runEnd = run.getEnd();
+                float runWidth = run.getWidth();
+                int clmapStart = Math.max(runStart, Math.min(start, runEnd));
+                int clampEnd = Math.max(runStart, Math.min(end, runEnd));
+                int runCount = clampEnd - clmapStart;
+                if (runCount != 0) {
+                    boolean ltr = run.isLeftToRight();
+                    float runLeft;
+                    if (runStart > start) {
+                        runLeft = ltr ? lineX : lineX + runWidth;
+                    } else {
+                        runLeft = lineX + run.getXAtOffset(start - runStart, true);
+                    }
+                    float runRight;
+                    if (runEnd < end) {
+                        runRight = ltr ? lineX + runWidth : lineX;
+                    } else {
+                        runRight = lineX + run.getXAtOffset(end - runStart, true);
+                    }
+                    if (runLeft > runRight) {
+                        float tmp = runLeft;
+                        runLeft = runRight;
+                        runRight = tmp;
+                    }
+                    count -= runCount;
+                    float top = 0, bottom = 0;
+
+                    //TYPE_TEXT
+                //    top = lineY;
+                //    bottom = lineY + lineBounds.getHeight();
+
+                    top = lineY + lineBounds.getMinY();
+                    bottom = lineY + lineBounds.getMinY() + lineBounds.getHeight();
+                    
+                    /* Merge continuous rectangles */
+                    if (runLeft != right) {
+                        if (left != -1 && right != -1) {
+                            float l = left, r = right;
+                            // if (isMirrored()) {
+                            //     float width = getMirroringWidth();
+                            //     l = width - l;
+                            //     r = width - r;
+                            // }
+
+                            result.add(new com.sun.javafx.geom.RectBounds(x + l, y + top, x + r, y + bottom));
+                        }
+                        left = runLeft;
+                        right = runRight;
+                    }
+                    right = runRight;
+                    if (count == 0) {
+                        float l = left, r = right;
+                        // if (isMirrored()) {
+                        //     float width = getMirroringWidth();
+                        //     l = width - l;
+                        //     r = width - r;
+                        // }
+                        
+                        result.add(new com.sun.javafx.geom.RectBounds(x + l, y + top, x + r, y + bottom));
+                    }
+                }
+                lineX += runWidth;
+                runIndex++;
+            }
+            lineY += lineBounds.getHeight() + spacing;
+        }
+        return result;
+    }
+}

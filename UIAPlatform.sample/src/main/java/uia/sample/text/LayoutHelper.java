@@ -27,11 +27,13 @@ package uia.sample.text;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.sun.javafx.geom.PathIterator;
+import com.sun.javafx.geom.RectBounds;
 import com.sun.javafx.geom.transform.BaseTransform;
 import com.sun.javafx.text.TextRun;
 
@@ -43,6 +45,8 @@ import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.FillRule;
 import javafx.scene.text.Font;
+import javafx.uia.IUIAElement;
+import uia.sample.samples.model.IDrawable;
 
 
 // this class uses the javafx internal TextLayout 
@@ -50,7 +54,9 @@ import javafx.scene.text.Font;
 public class LayoutHelper {
    
     public static interface Embedded {
-        Image getImage();
+        //Image getImage();
+
+        IUIAElement getElement();
     }
 
     static abstract class Fragment implements com.sun.javafx.scene.text.TextSpan {
@@ -106,7 +112,7 @@ public class LayoutHelper {
             this.bounds = new com.sun.javafx.geom.RectBounds(minX, minY, maxX, maxY);
         }
 
-        @Override
+        //@Override
         public Image getImage() {
             return image;
         }
@@ -120,6 +126,41 @@ public class LayoutHelper {
         public Object getFont() {
             return null;
         }
+
+        @Override
+        public IUIAElement getElement() {
+            return null;
+        }
+    }
+    static class DrawableFragment extends Fragment implements Embedded {
+
+        IDrawable drawable;
+
+        DrawableFragment(IDrawable drawable) {
+            super("\uFFFC");
+            this.drawable = drawable;
+        }
+
+        public IDrawable getDrawable() {
+            return drawable;
+        }
+
+        @Override
+        public RectBounds getBounds() {
+            Bounds bounds = drawable.getRenderBounds();
+            return new RectBounds((float) bounds.getMinX(), (float) bounds.getMinY(), (float) bounds.getMaxX(), (float) bounds.getMaxY());
+        }
+
+        @Override
+        public Object getFont() {
+            return null;
+        }
+
+        @Override
+        public IUIAElement getElement() {
+            return (IUIAElement) drawable;
+        }
+
     }
 
     private List<Fragment> content;
@@ -144,6 +185,17 @@ public class LayoutHelper {
 
     public void addImage(Image image, double baseline) {
         this.content.add(new ImageFragment(image, baseline));
+    }
+
+    public void addDrawable(IDrawable drawable, boolean inline) {
+        if (inline) {
+            this.content.add(new DrawableFragment(drawable));
+        } else {
+            this.content.add(new TextFragment("\n", Font.getDefault(), Color.BLACK));
+            this.content.add(new DrawableFragment(drawable));
+            this.content.add(new TextFragment("\n", Font.getDefault(), Color.BLACK));
+        }
+        
     }
 
     public void setWrapWidth(double width) {
@@ -187,8 +239,9 @@ public class LayoutHelper {
                 color = ((TextFragment)span).color;
             } else if (span instanceof ImageFragment) {
                 embed = true;
+            } else if (span instanceof DrawableFragment) {
+                embed = true;
             }
-
             for (int runIdx = 0; runIdx < run.getLength(); runIdx++) {
 
                 if (start <= index && end > index) {
@@ -394,6 +447,12 @@ public class LayoutHelper {
                     ctx.drawImage(fragment.image, base.getX() + loc.x + fragment.getBounds().getMinX(), base.getY()+ loc.y + fragment.getBounds().getMinY());
                 }
 
+                if (run.getTextSpan() instanceof DrawableFragment) {
+                    DrawableFragment fragment = (DrawableFragment) run.getTextSpan();
+
+                    fragment.getDrawable().layout(base.getX() + loc.x + fragment.getBounds().getMinX(), base.getY()+ loc.y + fragment.getBounds().getMinY());
+                    fragment.getDrawable().render(ctx);
+                }
             }
         }
 
@@ -435,6 +494,14 @@ public class LayoutHelper {
         .orElse(null);
     }
 
+    public Optional<Embedded> findEmbedded(IUIAElement el) {
+        return content.stream()
+            .filter(fragment -> fragment instanceof Embedded)
+            .map(fragment -> (Embedded) fragment)
+            .filter(emb -> emb.getElement() == el)
+            .findFirst();
+    }
+
     public Stream<Embedded> getEmbedded(int start, int end) {
 
 
@@ -445,8 +512,13 @@ public class LayoutHelper {
 
             if (ts.getStart() >= start && ts.getEnd() <= end) {
                 if (ts.isEmbedded()) {
-                    ImageFragment img = (ImageFragment) ts.getTextSpan();
-                    result.add(img);
+                    if (ts.getTextSpan() instanceof ImageFragment) {
+                        ImageFragment img = (ImageFragment) ts.getTextSpan();
+                        result.add(img);
+                    } else if (ts.getTextSpan() instanceof DrawableFragment) {
+                        DrawableFragment dr = (DrawableFragment) ts.getTextSpan();
+                        result.add(dr);
+                    }
                 }
             }
 

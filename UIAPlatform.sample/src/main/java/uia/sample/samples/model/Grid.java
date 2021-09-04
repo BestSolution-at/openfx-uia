@@ -32,7 +32,7 @@ import javafx.geometry.Bounds;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 
-public class Grid implements IDrawable {
+public class Grid extends BaseModel {
 
     public Canvas canvas;
 
@@ -42,10 +42,39 @@ public class Grid implements IDrawable {
     public int colCount;
     public int rowCount;
 
-    public List<Cell> cells = new ArrayList<>();
+    //public double layoutX = 0;
+    //public double layoutY = 0;
+
+    protected List<Cell> cells = new ArrayList<>();
+
+    public void addCell(Cell cell) {
+        cells.add(cell);
+        addChild(cell);
+    }
 
     public Bounds computeGridBounds() {
-        return new BoundingBox(0, 0, colCount * colWidth, rowCount * rowHeight);
+        return new BoundingBox(layoutX, layoutY, colCount * colWidth, rowCount * rowHeight);
+    }
+
+    @Override
+    public void layout() {
+        layoutW = colCount * colWidth;
+        layoutH = rowCount * rowHeight;
+        
+
+        getModelChildren().forEach(IModel::layout);
+    }
+
+    //@Override
+    public Bounds getRenderBounds() {
+        return computeGridBounds();
+    }
+
+    //@Override
+    public void layout(double x, double y) {
+        layoutX = x;
+        layoutY = y;
+        cells.forEach(cell -> cell.layout(x, y));
     }
 
     @Override

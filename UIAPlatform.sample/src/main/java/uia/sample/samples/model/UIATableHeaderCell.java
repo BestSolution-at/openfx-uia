@@ -24,9 +24,11 @@
  */
 package uia.sample.samples.model;
 
+import javafx.geometry.Bounds;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.uia.ControlType;
+import javafx.uia.IUIAElement;
 
 public class UIATableHeaderCell extends UIATableCell {
 
@@ -38,22 +40,24 @@ public class UIATableHeaderCell extends UIATableCell {
         
         gc.setFill(Color.LIGHTGREY);
     
-        double x = grid.colWidth * col;
-        double y = grid.rowHeight * row;
-        double w = grid.colWidth * colSpan;
-        double h = grid.rowHeight * rowSpan;
-
-        gc.fillRect(x, y, w, h);
+        Bounds lb = getLayoutBounds();
+        gc.fillRect(lb.getMinX(), lb.getMinY(), lb.getWidth(), lb.getHeight());
 
         super.render(gc);
-    }
-
-    public String getName() {
-        return (isColumnHeader ? "Column" : "") + (isRowHeader ? "Row" : "") + " Header Cell " + col + ", " + row;
     }
 
     @Override
     public ControlType getControlType() {
         return ControlType.UIA_HeaderItemControlTypeId;
+    }
+
+    @Override
+    public IUIAElement[] GetColumnHeaderItems() {
+        return new IUIAElement[0];
+    }
+
+    @Override
+    public IUIAElement[] GetRowHeaderItems() {
+        return new IUIAElement[0];
     }
 }
