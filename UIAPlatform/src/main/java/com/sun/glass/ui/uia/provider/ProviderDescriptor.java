@@ -34,6 +34,7 @@ import java.util.function.BiFunction;
 
 import com.sun.glass.ui.uia.ProxyAccessible;
 
+import javafx.uia.IExpandCollapseProvider;
 import javafx.uia.IGridItemProvider;
 import javafx.uia.IGridProvider;
 import javafx.uia.IInitContext;
@@ -41,11 +42,15 @@ import javafx.uia.IInvokeProvider;
 import javafx.uia.IPatternId;
 import javafx.uia.IScrollItemProvider;
 import javafx.uia.IScrollProvider;
+import javafx.uia.ISelectionItemProvider;
+import javafx.uia.ISelectionProvider;
+import javafx.uia.ISelectionProvider2;
 import javafx.uia.ITableItemProvider;
 import javafx.uia.ITableProvider;
 import javafx.uia.ITextChildProvider;
 import javafx.uia.ITextProvider;
 import javafx.uia.IToggleProvider;
+import javafx.uia.ITransformProvider;
 import javafx.uia.IUIAElement;
 import javafx.uia.IWindowProvider;
 import javafx.uia.StandardPatternIds;
@@ -78,6 +83,14 @@ public class ProviderDescriptor<JavaType, NativeType> {
 
             register(StandardPatternIds.UIA_TablePatternId, ITableProvider.class, NativeITableProvider.class, TableProviderAdapter::new);
             register(StandardPatternIds.UIA_TableItemPatternId, ITableItemProvider.class, NativeITableItemProvider.class, TableItemProviderAdapter::new);
+
+            register(StandardPatternIds.UIA_SelectionPatternId, ISelectionProvider.class, NativeISelectionProvider.class, SelectionProviderAdapter::new);
+            register(StandardPatternIds.UIA_SelectionPattern2Id, ISelectionProvider2.class, NativeISelectionProvider2.class, SelectionProvider2Adapter::new);
+            register(StandardPatternIds.UIA_SelectionItemPatternId, ISelectionItemProvider.class, NativeISelectionItemProvider.class, SelectionItemProviderAdapter::new);
+
+            register(StandardPatternIds.UIA_ExpandCollapsePatternId, IExpandCollapseProvider.class, NativeIExpandCollapseProvider.class, ExpandCollapseProviderAdapter::new);
+
+            register(StandardPatternIds.UIA_TransformPatternId, ITransformProvider.class, NativeITransformProvider.class, TransformProviderAdapter::new);
         }
 
         static <JavaType, NativeType> boolean isAvailable(IPatternId id) {
