@@ -75,7 +75,7 @@ public interface IScrollProvider extends IInitable {
 
 	/**
 	 * Specifies the horizontal size of the viewable region.
-	 * @return
+	 * @return the horizontal view size
 	 */
 	double get_HorizontalViewSize();
 
@@ -90,13 +90,13 @@ public interface IScrollProvider extends IInitable {
 	 * <p>
 	 * The vertical scroll position can be reported as UIA_ScrollPatternNoScroll if no valid position is available; for example, if the window does not have a vertical scroll bar.
 	 * </p>
-	 * @return
+	 * @return the vertical scroll percent
 	 */
 	double get_VerticalScrollPercent();
 
 	/**
 	 * Specifies the vertical size of the viewable region.
-	 * @return
+	 * @return the vertical view size
 	 */
 	double get_VerticalViewSize();
 

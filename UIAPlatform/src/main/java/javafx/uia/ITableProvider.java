@@ -30,9 +30,9 @@ package javafx.uia;
  * logical coordinate system that can be traversed by using the keyboard.
  * <p>
  * This control pattern is analogous to IGridProvider with the distinction that any control that implements 
- * ITableProvider must also expose a column and/or row header relationship for each child element.<br/>
+ * ITableProvider must also expose a column and/or row header relationship for each child element.<br>
  * Controls that implement ITableProvider are also required to implement IGridProvider so as to expose the 
- * inherent grid functionality of a table control.<br/>
+ * inherent grid functionality of a table control.<br>
  * Implemented on a UI Automation provider that must support the Table control pattern and Grid control pattern.
  * </p>
  */

@@ -27,7 +27,7 @@ package javafx.uia;
 /**
  * Provides access to individual child controls of containers that implement IGridProvider.
  * <p>
- * Implemented on a UI Automation provider that must support the GridItem control pattern.<br/>
+ * Implemented on a UI Automation provider that must support the GridItem control pattern.<br>
  * Controls that implement IGridItemProvider can typically be traversed (that is, a UI Automation client can move to adjacent controls) by using the keyboard.
  * </p>
  */

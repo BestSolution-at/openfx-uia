@@ -32,8 +32,8 @@ package javafx.uia;
  * The IGridProvider interface exposes methods and properties to support UI Automation client access to controls that act as 
  * containers for a collection of child elements. The children of this element must implement IGridItemProvider and be organized 
  * in a two-dimensional logical coordinate system that can be traversed (that is, a UI Automation client can move to adjacent controls) 
- * by using the keyboard.<br/>
- * Implemented on a UI Automation provider that must support the Grid control pattern.<br/>
+ * by using the keyboard.<br>
+ * Implemented on a UI Automation provider that must support the Grid control pattern.<br>
  * IGridProvider does not enable active manipulation of a grid; ITransformProvider must be implemented for this.
  * </p>
  */
@@ -77,9 +77,9 @@ public interface IGridProvider extends IInitable {
 	/**
 	 * Retrieves the Microsoft UI Automation provider for the specified cell.
 	 * <p>
-	 * Grid coordinates are zero-based with the upper left (or upper right cell depending on locale) having coordinates (0,0).<br/>
-	 * If a cell is empty a UI Automation provider must still be returned in order to support the ContainingGrid property for that cell. This is possible when the layout of child elements in the grid is similar to a ragged array. <br/>
-	 * Hidden rows and columns, depending on the provider implementation, may be loaded in the UI Automation tree and will therefore be reflected in the IGridProvider::RowCount and IGridProvider::ColumnCount properties. If the hidden rows and columns have not yet been loaded they should not be counted.<br/>
+	 * Grid coordinates are zero-based with the upper left (or upper right cell depending on locale) having coordinates (0,0).<br>
+	 * If a cell is empty a UI Automation provider must still be returned in order to support the ContainingGrid property for that cell. This is possible when the layout of child elements in the grid is similar to a ragged array. <br>
+	 * Hidden rows and columns, depending on the provider implementation, may be loaded in the UI Automation tree and will therefore be reflected in the IGridProvider::RowCount and IGridProvider::ColumnCount properties. If the hidden rows and columns have not yet been loaded they should not be counted.<br>
 	 * </p>
 	 * @param row The ordinal number of the row of interest.
 	 * @param column The ordinal number of the column of interest.

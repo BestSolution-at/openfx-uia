@@ -28,8 +28,8 @@ package javafx.uia;
  * Provides access to child controls of containers that implement ITableProvider.
  * <p>
  * This control pattern is analogous to IGridItemProvider with the distinction that any control 
- * implementing ITableItemProvider must expose the relationship between the individual cell and its row and column information.<br/>
- * Access to individual cell functionality is provided by the concurrent implementation of IGridItemProvider.<br/>
+ * implementing ITableItemProvider must expose the relationship between the individual cell and its row and column information.<br>
+ * Access to individual cell functionality is provided by the concurrent implementation of IGridItemProvider.<br>
  * Implemented on a UI Automation provider that must support the TableItem control pattern.
  * </p>
  */
