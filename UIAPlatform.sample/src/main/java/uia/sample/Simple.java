@@ -46,6 +46,7 @@ import uia.sample.samples.DocumentModelSample;
 import uia.sample.samples.SimpleIExpandCollapseProvider;
 import uia.sample.samples.SimpleIGridProvider;
 import uia.sample.samples.SimpleITableProvider;
+import uia.sample.samples.SimpleITransformProvider;
 import uia.sample.samples.SimpleScrollProvider;
 import uia.sample.samples.SimpleTextProvider;
 import uia.sample.samples.SimpleTextProviderWithAttributes;
@@ -78,7 +79,8 @@ public class Simple extends Application {
             new SimpleScrollProvider(),
             new SimpleIGridProvider(),
             new SimpleITableProvider(),
-            new SimpleIExpandCollapseProvider()
+            new SimpleIExpandCollapseProvider(),
+            new SimpleITransformProvider()
             );
 
         VBox s = new VBox();
@@ -127,11 +129,13 @@ public class Simple extends Application {
                 
                 title.setText(ne.getName());
                 contentArea.setCenter(sample);
-                desc.setCenter(ne.getDescription());
+                desc.setTop(ne.getDescription());
+                desc.setCenter(ne.getControls());
 
             } else {
                 title.setText("");
                 contentArea.setCenter(new Label("Please select a sample"));
+                desc.setTop(null);
                 desc.setCenter(null);
             }
         });
