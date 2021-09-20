@@ -56,6 +56,7 @@ import com.sun.glass.ui.uia.provider.NativeISelectionItemProvider;
 import com.sun.glass.ui.uia.provider.NativeIExpandCollapseProvider;
 import com.sun.glass.ui.uia.provider.NativeITransformProvider;
 import com.sun.glass.ui.uia.provider.NativeIWindowProvider;
+import com.sun.glass.ui.uia.provider.NativeIDockProvider;
 import com.sun.glass.ui.uia.provider.UIAElementAdapter;
 import com.sun.javafx.tk.quantum.QuantumToolkit;
 
@@ -745,8 +746,12 @@ public class ProxyAccessible extends Accessible {
 
     
     // IDockProvider
-    private int     DockProvider_get_DockPosition() { return 0; }
-    private void    DockProvider_SetDockPosition(int dockPosition) {}
+    private int     DockProvider_get_DockPosition() { 
+        return callProviderInt(NativeIDockProvider.class, NativeIDockProvider::get_DockPosition, 0 , 0);
+    }
+    private void    DockProvider_SetDockPosition(int dockPosition) {
+        callProvider(NativeIDockProvider.class, provider -> provider.SetDockPosition(dockPosition));
+    }
     // IAnnotationProvider
     private int     IAnnotationProvider_get_AnnotationTypeId() { return 0; }
     private String  IAnnotationProvider_get_AnnotationTypeName()  { return ""; }

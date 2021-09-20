@@ -34,6 +34,7 @@ import java.util.function.BiFunction;
 
 import com.sun.glass.ui.uia.ProxyAccessible;
 
+import javafx.uia.IDockProvider;
 import javafx.uia.IExpandCollapseProvider;
 import javafx.uia.IGridItemProvider;
 import javafx.uia.IGridProvider;
@@ -91,6 +92,8 @@ public class ProviderDescriptor<JavaType, NativeType> {
             register(StandardPatternIds.UIA_ExpandCollapsePatternId, IExpandCollapseProvider.class, NativeIExpandCollapseProvider.class, ExpandCollapseProviderAdapter::new);
 
             register(StandardPatternIds.UIA_TransformPatternId, ITransformProvider.class, NativeITransformProvider.class, TransformProviderAdapter::new);
+
+            register(StandardPatternIds.UIA_DockPatternId, IDockProvider.class, NativeIDockProvider.class, DockProviderAdapter::new);
         }
 
         static <JavaType, NativeType> boolean isAvailable(IPatternId id) {
