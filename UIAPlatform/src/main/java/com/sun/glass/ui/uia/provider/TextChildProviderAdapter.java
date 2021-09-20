@@ -28,9 +28,7 @@ import com.sun.glass.ui.uia.ProxyAccessible;
 import com.sun.glass.ui.uia.ProxyAccessibleRegistry;
 import com.sun.glass.ui.uia.ProxyTextRangeProvider;
 
-import javafx.geometry.Point2D;
 import javafx.uia.ITextChildProvider;
-import javafx.uia.ITextProvider;
 import javafx.uia.ITextRangeProvider;
 import javafx.uia.IUIAElement;
 

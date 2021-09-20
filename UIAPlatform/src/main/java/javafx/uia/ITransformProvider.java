@@ -99,19 +99,4 @@ public interface ITransformProvider extends IInitable {
      */
     void Rotate(double degrees);
 
-    /**
-     * Hides all child nodes, controls, or content of this element.
-     */
-    void Expand();
-
-    /**
-     * Displays all child nodes, controls, or content of the control.
-     */
-    void Collapse();
-
-    /**
-     * Indicates the state, expanded or collapsed, of the control.
-     * @return the expand/collapse state
-     */
-    ExpandCollapseState get_ExpandCollapseState();
 }

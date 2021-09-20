@@ -52,10 +52,10 @@ import com.sun.glass.ui.uia.provider.NativeITextChildProvider;
 import com.sun.glass.ui.uia.provider.NativeITextProvider;
 import com.sun.glass.ui.uia.provider.NativeIToggleProvider;
 import com.sun.glass.ui.uia.provider.NativeISelectionProvider;
-import com.sun.glass.ui.uia.provider.NativeISelectionProvider2;
 import com.sun.glass.ui.uia.provider.NativeISelectionItemProvider;
 import com.sun.glass.ui.uia.provider.NativeIExpandCollapseProvider;
 import com.sun.glass.ui.uia.provider.NativeITransformProvider;
+import com.sun.glass.ui.uia.provider.NativeIWindowProvider;
 import com.sun.glass.ui.uia.provider.UIAElementAdapter;
 import com.sun.javafx.tk.quantum.QuantumToolkit;
 
@@ -714,16 +714,34 @@ public class ProxyAccessible extends Accessible {
     }
 
 
-    // other
-    private void WindowProvider_Close() {}
-    private boolean WindowProvider_get_CanMaximize() {return false;}
-    private boolean WindowProvider_get_CanMinimize() {return false;}
-    private boolean WindowProvider_get_IsModal() {return false;}
-    private boolean WindowProvider_get_IsTopmost() {return false;}
-    private int WindowProvider_get_WindowInteractionState() {return 0;}
-    private int WindowProvider_get_WindowVisualState() {return 0;}
-    private void WindowProvider_SetVisualState(int s) {}
-    private boolean WindowProvider_WaitForInputIdle(int s) {return false;}
+    // IWindowProvider
+    private void WindowProvider_Close() {
+        callProvider(NativeIWindowProvider.class, NativeIWindowProvider::Close);
+    }
+    private boolean WindowProvider_get_CanMaximize() {
+        return callProviderBoolean(NativeIWindowProvider.class, NativeIWindowProvider::get_CanMaximize, false, false);
+    }
+    private boolean WindowProvider_get_CanMinimize() {
+        return callProviderBoolean(NativeIWindowProvider.class, NativeIWindowProvider::get_CanMinimize, false, false);
+    }
+    private boolean WindowProvider_get_IsModal() {
+        return callProviderBoolean(NativeIWindowProvider.class, NativeIWindowProvider::get_IsModal, false, false);
+    }
+    private boolean WindowProvider_get_IsTopmost() {
+        return callProviderBoolean(NativeIWindowProvider.class, NativeIWindowProvider::get_IsTopmost, false, false);
+    }
+    private int WindowProvider_get_WindowInteractionState() {
+        return callProviderInt(NativeIWindowProvider.class, NativeIWindowProvider::get_WindowInteractionState, 0, 0);
+    }
+    private int WindowProvider_get_WindowVisualState() {
+        return callProviderInt(NativeIWindowProvider.class, NativeIWindowProvider::get_WindowVisualState, 0, 0);
+    }
+    private void WindowProvider_SetVisualState(int state) {
+        callProvider(NativeIWindowProvider.class, provider -> provider.SetVisualState(state));
+    }
+    private boolean WindowProvider_WaitForInputIdle(int milliseconds) {
+        return callProviderBoolean(NativeIWindowProvider.class, provider -> provider.WaitForInputIdle(milliseconds), false, false);
+    }
 
     
     // IDockProvider
@@ -850,6 +868,15 @@ public class ProxyAccessible extends Accessible {
         });
     }
 
+    <P> void callProvider(Class<P> providerType, Consumer<P> method) {
+        Util.guard(() -> {
+            P provider = getNativeProvider(providerType);
+            if (provider != null) {
+                method.accept(provider);
+            }
+        });
+    }
+
     <P, R> R callProvider(Class<P> providerType, Function<P, R> method, Function<WinAccessible, R> glassMethod, R errorValue) {
         return Util.guard(() -> {
             P provider = getNativeProvider(providerType);
@@ -908,6 +935,17 @@ public class ProxyAccessible extends Accessible {
         }, errorValue);
     }
 
+    <P> int callProviderInt(Class<P> providerType, ToIntFunction<P> method, int noProviderValue, int errorValue) {
+        return Util.guard(() -> {
+            P provider = getNativeProvider(providerType);
+            if (provider != null) {
+                return method.applyAsInt(provider);
+            } else {
+                return noProviderValue;
+            } 
+        }, errorValue);
+    }
+
     <P> double callProviderDouble(Class<P> providerType, ToDoubleFunction<P> method, ToDoubleFunction<WinAccessible> glassMethod, double errorValue) {
         return Util.guard(() -> {
             P provider = getNativeProvider(providerType);
@@ -929,6 +967,17 @@ public class ProxyAccessible extends Accessible {
             } else {
                 checkGlass();
                 return alternative.applyAsBoolean(glass);
+            } 
+        }, errorValue);
+    }
+
+    <P> boolean callProviderBoolean(Class<P> providerType, ToBooleanFunction<P> method, boolean noProviderValue, boolean errorValue) {
+        return Util.guard(() -> {
+            P provider = getNativeProvider(providerType);
+            if (provider != null) {
+                return method.applyAsBoolean(provider);
+            } else {
+                return noProviderValue;
             } 
         }, errorValue);
     }

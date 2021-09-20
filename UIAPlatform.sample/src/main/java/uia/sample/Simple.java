@@ -47,6 +47,7 @@ import uia.sample.samples.SimpleIExpandCollapseProvider;
 import uia.sample.samples.SimpleIGridProvider;
 import uia.sample.samples.SimpleITableProvider;
 import uia.sample.samples.SimpleITransformProvider;
+import uia.sample.samples.SimpleIWindowProvider;
 import uia.sample.samples.SimpleScrollProvider;
 import uia.sample.samples.SimpleTextProvider;
 import uia.sample.samples.SimpleTextProviderWithAttributes;
@@ -80,7 +81,8 @@ public class Simple extends Application {
             new SimpleIGridProvider(),
             new SimpleITableProvider(),
             new SimpleIExpandCollapseProvider(),
-            new SimpleITransformProvider()
+            new SimpleITransformProvider(),
+            new SimpleIWindowProvider()
             );
 
         VBox s = new VBox();
