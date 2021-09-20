@@ -22,31 +22,12 @@
  * http://www.gnu.org/licenses/gpl.html
  * ----------------------------------------------------------------
  */
-package javafx.uia;
+package com.sun.glass.ui.uia.provider;
 
-import java.util.stream.Stream;
-
-public interface ITextAttributeId extends INativeConstant {
-
-    int getNativeValue();
-
-    static ITextAttributeId fromNativeValue(int attributeId) {
-        return Stream.of(StandardTextAttributeIds.values())
-        .filter(value -> value.getNativeValue() == attributeId)
-        .map(v -> (ITextAttributeId)v).findFirst()
-        .orElse(new ITextAttributeId() {
-            @Override
-            public int getNativeValue() {
-                return attributeId;
-            }
-            @Override
-            public String getConstantName() {
-                return "ITextAttributeId_NOT_MAPPED("+attributeId+")";
-            }
-            @Override
-            public String toString() {
-                return "ITextAttributeId("+attributeId+")";
-            }
-        });
-    }
+public interface NativeIAnnotationProvider {
+    int get_AnnotationTypeId();
+    String get_AnnotationTypeName();
+    String get_Author();
+    String get_DateTime();
+    long get_Target();
 }

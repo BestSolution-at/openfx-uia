@@ -24,29 +24,7 @@
  */
 package javafx.uia;
 
-import java.util.stream.Stream;
-
-public interface ITextAttributeId extends INativeConstant {
-
+public interface INativeConstant {
     int getNativeValue();
-
-    static ITextAttributeId fromNativeValue(int attributeId) {
-        return Stream.of(StandardTextAttributeIds.values())
-        .filter(value -> value.getNativeValue() == attributeId)
-        .map(v -> (ITextAttributeId)v).findFirst()
-        .orElse(new ITextAttributeId() {
-            @Override
-            public int getNativeValue() {
-                return attributeId;
-            }
-            @Override
-            public String getConstantName() {
-                return "ITextAttributeId_NOT_MAPPED("+attributeId+")";
-            }
-            @Override
-            public String toString() {
-                return "ITextAttributeId("+attributeId+")";
-            }
-        });
-    }
+    String getConstantName();
 }

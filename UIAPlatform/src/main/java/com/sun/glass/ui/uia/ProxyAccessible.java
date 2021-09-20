@@ -41,6 +41,7 @@ import com.sun.glass.ui.Accessible;
 import com.sun.glass.ui.View;
 import com.sun.glass.ui.uia.glass.WinAccessible;
 import com.sun.glass.ui.uia.glass.WinVariant;
+import com.sun.glass.ui.uia.provider.NativeIAnnotationProvider;
 import com.sun.glass.ui.uia.provider.NativeIGridItemProvider;
 import com.sun.glass.ui.uia.provider.NativeIGridProvider;
 import com.sun.glass.ui.uia.provider.NativeIInvokeProvider;
@@ -753,11 +754,21 @@ public class ProxyAccessible extends Accessible {
         callProvider(NativeIDockProvider.class, provider -> provider.SetDockPosition(dockPosition));
     }
     // IAnnotationProvider
-    private int     IAnnotationProvider_get_AnnotationTypeId() { return 0; }
-    private String  IAnnotationProvider_get_AnnotationTypeName()  { return ""; }
-    private String  IAnnotationProvider_get_Author() { return ""; }
-    private String  IAnnotationProvider_get_DateTime() { return ""; }
-    private long    IAnnotationProvider_get_Target() { return 0L; }
+    private int     IAnnotationProvider_get_AnnotationTypeId() { 
+        return callProviderInt(NativeIAnnotationProvider.class, NativeIAnnotationProvider::get_AnnotationTypeId, 0, 0);
+    }
+    private String  IAnnotationProvider_get_AnnotationTypeName()  {
+        return callProvider(NativeIAnnotationProvider.class, NativeIAnnotationProvider::get_AnnotationTypeName, (String) null, null);
+    }
+    private String  IAnnotationProvider_get_Author() {
+        return callProvider(NativeIAnnotationProvider.class, NativeIAnnotationProvider::get_Author, (String) null, null);
+    }
+    private String  IAnnotationProvider_get_DateTime() {
+        return callProvider(NativeIAnnotationProvider.class, NativeIAnnotationProvider::get_DateTime, (String) null, null);
+    }
+    private long    IAnnotationProvider_get_Target() {
+        return callProviderLong(NativeIAnnotationProvider.class, NativeIAnnotationProvider::get_Target, 0L, 0L);
+    }
     // IDragProvider
     private String      IDragProvider_get_DropEffect() { return ""; }
     private String[]    IDragProvider_get_DropEffects() { return new String[0]; }
@@ -890,6 +901,17 @@ public class ProxyAccessible extends Accessible {
             } else {
                 checkGlass();
                 return glassMethod.apply(glass);
+            }
+        });
+    }
+    
+    <P, R> R callProvider(Class<P> providerType, Function<P, R> method, R noProviderValue, R errorValue) {
+        return Util.guard(() -> {
+            P provider = getNativeProvider(providerType);
+            if (provider != null) {
+                return method.apply(provider);
+            } else {
+                return noProviderValue;
             }
         });
     }

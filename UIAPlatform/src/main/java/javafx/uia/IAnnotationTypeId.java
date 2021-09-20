@@ -24,29 +24,29 @@
  */
 package javafx.uia;
 
-import java.util.stream.Stream;
-
-public interface ITextAttributeId extends INativeConstant {
-
+/**
+ * represents a uia annotation type id
+ */
+public interface IAnnotationTypeId extends INativeConstant {
+    
+    /**
+     * the native value
+     * @return native value
+     */
     int getNativeValue();
 
-    static ITextAttributeId fromNativeValue(int attributeId) {
-        return Stream.of(StandardTextAttributeIds.values())
-        .filter(value -> value.getNativeValue() == attributeId)
-        .map(v -> (ITextAttributeId)v).findFirst()
-        .orElse(new ITextAttributeId() {
+
+    static IAnnotationTypeId fromNativeValue(int nativeValue) {
+        return StandardAnnotationTypeIds.fromNativeValue(nativeValue).orElse(new IAnnotationTypeId(){
             @Override
             public int getNativeValue() {
-                return attributeId;
+                return nativeValue;
             }
             @Override
             public String getConstantName() {
-                return "ITextAttributeId_NOT_MAPPED("+attributeId+")";
-            }
-            @Override
-            public String toString() {
-                return "ITextAttributeId("+attributeId+")";
+                return "AnnotationTypeId_NOT_MAPPED("+nativeValue+")";
             }
         });
     }
+    
 }

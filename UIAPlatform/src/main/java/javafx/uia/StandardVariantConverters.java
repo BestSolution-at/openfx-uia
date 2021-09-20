@@ -27,6 +27,7 @@ package javafx.uia;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.IntFunction;
 
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
@@ -82,6 +83,11 @@ public class StandardVariantConverters {
     public static final IVariantConverter<IUIAElement[]> UNKNOWNArray_IUIAElementArray = createConverter(
         value -> Variant.vt_unknown_array(Arrays.stream(value).mapToLong(element -> ProxyAccessibleRegistry.getInstance().findAccessible(element).getNativeAccessible()).toArray()),
         variant -> null // TODO punk val backmapping = ?
+    );
+
+    public static final IVariantConverter<int[]> I4Array_IntegerArray = createConverter(
+        value -> Variant.vt_i4_array(value),
+        variant -> variant.getLValSafeArray()
     );
 
     public static final IVariantConverter<Double> R8_Double = createConverter(value -> Variant.vt_r8(value), variant -> variant.getDblVal());
@@ -140,6 +146,13 @@ public class StandardVariantConverters {
         return createConverter(value -> Variant.vt_i4(value.getNativeValue()), variant -> enumResolver.apply(variant.getLVal()).orElse(null));
     }
 
+    public static final <T extends INativeConstant> IVariantConverter<T[]> I4Array_INativeConstantArray(IntFunction<T> constantResolver) {
+        return createConverter(
+            value -> Variant.vt_i4_array(Arrays.stream(value).mapToInt(INativeConstant::getNativeValue).toArray()),
+            variant -> (T[]) Arrays.stream(variant.getLValSafeArray()).mapToObj(constantResolver).toArray(size -> new INativeConstant[size])
+        );
+    }
+
     public static void main(String[] args) {
         Color value = Color.rgb(100, 200, 255);
         int red = (int) Math.floor(value.getRed() * 255);
@@ -155,5 +168,11 @@ public class StandardVariantConverters {
         color |= (blue  << 16) & rgbBlue;
 
         System.err.println(Integer.toHexString(color));
+    }
+    public static <T extends INativeConstant> IVariantConverter<T> I4_INativeConstant(Function<Integer, T> constantResolver) {
+        return createConverter(
+            value -> Variant.vt_i4(value.getNativeValue()),
+            variant -> constantResolver.apply(variant.getLVal())
+        );
     }
 }

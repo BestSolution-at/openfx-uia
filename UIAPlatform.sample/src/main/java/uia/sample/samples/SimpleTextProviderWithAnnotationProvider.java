@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import com.sun.javafx.geom.BaseBounds;
 import com.sun.javafx.geom.Point2D;
@@ -54,10 +55,17 @@ import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.uia.ControlType;
+import javafx.uia.IAnnotationProvider;
+import javafx.uia.IAnnotationTypeId;
+import javafx.uia.IInitContext;
 import javafx.uia.ITextAttributeSupport;
 import javafx.uia.ITextProvider;
 import javafx.uia.ITextRangeProvider;
 import javafx.uia.IUIAElement;
+import javafx.uia.StandardAnnotationTypeIds;
+import javafx.uia.StandardPropertyIds;
+import javafx.uia.StandardTextAttributeIds;
+import javafx.uia.StandardVariantConverters;
 import javafx.uia.SupportedTextSelection;
 import javafx.uia.TextAttributeValue;
 import javafx.uia.TextPatternRangeEndpoint;
@@ -66,7 +74,66 @@ import javafx.uia.UIA;
 import uia.sample.Sample;
 
 @SuppressWarnings("restriction")
-public class SimpleTextProviderWithAttributes implements Sample { 
+public class SimpleTextProviderWithAnnotationProvider implements Sample { 
+
+    class Annotation implements IUIAElement, IAnnotationProvider {
+
+        Node node;
+
+        private IUIAElement target;
+        private String comment;
+        private String author;
+
+        public Annotation(Node node, IUIAElement target, String comment, String author) {
+            this.node = node;
+            this.comment = comment;
+        }
+
+        @Override
+        public void initialize(IInitContext init) {
+            init.addProperty(StandardPropertyIds.UIA_ValueValuePropertyId, this::getComment, StandardVariantConverters.BSTR_String);
+        }
+
+        String getComment() {
+            return comment;
+        }
+
+        @Override
+        public IAnnotationTypeId get_AnnotationTypeId() {
+            return StandardAnnotationTypeIds.Comment;
+        }
+
+        @Override
+        public String get_AnnotationTypeName() {
+            return "Kommentar";
+        }
+
+        @Override
+        public String get_Author() {
+            return author;
+        }
+
+        @Override
+        public String get_DateTime() {
+            return "2021-01-01 10:00";
+        }
+
+        @Override
+        public IUIAElement get_Target() {
+            return target;
+        }
+
+        @Override
+        public Bounds getBounds() {
+            return node.localToScreen(node.getBoundsInLocal());
+        }
+
+        @Override
+        public void SetFocus() {
+            node.requestFocus();
+        }
+
+    }
 
     class TextPart implements TextSpan {
         Font font;
@@ -97,6 +164,8 @@ public class SimpleTextProviderWithAttributes implements Sample {
 
  
     }
+
+
 
     List<TextPart> content = Arrays.asList(
         new TextPart("Hello", Font.font(12), Color.BLACK),
@@ -191,6 +260,8 @@ public class SimpleTextProviderWithAttributes implements Sample {
 
     }
 
+    Annotation uiaAnnotation;
+
     class SimpleRange implements ITextRangeProvider {
 
 
@@ -201,6 +272,43 @@ public class SimpleTextProviderWithAttributes implements Sample {
             context.addFontNameAttribute(this::getFontName, null);
             context.addForegroundColorAttribute(this::getForegroundColor, null);
             context.addBackgroundColorAttribute(this::getBackgroundColor, null);
+
+            // AnnotationObjects attribute
+            context.addAttribute(StandardTextAttributeIds.UIA_AnnotationObjectsAttributeId, this::getAnnotationObjects, StandardVariantConverters.UNKNOWNArray_IUIAElementArray, null);
+            // AnnotationTypes attribute
+            context.addAttribute(StandardTextAttributeIds.UIA_AnnotationTypesAttributeId, this::getAnnotationTypes, StandardVariantConverters.I4Array_INativeConstantArray(IAnnotationTypeId::fromNativeValue), null);
+        }
+
+        private IAnnotationProvider[] findAnnotations() {
+            if (start <= 25 && end >= 22) { // hardcoded "UIA"
+                return new IAnnotationProvider[] { uiaAnnotation };
+            } else {
+                return new IAnnotationProvider[0];
+            }
+        }
+
+        private TextAttributeValue<IUIAElement[]> getAnnotationObjects() {
+            System.err.println("### getAnnotationObjects() called");
+
+            IAnnotationProvider[] annotations = findAnnotations();
+
+            if (annotations.length == 0) {
+                return TextAttributeValue.value(new IUIAElement[0]);
+            } else {
+                return TextAttributeValue.value(Stream.of(annotations).map(el -> (IUIAElement) el).toArray(size -> new IUIAElement[size]));
+            }
+        }
+
+        private TextAttributeValue<IAnnotationTypeId[]> getAnnotationTypes() {
+            System.err.println("### getAnnotationTypes() called");
+
+            IAnnotationProvider[] annotations = findAnnotations();
+
+            if (annotations.length == 0) {
+                return TextAttributeValue.value(new IAnnotationTypeId[0]);
+            } else {
+                return TextAttributeValue.value(Stream.of(annotations).map(el -> el.get_AnnotationTypeId()).toArray(size -> new IAnnotationTypeId[size]));
+            }
         }
 
         private ITextRangeProvider findFontSizeAttribute(boolean backward, double fontSize) {
@@ -708,7 +816,7 @@ public class SimpleTextProviderWithAttributes implements Sample {
 
         @Override
         public ITextRangeProvider[] GetSelection() {
-            return new ITextRangeProvider[] { };
+            return new ITextRangeProvider[] { new SimpleRange(helper, 22, 25) };
         }
 
         @Override
@@ -718,6 +826,7 @@ public class SimpleTextProviderWithAttributes implements Sample {
 
         @Override
         public ITextRangeProvider RangeFromChild(IUIAElement childElement) {
+            System.err.println("getRangeFromChild called: " + childElement);
             return null;
         }
 
@@ -751,10 +860,12 @@ public class SimpleTextProviderWithAttributes implements Sample {
     }
     BorderPane area;
     Canvas canvas;
-    public SimpleTextProviderWithAttributes() {
+    public SimpleTextProviderWithAnnotationProvider() {
 
         TextElement el = new TextElement(new TextHelper());
+        
         element = el;
+
         canvas = new Canvas(400, 50) {
             @Override
             public Object queryAccessibleAttribute(AccessibleAttribute attribute, Object... parameters) {
@@ -765,22 +876,38 @@ public class SimpleTextProviderWithAttributes implements Sample {
             }
         };
 
+        String annotationText = "UIA means UserInterfaceAutomation";
+        Label annotationNode = new Label(annotationText) {
+            Annotation uiaAnnotation = new Annotation(this, el, annotationText, "Christoph");{
+                SimpleTextProviderWithAnnotationProvider.this.uiaAnnotation = uiaAnnotation;
+            }
+            public Object queryAccessibleAttribute(AccessibleAttribute attribute, Object... parameters) {
+                if (UIA.isUIAQuery(attribute, parameters)) {
+                    return uiaAnnotation;
+                }
+                return super.queryAccessibleAttribute(attribute, parameters);
+            }
+        };
+        
+
         layoutContent();
 
         GraphicsContext ctx = canvas.getGraphicsContext2D();
         draw(ctx);
 
+        area = new BorderPane();
+        area.setCenter(canvas);
+        area.setBottom(annotationNode);
 
 
-
-        desc = new Label("Simple ITextProvider & ITextRangeProvider sample with attributes. Also FindAttribute is implemented for font size. The sample uses the font sizes 12, 14 and 16.");
+        desc = new Label("Simple ITextProvider & ITextRangeProvider sample with an IAnnotationProvider attached");
         desc.setWrapText(true);
     }
 
 
     @Override
     public String getName() {
-        return "ITextProvider w/ Attributes";
+        return "ITextProvider w/ IAnnotationProvider";
     }
 
     @Override
@@ -791,7 +918,7 @@ public class SimpleTextProviderWithAttributes implements Sample {
 
     @Override
     public Node getSample() {
-        return canvas;
+        return area;
     }
 
     @Override

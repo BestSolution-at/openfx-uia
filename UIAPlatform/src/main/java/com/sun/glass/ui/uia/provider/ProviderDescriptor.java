@@ -34,6 +34,7 @@ import java.util.function.BiFunction;
 
 import com.sun.glass.ui.uia.ProxyAccessible;
 
+import javafx.uia.IAnnotationProvider;
 import javafx.uia.IDockProvider;
 import javafx.uia.IExpandCollapseProvider;
 import javafx.uia.IGridItemProvider;
@@ -94,6 +95,9 @@ public class ProviderDescriptor<JavaType, NativeType> {
             register(StandardPatternIds.UIA_TransformPatternId, ITransformProvider.class, NativeITransformProvider.class, TransformProviderAdapter::new);
 
             register(StandardPatternIds.UIA_DockPatternId, IDockProvider.class, NativeIDockProvider.class, DockProviderAdapter::new);
+
+            register(StandardPatternIds.UIA_AnnotationPatternId, IAnnotationProvider.class, NativeIAnnotationProvider.class, AnnotationProviderAdapter::new);
+            
         }
 
         static <JavaType, NativeType> boolean isAvailable(IPatternId id) {

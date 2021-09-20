@@ -67,6 +67,10 @@ public class Variant {
         return winVariant.pDblVal;
     }
 
+    public int[] getLValSafeArray() {
+        return winVariant.pLVal;
+    }
+
 
     public static Variant vt_empty() {
         WinVariant v = new WinVariant();
@@ -149,5 +153,14 @@ public class Variant {
         v.pFltVal = value;
         return new Variant(v);
     }
+
+    public static Variant vt_i4_array(int[] value) {
+        WinVariant v = new WinVariant();
+        v.vt = WinVariant.VT_I4 | WinVariant.VT_ARRAY;
+        v.pLVal = value;
+        return new Variant(v);
+    }
+
+
 
 }

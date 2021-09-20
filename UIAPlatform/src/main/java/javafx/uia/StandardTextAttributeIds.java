@@ -250,7 +250,14 @@ public enum StandardTextAttributeIds implements ITextAttributeId, INativeEnum {
      *  Variant type: VT_I4
      *  Default value: TextDecorationLineStyle_None
      */
-    UIA_UnderlineStyleAttributeId(40030)
+    UIA_UnderlineStyleAttributeId(40030),
+    /** not documented */
+    UIA_SayAsInterpretAsAttributeId(40043),
+    /** Identifies the CapStyle text attribute, which specifies the capitalization style for the text. This attribute is specified as a value from the CapStyle enumerated type. 
+     *  Variant type: VT_I4
+     *  Default value: CapStyle_None
+     */
+    UIA_CapStyleAttributeId(40003)
     ;
 
     private int nativeValue;
