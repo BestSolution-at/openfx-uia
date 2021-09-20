@@ -59,7 +59,7 @@ public class SimpleITableProvider implements Sample {
                 return super.queryAccessibleAttribute(attribute, parameters);
             }
         };
-
+        root.canvas = canvas;
         
         UIATable grid = new UIATable();
         grid.colCount = 3;

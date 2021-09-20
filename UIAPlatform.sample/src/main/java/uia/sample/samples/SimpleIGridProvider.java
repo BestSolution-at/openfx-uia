@@ -59,7 +59,7 @@ public class SimpleIGridProvider implements Sample {
                 return super.queryAccessibleAttribute(attribute, parameters);
             }
         };
-
+        root.canvas = canvas;
         
         UIAGrid grid = new UIAGrid();
         grid.colCount = 3;
