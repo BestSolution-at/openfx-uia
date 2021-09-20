@@ -59,7 +59,7 @@ public interface ISelectionProvider2 extends ISelectionProvider {
 
     /**
      * Gets the first item in a group of selected items.
-     * @retur the first selected item
+     * @return the first selected item
      */
     IUIAElement get_FirstSelectedItem();
 

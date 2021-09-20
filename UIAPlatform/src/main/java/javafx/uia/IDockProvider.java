@@ -52,7 +52,7 @@ public interface IDockProvider extends IInitable {
 	 * <p>
 	 * A docking container is a control that allows the arrangement of child elements, both horizontally and vertically, relative to the boundaries of the docking container and other elements within the container.
 	 * </p>
-	 * @return The new docking position.
+	 * @attrib dockPosition The new docking position.
 	 */
 	void SetDockPosition(DockPosition dockPosition);
 
@@ -61,6 +61,7 @@ public interface IDockProvider extends IInitable {
 	 * <p>
 	 * A docking container is a control that allows the arrangement of child elements, both horizontally and vertically, relative to the boundaries of the docking container and other elements in the container.
 	 * </p>	 
+	 * @return the dock position
 	 */
 	DockPosition get_DockPosition();
 
