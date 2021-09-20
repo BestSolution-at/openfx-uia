@@ -43,6 +43,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import uia.sample.samples.CanvasWithVirtualChildren;
 import uia.sample.samples.DocumentModelSample;
+import uia.sample.samples.SimpleIDockProvider;
 import uia.sample.samples.SimpleIExpandCollapseProvider;
 import uia.sample.samples.SimpleIGridProvider;
 import uia.sample.samples.SimpleITableProvider;
@@ -82,7 +83,8 @@ public class Simple extends Application {
             new SimpleITableProvider(),
             new SimpleIExpandCollapseProvider(),
             new SimpleITransformProvider(),
-            new SimpleIWindowProvider()
+            new SimpleIWindowProvider(),
+            new SimpleIDockProvider()
             );
 
         VBox s = new VBox();
