@@ -35,11 +35,16 @@ import com.sun.glass.ui.uia.ProxyAccessible;
 import com.sun.glass.ui.uia.ProxyAccessibleRegistry;
 import com.sun.glass.ui.uia.glass.WinVariant;
 
+import javafx.uia.IActiveTextPositionChangedEvent;
+import javafx.uia.IAsyncContentLoadedEvent;
 import javafx.uia.IEvent;
 import javafx.uia.IEventId;
 import javafx.uia.IInitContext;
+import javafx.uia.INotificationEvent;
 import javafx.uia.IProperty;
 import javafx.uia.IPropertyId;
+import javafx.uia.IStructureChangedEvent;
+import javafx.uia.ITextEditTextChangedEvent;
 import javafx.uia.IUIAElement;
 import javafx.uia.IUIAVirtualElement;
 import javafx.uia.IUIAVirtualRootElement;
@@ -84,6 +89,32 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
         public IEvent addEvent(IEventId id) {
             return () -> UiaRaiseAutomationEvent(id);
         }
+
+        @Override
+        public INotificationEvent addNotificationEvent() {
+            return UIAElementAdapter.this::UiaRaiseNotificationEvent;
+        }
+        
+        @Override
+        public ITextEditTextChangedEvent addTextEditTextChangedEvent() {
+            return UIAElementAdapter.this::UiaRaiseTextEditTextChangedEvent;
+        }
+
+        @Override
+        public IActiveTextPositionChangedEvent addActiveTextPositionChangedEvent() {
+            return UIAElementAdapter.this::UiaRaiseActiveTextPositionChangedEvent;
+        }
+
+        @Override
+        public IAsyncContentLoadedEvent addAsyncContentLoadedEvent() {
+            return UIAElementAdapter.this::UiaRaiseAsyncContentLoadedEvent;
+        }
+
+        @Override
+        public IStructureChangedEvent addStructureChangedEvent() {
+            return UIAElementAdapter.this::UiaRaiseStructureChangedEvent;
+        }
+
     };
 
     private Map<Integer, Prop<?>> installedProps = new HashMap<>();

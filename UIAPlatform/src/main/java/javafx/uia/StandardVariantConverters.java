@@ -146,6 +146,7 @@ public class StandardVariantConverters {
         return createConverter(value -> Variant.vt_i4(value.getNativeValue()), variant -> enumResolver.apply(variant.getLVal()).orElse(null));
     }
 
+    @SuppressWarnings("unchecked")
     public static final <T extends INativeConstant> IVariantConverter<T[]> I4Array_INativeConstantArray(IntFunction<T> constantResolver) {
         return createConverter(
             value -> Variant.vt_i4_array(Arrays.stream(value).mapToInt(INativeConstant::getNativeValue).toArray()),

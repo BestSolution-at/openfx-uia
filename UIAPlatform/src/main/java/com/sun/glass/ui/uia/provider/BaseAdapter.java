@@ -25,9 +25,22 @@
 package com.sun.glass.ui.uia.provider;
 
 import com.sun.glass.ui.uia.ProxyAccessible;
+import com.sun.glass.ui.uia.ProxyTextRangeProvider;
 
+import java.util.Arrays;
+
+import com.sun.glass.ui.uia.Logger;
+
+import com.sun.glass.ui.uia.winapi.Windows;
+
+import javafx.uia.AsyncContentLoadedState;
 import javafx.uia.IEventId;
 import javafx.uia.IPropertyId;
+import javafx.uia.ITextRangeProvider;
+import javafx.uia.NotificationKind;
+import javafx.uia.NotificationProcessing;
+import javafx.uia.StructureChangeType;
+import javafx.uia.TextEditChangeType;
 import javafx.uia.Variant;
 
 public abstract class BaseAdapter<T> {
@@ -49,4 +62,49 @@ public abstract class BaseAdapter<T> {
         ProxyAccessible.UiaRaiseAutomationEvent(accessible.getNativeAccessible(), eventId.getNativeValue());
     }
 
+    protected void UiaRaiseTextEditTextChangedEvent(TextEditChangeType changeType, String[] payload) {
+        Logger.debug(this, () -> "UiaRaiseTextEditTextChangedEvent("+changeType+", "+Arrays.toString(payload)+")");
+        long pProvider = accessible.getNativeAccessible();
+        int textEditChangeType = changeType.getNativeValue();
+        long pChangedData = Windows.SafeArrayCreateVector((short) Windows.VT_BSTR, 0, payload.length);
+        for (int idx = 0; idx < payload.length; idx ++) {
+            long pValue = Windows.SysAllocString(payload[idx]);
+            Windows.SafeArrayPutElement(pChangedData, idx, pValue);
+            Windows.SysFreeString(pValue);
+        }
+        long result = Windows.UiaRaiseTextEditTextChangedEvent(pProvider, textEditChangeType, pChangedData);
+        Logger.debug(this, () -> "UiaRaiseTextEditTextChangedEvent => 0x" + Long.toHexString(result));
+    }
+
+    protected void UiaRaiseNotificationEvent(NotificationKind notificationKind, NotificationProcessing notificationProcessing, String displayString, String activityId) {
+        Logger.debug(this, () -> "UiaRaiseNotificationEvent("+notificationKind+", " + notificationProcessing +", " + displayString + ", " + activityId +")");
+        long result = Windows.UiaRaiseNotificationEvent(accessible.getNativeAccessible(), notificationKind.getNativeValue(), notificationProcessing.getNativeValue(), displayString, activityId);
+        Logger.debug(this, () -> "UiaRaiseNotificationEvent => 0x" + Long.toHexString(result));
+    }
+
+    private long getNativeTextRange(ITextRangeProvider textRange) {
+        if (textRange == null) {
+            return 0;
+        }
+        ProxyTextRangeProvider proxy = new ProxyTextRangeProvider(accessible, textRange);
+        return proxy.getNativeProvider();
+    }
+
+    protected void UiaRaiseActiveTextPositionChangedEvent(ITextRangeProvider textRange) {
+        Logger.debug(this, () -> "UiaRaiseActiveTextPositionChangedEvent(" + textRange + ")");
+        long result = Windows.UiaRaiseActiveTextPositionChangedEvent(accessible.getNativeAccessible(), getNativeTextRange(textRange));
+        Logger.debug(this, () -> "UiaRaiseActiveTextPositionChangedEvent => 0x" + Long.toHexString(result));
+    }
+
+    protected void UiaRaiseAsyncContentLoadedEvent(AsyncContentLoadedState asyncContentLoadedState, double percentComplete) {
+        Logger.debug(this, () -> "UiaRaiseAsyncContentLoadedEvent(" + asyncContentLoadedState + ", " + percentComplete + ")");
+        long result = Windows.UiaRaiseAsyncContentLoadedEvent(accessible.getNativeAccessible(), asyncContentLoadedState.getNativeValue(), percentComplete);
+        Logger.debug(this, () -> "UiaRaiseAsyncContentLoadedEvent => 0x" + Long.toHexString(result));       
+    }
+
+    protected void UiaRaiseStructureChangedEvent(StructureChangeType structureChangeType, int[] runtimeId) {
+        Logger.debug(this, () -> "UiaRaiseStructureChangedEvent(" + structureChangeType + ", " + Arrays.toString(runtimeId) + ")");
+        long result = Windows.UiaRaiseStructureChangedEvent(accessible.getNativeAccessible(), structureChangeType.getNativeValue(), runtimeId);
+        Logger.debug(this, () -> "UiaRaiseStructureChangedEvent => 0x" + Long.toHexString(result));   
+    }
 }

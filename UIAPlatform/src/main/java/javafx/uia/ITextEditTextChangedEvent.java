@@ -24,13 +24,11 @@
  */
 package javafx.uia;
 
-public interface IEventSupport {
-    IEvent addEvent(IEventId id);
-
-    INotificationEvent addNotificationEvent();
-    IActiveTextPositionChangedEvent addActiveTextPositionChangedEvent();
-    IAsyncContentLoadedEvent addAsyncContentLoadedEvent();
-    ITextEditTextChangedEvent addTextEditTextChangedEvent();
-    IStructureChangedEvent addStructureChangedEvent();
+/**
+ * Support for the UiaRaiseTextEditTextChangedEvent function
+ */
+public interface ITextEditTextChangedEvent {
+    
+    public void fire(TextEditChangeType textEditChangeType, String[] changedData);
 
 }

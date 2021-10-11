@@ -39,7 +39,6 @@ import java.util.function.ToLongFunction;
 
 import com.sun.glass.ui.Accessible;
 import com.sun.glass.ui.View;
-import com.sun.glass.ui.uia.Logger;
 import com.sun.glass.ui.uia.glass.WinAccessible;
 import com.sun.glass.ui.uia.glass.WinVariant;
 import com.sun.glass.ui.uia.provider.NativeIAnnotationProvider;

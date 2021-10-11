@@ -114,13 +114,18 @@ JNIEXPORT jboolean JNICALL Java_com_sun_glass_ui_uia_winapi_Windows_VariantGetBo
     return variant->boolVal == VARIANT_TRUE ? JNI_TRUE : JNI_FALSE;
 }
 
+BSTR toBSTR(JNIEnv* env, jstring value) {
+    UINT length = env->GetStringLength(value);
+    const jchar* ptr = env->GetStringCritical(value, NULL);
+    BSTR result = SysAllocStringLen(reinterpret_cast<const OLECHAR*>(ptr), length);
+    env->ReleaseStringCritical(value, ptr);
+    return result;
+}
+
 JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_winapi_Windows_VariantSetBstrVal
 (JNIEnv* env, jclass jClass, jlong _variant, jstring _bstrVal) {
     VARIANT* variant = (VARIANT*) _variant;
-    UINT length = env->GetStringLength(_bstrVal);
-    const jchar* ptr = env->GetStringCritical(_bstrVal, NULL);
-    variant->bstrVal = SysAllocStringLen(reinterpret_cast<const OLECHAR*>(ptr), length);
-    env->ReleaseStringCritical(_bstrVal, ptr);
+    variant->bstrVal = toBSTR(env, _bstrVal);
 }
 JNIEXPORT jstring JNICALL Java_com_sun_glass_ui_uia_winapi_Windows_VariantGetBstrVal
 (JNIEnv* env, jclass jClass, jlong _variant) {
@@ -372,6 +377,155 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_winapi_Windows_VariantDebugOutp
         break;
     }
     std::cerr     << "       : " << variant << std::endl;
+}
+
+
+JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_winapi_Windows_UiaRaiseActiveTextPositionChangedEvent
+(JNIEnv* env, jclass jClass, jlong _pProvider, jlong _pTextRange) {
+    IRawElementProviderSimple* pProvider = (IRawElementProviderSimple*) _pProvider;
+    ITextRangeProvider* pTextRange = (ITextRangeProvider*) _pTextRange;
+    HRESULT result = UiaRaiseActiveTextPositionChangedEvent(pProvider, pTextRange);
+    return (jlong) result;
+}
+
+JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_winapi_Windows_UiaRaiseAsyncContentLoadedEvent
+(JNIEnv* env, jclass jClass, jlong _pProvider, jint _asyncContentLoadedState, jdouble _percentComplete) {
+    IRawElementProviderSimple* pProvider = (IRawElementProviderSimple*) _pProvider;
+    AsyncContentLoadedState asyncContentLoadedState = (AsyncContentLoadedState) _asyncContentLoadedState;
+    double percentComplete = (double) _percentComplete;
+    std::cerr << "FOOO " << asyncContentLoadedState << ", " << percentComplete << std::endl;
+    HRESULT result = UiaRaiseAsyncContentLoadedEvent(pProvider, asyncContentLoadedState, percentComplete);
+    return (jlong) result;
+}
+
+JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_winapi_Windows_UiaRaiseAutomationEvent
+(JNIEnv* env, jclass jClass, jlong _pProvider, jint _id) {
+    IRawElementProviderSimple* pProvider = (IRawElementProviderSimple*) _pProvider;
+    EVENTID id = (EVENTID) _id;
+    HRESULT result = UiaRaiseAutomationEvent(pProvider, id);
+    return (jlong) result;
+}
+
+JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_winapi_Windows_UiaRaiseAutomationPropertyChangedEvent
+(JNIEnv* env, jclass jClass, jlong _pProvider, jint _id, jlong _variantOld, jlong _variantNew) {
+    IRawElementProviderSimple* pProvider = (IRawElementProviderSimple*) _pProvider;
+    PROPERTYID id = (PROPERTYID) _id;
+    VARIANT* variantOld = (VARIANT*) _variantOld;
+    VARIANT* variantNew = (VARIANT*) _variantNew;
+    HRESULT result = UiaRaiseAutomationPropertyChangedEvent(pProvider, id, *variantOld, *variantNew);
+    return result;
+}
+
+JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_winapi_Windows_UiaRaiseChangesEvent
+(JNIEnv* env, jclass jClass, jlong _pProvider, jint _eventIdCount, jlong _pUiaChanges) {
+    IRawElementProviderSimple* pProvider = (IRawElementProviderSimple*) _pProvider;
+    int eventIdCount = (int) _eventIdCount;
+    UiaChangeInfo* pUiaChanges = (UiaChangeInfo*) _pUiaChanges;
+    HRESULT result = UiaRaiseChangesEvent(pProvider, eventIdCount, pUiaChanges);
+    return result;
+}
+
+JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_winapi_Windows_UiaRaiseNotificationEvent
+(JNIEnv* env, jclass jClass, jlong _pProvider, jint _notificationKind, jint _notificationProcessing, jstring _displayString, jstring _activityId) {
+    IRawElementProviderSimple* pProvider = (IRawElementProviderSimple*) _pProvider;
+    NotificationKind notificationKind = (NotificationKind) _notificationKind;
+    NotificationProcessing notificationProcessing = (NotificationProcessing) _notificationProcessing;
+    BSTR displayString = toBSTR(env, _displayString);
+    BSTR activityId = toBSTR(env, _activityId);
+    HRESULT result = UiaRaiseNotificationEvent(pProvider, notificationKind, notificationProcessing, displayString, activityId);
+    return result;
+}
+
+JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_winapi_Windows_UiaRaiseStructureChangedEvent
+(JNIEnv* env, jclass jClass, jlong _pProvider, jint _structureChangeType, jarray _pRuntimeId) {
+    IRawElementProviderSimple* pProvider = (IRawElementProviderSimple*) _pProvider;
+    StructureChangeType structureChangeType = (StructureChangeType) _structureChangeType;
+
+    int* pRuntimeId = NULL;
+    int cRuntimeIdLen = 0;
+
+    if (_pRuntimeId != NULL) {
+        jsize len = env->GetArrayLength(_pRuntimeId);
+        pRuntimeId = new int[len];
+        void* listPtr = env->GetPrimitiveArrayCritical(_pRuntimeId, 0);
+        jint* intPtr = (jint*)listPtr;
+        for (LONG i = 0; i < len; i++) {
+            pRuntimeId[i] = intPtr[i];
+        }
+        env->ReleasePrimitiveArrayCritical(_pRuntimeId, listPtr, 0);
+        cRuntimeIdLen = (int) len;
+    }
+
+    
+    HRESULT result = UiaRaiseStructureChangedEvent(pProvider, structureChangeType, pRuntimeId, cRuntimeIdLen);
+    return result;
+}
+
+JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_winapi_Windows_UiaRaiseTextEditTextChangedEvent
+(JNIEnv* env, jclass jClass, jlong _pProvider, jint _textEditChangeType, jarray _pRuntimeId, jlong _pChangedData) {
+    IRawElementProviderSimple* pProvider = (IRawElementProviderSimple*) _pProvider;
+    TextEditChangeType textEditChangeType = (TextEditChangeType) _textEditChangeType;
+    SAFEARRAY* pChangedData = (SAFEARRAY*) _pChangedData;
+    HRESULT result = UiaRaiseTextEditTextChangedEvent(pProvider, textEditChangeType, pChangedData);
+    return result;
+}
+
+JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_winapi_Windows_SysAllocString
+(JNIEnv* env, jclass jClass, jstring value) {
+    UINT length = env->GetStringLength(value);
+    const jchar* ptr = env->GetStringCritical(value, NULL);
+    BSTR result = SysAllocStringLen(reinterpret_cast<const OLECHAR*>(ptr), length);
+    env->ReleaseStringCritical(value, ptr);
+
+    std::wcerr << "allocated: " << result << std:: endl;
+    return (jlong) result;
+}
+
+JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_winapi_Windows_SysFreeString
+(JNIEnv* env, jclass jClass, jlong pBstr) {
+    BSTR bstr = (BSTR) pBstr;
+    SysFreeString(bstr);
+}
+
+JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_winapi_Windows_SafeArrayCreateVector
+(JNIEnv* env, jclass jClass, jshort _vt, jint _lLbound, jint _cElements) {
+    VARTYPE vt = (VARTYPE) _vt;
+    LONG lLbound = (LONG) _lLbound;
+    ULONG cElements = (ULONG) _cElements;
+    SAFEARRAY* result = SafeArrayCreateVector(vt, lLbound, cElements);
+    return (jlong) result;
+}
+
+JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_winapi_Windows_SafeArrayDestroy
+(JNIEnv* env, jclass jClass, jlong _psa) {
+    SAFEARRAY* psa = (SAFEARRAY*) _psa;
+    HRESULT result = SafeArrayDestroy(psa);
+    return result;
+}
+
+JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_winapi_Windows_SafeArrayPutElement
+(JNIEnv* env, jclass jClass, jlong _psa, jint _index, jlong pValue) {
+    SAFEARRAY* psa = (SAFEARRAY*) _psa;
+    LONG index = (LONG) _index;
+    void* value = (void*) pValue;
+    HRESULT result = SafeArrayPutElement(psa, &index, value);
+    return result;
+}
+
+JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_winapi_Windows_SafeArrayGetElement
+(JNIEnv* env, jclass jClass, jlong _psa, jint _index, jlong pValue) {
+    SAFEARRAY* psa = (SAFEARRAY*) _psa;
+    LONG index = (LONG) _index;
+    BSTR value;
+    HRESULT result = SafeArrayGetElement(psa, &index, &value);
+    std::wcerr << value << std::endl;
+    return (jlong) value;
+}
+
+JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_winapi_Windows_DebugOutputBSTR
+(JNIEnv* env, jclass jClass, jlong _pBstr) {
+    BSTR bstr = (BSTR) _pBstr;
+    std::wcerr << bstr << std::endl;
 }
 
 }

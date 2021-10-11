@@ -78,11 +78,29 @@ public class Windows {
     public static native long UiaGetReservedNotSupportedValue();
 
     public static native boolean UiaClientsAreListening();
-    public static native int UiaRaiseAutomationEvent(long accessible, int eventId);
-    public static native int UiaRaiseAutomationPropertyChangedEvent(long accessible, int propertyId, long variantOld, long variantNew);
+    
+    public static native long UiaRaiseActiveTextPositionChangedEvent(long pProvider, long textRange);
+    public static native long UiaRaiseAsyncContentLoadedEvent(long pProvider, int asyncContentLoadedState, double percentComplete);
+    public static native long UiaRaiseAutomationEvent(long pProvider, int eventId);
+    public static native long UiaRaiseAutomationPropertyChangedEvent(long pProvider, int propertyId, long variantOld, long variantNew);
+    public static native long UiaRaiseChangesEvent(long pProvider, int eventIdCount, long pUiaChanges);
+    public static native long UiaRaiseNotificationEvent(long pProvider, int notificationKind, int notificationProcessing, String displayString, String activityId);
+    public static native long UiaRaiseStructureChangedEvent(long pProvider, int structureChangeType, int[] pRuntimeId);
+    public static native long UiaRaiseTextEditTextChangedEvent(long pProvider, int textEditChangeType, long pChangedData);
 
+
+    public static native long SafeArrayCreateVector(short vt, int lLbound, int cElements);
+    public static native long SafeArrayDestroy(long psa);
+    public static native long SafeArrayPutElement(long psa, int index, long pValue);
+    public static native long SafeArrayGetElement(long psa, int index);
+
+    public static native long SysAllocString(String string);
+    public static native void SysFreeString(long pBstr);
+
+    public static native void DebugOutputBSTR(long pBstr);
 
     public static void main(String[] args) {
+        ProxyAccessible.requireLibrary();
         {
             long variant = VariantInit();
             VariantDebugOutput(variant);
@@ -171,5 +189,36 @@ public class Windows {
         System.err.println(UiaGetReservedMixedAttributeValue());
         System.err.println(UiaGetReservedNotSupportedValue());
 
+
+        System.err.println("-----------------------");
+
+        long test = SysAllocString("test");
+        DebugOutputBSTR(test);
+        SysFreeString(test);
+
+        long mySa = SafeArrayCreateVector((short) VT_BSTR, 0, 3);
+
+        long zero = SysAllocString("zero");
+        SafeArrayPutElement(mySa, 0, zero);
+        SysFreeString(zero);
+
+        long one = SysAllocString("one");
+        SafeArrayPutElement(mySa, 1, one);
+        SysFreeString(one);
+
+        long two = SysAllocString("two");
+        SafeArrayPutElement(mySa, 2, two);
+        SysFreeString(two);
+
+        long hr = SafeArrayDestroy(mySa);
+
+        long readZero = SafeArrayGetElement(mySa, 0);
+        System.err.println("zero: " + readZero);
+        DebugOutputBSTR(readZero);
+        long readOne = SafeArrayGetElement(mySa, 1);
+        System.err.println("one: " + readOne);
+        DebugOutputBSTR(readOne);
+
+        System.err.println("destroy = 0x" + Long.toHexString(hr));
     }
 }

@@ -43,6 +43,7 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import uia.sample.samples.CanvasWithVirtualChildren;
 import uia.sample.samples.DocumentModelSample;
+import uia.sample.samples.SimpleAsyncContentLoadedEvent;
 import uia.sample.samples.SimpleIDockProvider;
 import uia.sample.samples.SimpleIExpandCollapseProvider;
 import uia.sample.samples.SimpleIGridProvider;
@@ -51,7 +52,10 @@ import uia.sample.samples.SimpleITableProvider;
 import uia.sample.samples.SimpleITransformProvider;
 import uia.sample.samples.SimpleIValueProvider;
 import uia.sample.samples.SimpleIWindowProvider;
+import uia.sample.samples.SimpleNotificationEvent;
 import uia.sample.samples.SimpleScrollProvider;
+import uia.sample.samples.SimpleStructureChangedEvent;
+import uia.sample.samples.SimpleTextEditTextChangedEvent;
 import uia.sample.samples.SimpleTextProvider;
 import uia.sample.samples.SimpleTextProviderWithAnnotationProvider;
 import uia.sample.samples.SimpleTextProviderWithAttributes;
@@ -90,7 +94,11 @@ public class Simple extends Application {
             new SimpleIDockProvider(),
             new SimpleTextProviderWithAnnotationProvider(),
             new SimpleIValueProvider(),
-            new SimpleIRangeValueProvider()
+            new SimpleIRangeValueProvider(),
+            new SimpleNotificationEvent(),
+            new SimpleAsyncContentLoadedEvent(),
+            new SimpleTextEditTextChangedEvent(),
+            new SimpleStructureChangedEvent()
             );
 
         VBox s = new VBox();

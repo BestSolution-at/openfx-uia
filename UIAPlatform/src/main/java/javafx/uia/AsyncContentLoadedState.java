@@ -24,13 +24,36 @@
  */
 package javafx.uia;
 
-public interface IEventSupport {
-    IEvent addEvent(IEventId id);
+import java.util.Optional;
+import java.util.stream.Stream;
 
-    INotificationEvent addNotificationEvent();
-    IActiveTextPositionChangedEvent addActiveTextPositionChangedEvent();
-    IAsyncContentLoadedEvent addAsyncContentLoadedEvent();
-    ITextEditTextChangedEvent addTextEditTextChangedEvent();
-    IStructureChangedEvent addStructureChangedEvent();
+/** 
+ * Contains values that describe the progress of asynchronous loading of content.
+ */
+public enum AsyncContentLoadedState implements INativeEnum {
+    /** Loading of the content into the UI Automation element is beginning. */
+    Beginning(0),
+    /** Loading of the content into the UI Automation element is in progress. */
+    Progress(1),
+    /** Loading of the content into the UI Automation element is complete. */
+    Completed(2);
+    
+    private final int value;
+    private AsyncContentLoadedState(int value) {
+        this.value = value;
+    }
 
+    @Override
+    public int getNativeValue() {
+        return value;
+    }
+
+    @Override
+    public String getConstantName() {
+        return "AsyncContentLoadedState_" + name();
+    }
+    
+    public static Optional<AsyncContentLoadedState> fromNativeValue(int nativeValue) {
+		return Stream.of(values()).filter(value -> value.getNativeValue() == nativeValue).findFirst();
+	}
 }
