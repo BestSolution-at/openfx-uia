@@ -64,10 +64,6 @@ public interface IRangeValueProvider extends IInitable {
 	 * <p>
 	 * The LargeChange property can support Not a Number (NaN) value. When returning a NaN value, the provider should return a quiet (non-signaling) NaN to avoid raising an exception if floating-point exceptions are turned on. The following example shows how to create a quiet NaN:
 	 * </p>
-	 * <code>
-	 * ULONGLONG ulNaN = 0xFFFFFFFFFFFFFFFF;
-     * *pRetVal = *reinterpret_cast<double*>(&ulNaN);
-	 * </code>
 	 * @return the large change
 	 */
 	double get_LargeChange();
@@ -95,10 +91,6 @@ public interface IRangeValueProvider extends IInitable {
 	 * <p>
 	 * The SmallChange property can support Not a Number (NaN) value. When returning a NaN value, the provider should return a quiet (non-signaling) NaN to avoid raising an exception if floating-point exceptions are turned on. The following example shows how to create a quiet NaN:
 	 * </p>
-	 * <code>
-	 * ULONGLONG ulNaN = 0xFFFFFFFFFFFFFFFF;
-	 * *pRetVal = *reinterpret_cast<double*>(&ulNaN);
-	 * </code>
 	 * @return
 	 */
 	double get_SmallChange();
