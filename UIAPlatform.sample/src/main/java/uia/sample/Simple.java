@@ -48,6 +48,7 @@ import uia.sample.samples.SimpleIDockProvider;
 import uia.sample.samples.SimpleIExpandCollapseProvider;
 import uia.sample.samples.SimpleIGridProvider;
 import uia.sample.samples.SimpleIRangeValueProvider;
+import uia.sample.samples.SimpleISelectionProvider;
 import uia.sample.samples.SimpleITableProvider;
 import uia.sample.samples.SimpleITransformProvider;
 import uia.sample.samples.SimpleIValueProvider;
@@ -95,6 +96,7 @@ public class Simple extends Application {
             new SimpleTextProviderWithAnnotationProvider(),
             new SimpleIValueProvider(),
             new SimpleIRangeValueProvider(),
+            new SimpleISelectionProvider(),
             new SimpleNotificationEvent(),
             new SimpleAsyncContentLoadedEvent(),
             new SimpleTextEditTextChangedEvent(),
