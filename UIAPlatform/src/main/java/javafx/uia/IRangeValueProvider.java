@@ -91,7 +91,7 @@ public interface IRangeValueProvider extends IInitable {
 	 * <p>
 	 * The SmallChange property can support Not a Number (NaN) value. When returning a NaN value, the provider should return a quiet (non-signaling) NaN to avoid raising an exception if floating-point exceptions are turned on. The following example shows how to create a quiet NaN:
 	 * </p>
-	 * @return
+	 * @return the small change
 	 */
 	double get_SmallChange();
 
