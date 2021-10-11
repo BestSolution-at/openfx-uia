@@ -56,35 +56,29 @@ public class TextProviderAdapter extends BaseAdapter<ITextProvider> implements N
 
     @Override
     public long get_DocumentRange() {
-        System.err.println("#get_DocumentRange()");
         ITextRangeProvider range = provider.get_DocumentRange();
         return toNative(range);
     }
 
     @Override
     public int get_SupportedTextSelection() {
-        System.err.println("#get_SupportedTextSelection()");
         return provider.get_SupportedTextSelection().getNativeValue();
     }
 
     @Override
     public long[] GetSelection() {
-        System.err.println("#GetSelection()");
         ITextRangeProvider[] ranges = provider.GetSelection();
         return toNative(ranges);
     }
 
     @Override
     public long[] GetVisibleRanges() {
-        System.err.println("#GetVisibleRanges()");
         ITextRangeProvider[] ranges = provider.GetVisibleRanges();
         return toNative(ranges);
     }
 
     @Override
     public long RangeFromChild(long childElement) {
-        System.err.println("#RangeFromChild()");
-        
         ProxyAccessible acc = ProxyAccessibleRegistry.getInstance().getByNative(childElement);
         IUIAElement el = acc.getUIAElement();
         
@@ -94,7 +88,6 @@ public class TextProviderAdapter extends BaseAdapter<ITextProvider> implements N
 
     @Override
     public long RangeFromPoint(double x, double y) {
-        System.err.println("#RangeFromPoint("+x+", "+y+")");
         ITextRangeProvider range = provider.RangeFromPoint(new Point2D(x, y));
         if (range != null) {
             return toNative(range);

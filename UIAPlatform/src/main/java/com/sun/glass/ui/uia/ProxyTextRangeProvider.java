@@ -94,7 +94,7 @@ public class ProxyTextRangeProvider {
     public ProxyTextRangeProvider(ProxyAccessible accessible, ITextRangeProvider impl) {
 
         if (impl == null) {
-            System.err.println("ProxyTextRangeProvider cannot be created without an ITextRangeProvider");
+            Logger.debug(this, () -> "ProxyTextRangeProvider cannot be created without an ITextRangeProvider");
             throw new NullPointerException("impl is null!");
         }
 
@@ -103,7 +103,7 @@ public class ProxyTextRangeProvider {
         peer = _createTextRangeProvider(accessible.getNativeAccessible());
         id = idCount++;
 
-        System.err.println("ProxyTextRangeProvider created. acc=" + accessible);
+        Logger.debug(this, () -> "ProxyTextRangeProvider created. acc=" + accessible);
 
         impl.initialize(support);
     }
@@ -175,7 +175,7 @@ public class ProxyTextRangeProvider {
             case Windows.VT_UNKNOWN:
                 return Variant.vt_unknown(Windows.VariantGetPunkVal(variant));
         }
-        System.err.println("Variant unknown; using VT_EMPTY");
+        Logger.warning(this, () -> "Variant unknown; using VT_EMPTY");
         Thread.dumpStack();
         return Variant.vt_empty();
     }

@@ -39,6 +39,7 @@ import java.util.function.ToLongFunction;
 
 import com.sun.glass.ui.Accessible;
 import com.sun.glass.ui.View;
+import com.sun.glass.ui.uia.Logger;
 import com.sun.glass.ui.uia.glass.WinAccessible;
 import com.sun.glass.ui.uia.glass.WinVariant;
 import com.sun.glass.ui.uia.provider.NativeIAnnotationProvider;
@@ -126,7 +127,7 @@ public class ProxyAccessible extends Accessible {
     ProxyAccessible(ProxyAccessible context, IUIAElement uiaElement) {
 
         if (uiaElement == null) {
-            System.err.println("virtual ProxyAccessible cannot be created without an uiaElement");
+            Logger.debug(this, () -> "virtual ProxyAccessible cannot be created without an uiaElement");
             throw new NullPointerException("uiaElement is null!");
         }
 
@@ -369,7 +370,7 @@ public class ProxyAccessible extends Accessible {
 
     private void checkGlass() {
         if (glass == null) {
-            System.err.println("Glass is null in " + this);
+            Logger.error(this, () -> "Glass is null in " + this);
             new NullPointerException("glass is null").printStackTrace();
         }
     }
@@ -520,7 +521,6 @@ public class ProxyAccessible extends Accessible {
     }
     /*  Note that this method is called by the IValueProvider also. */
     private boolean IRangeValueProvider_get_IsReadOnly() {
-        System.err.println("mixed is_readonly");
         return Util.guard(() -> {
             if (uiaElementAdapter != null) {
                 if (uiaElementAdapter.getProviderRegistry().isProviderAvailable(StandardPatternIds.UIA_RangeValuePatternId.getNativeValue())) {
@@ -552,11 +552,9 @@ public class ProxyAccessible extends Accessible {
     /*             IValueProvider                  */
     /***********************************************/
     private void IValueProvider_SetValueString(String val) {
-        System.err.println("set value");
         callProviderW(NativeIValueProvider.class, provider -> provider.SetValue(val), win -> win.SetValueString(val));
     }
     private String IValueProvider_get_ValueString() {
-        System.err.println("get value");
         return callProviderW(NativeIValueProvider.class, NativeIValueProvider::get_Value, WinAccessible::get_ValueString, (String)null);
     }
     /***********************************************/
