@@ -42,6 +42,7 @@ import javafx.uia.IGridProvider;
 import javafx.uia.IInitContext;
 import javafx.uia.IInvokeProvider;
 import javafx.uia.IPatternId;
+import javafx.uia.IRangeValueProvider;
 import javafx.uia.IScrollItemProvider;
 import javafx.uia.IScrollProvider;
 import javafx.uia.ISelectionItemProvider;
@@ -54,6 +55,7 @@ import javafx.uia.ITextProvider;
 import javafx.uia.IToggleProvider;
 import javafx.uia.ITransformProvider;
 import javafx.uia.IUIAElement;
+import javafx.uia.IValueProvider;
 import javafx.uia.IWindowProvider;
 import javafx.uia.StandardPatternIds;
 
@@ -98,6 +100,8 @@ public class ProviderDescriptor<JavaType, NativeType> {
 
             register(StandardPatternIds.UIA_AnnotationPatternId, IAnnotationProvider.class, NativeIAnnotationProvider.class, AnnotationProviderAdapter::new);
             
+            register(StandardPatternIds.UIA_ValuePatternId, IValueProvider.class, NativeIValueProvider.class, ValueProviderAdapter::new);
+            register(StandardPatternIds.UIA_RangeValuePatternId, IRangeValueProvider.class, NativeIRangeValueProvider.class, RangeValueProviderAdapter::new);
         }
 
         static <JavaType, NativeType> boolean isAvailable(IPatternId id) {
