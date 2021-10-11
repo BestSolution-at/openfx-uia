@@ -26,6 +26,7 @@ package com.sun.glass.ui.uia.provider;
 
 import java.util.Optional;
 
+import com.sun.glass.ui.uia.Logger;
 import com.sun.glass.ui.uia.ProxyAccessible;
 import com.sun.glass.ui.uia.ProxyAccessibleRegistry;
 
@@ -65,7 +66,7 @@ public class GridItemProviderAdapter extends BaseAdapter<IGridItemProvider> impl
         .map(el -> {
             ProxyAccessible acc = ProxyAccessibleRegistry.getInstance().findAccessible(el);
             if (acc == null) {
-                System.err.println("Creating virtual for GridItem#ContainingGrid!!!");
+                Logger.debug(this, () -> "Creating virtual for GridItem#ContainingGrid!!!");
                 acc = ProxyAccessibleRegistry.getInstance().getVirtualAccessible(accessible, el);
             }
             return acc;
