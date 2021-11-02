@@ -52,6 +52,7 @@ import javafx.uia.ITableItemProvider;
 import javafx.uia.ITableProvider;
 import javafx.uia.ITextChildProvider;
 import javafx.uia.ITextProvider;
+import javafx.uia.ITextProvider2;
 import javafx.uia.IToggleProvider;
 import javafx.uia.ITransformProvider;
 import javafx.uia.IUIAElement;
@@ -76,6 +77,7 @@ public class ProviderDescriptor<JavaType, NativeType> {
             register(StandardPatternIds.UIA_WindowPatternId, IWindowProvider.class, NativeIWindowProvider.class, WindowProviderAdapter::new);
             register(StandardPatternIds.UIA_InvokePatternId, IInvokeProvider.class, NativeIInvokeProvider.class, InvokeProviderAdapter::new);
             register(StandardPatternIds.UIA_TextPatternId, ITextProvider.class, NativeITextProvider.class, TextProviderAdapter::new);
+            register(StandardPatternIds.UIA_TextPattern2Id, ITextProvider2.class, NativeITextProvider2.class, TextProviderAdapter2::new);
             
             register(StandardPatternIds.UIA_TextChildPatternId, ITextChildProvider.class, NativeITextChildProvider.class, TextChildProviderAdapter::new);
 

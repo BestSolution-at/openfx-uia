@@ -1,13 +1,40 @@
 package uia.sample.samples;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javafx.application.Platform;
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.value.ObservableValue;
+import javafx.geometry.BoundingBox;
+import javafx.geometry.Bounds;
+import javafx.geometry.Point2D;
 import javafx.scene.AccessibleAttribute;
+import javafx.scene.Cursor;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.control.Tooltip;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCombination;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.uia.UIA;
 import uia.sample.Sample;
+import uia.sample.samples.model.BaseModel;
+import uia.sample.samples.model.IModel;
+import uia.sample.samples.model.Text;
+import uia.sample.samples.model.TextSupport.Glyph;
 import uia.sample.samples.model.UIADocument;
 import uia.sample.samples.model.UIAPage;
 import uia.sample.samples.model.UIATable;
@@ -15,7 +42,7 @@ import uia.sample.samples.model.UIATableCell;
 import uia.sample.samples.model.UIATableHeaderCell;
 
 public class DocumentModelSample implements Sample {
-    
+
     private UIATable createTable() {
         UIATable table = new UIATable();
         table.colCount = 3;
@@ -99,20 +126,20 @@ public class DocumentModelSample implements Sample {
         doc.layoutX = 30;
 
         UIAPage page1 = new UIAPage();
-        page1.addText("Hello World\n", Font.font(16), Color.BLACK);
-        page1.addText("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", Font.font(10), Color.ROYALBLUE);
-        page1.addText("Tabelle?\n", Font.getDefault(), Color.BLACK);
+        page1.addText("Hello World\n", Font.font(22), Color.BLACK);
+        page1.addText("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", Font.font(14), Color.ROYALBLUE);
+        page1.addText("Tabelle?\n", Font.font(16), Color.BLACK);
         page1.addEmbed(createTable());
-        page1.addText("\n", Font.getDefault(), Color.BLACK);
-        page1.addText("End\n", Font.getDefault(), Color.BLACK);
+        page1.addText("\n", Font.font(16), Color.BLACK);
+        page1.addText("End\n", Font.font(16), Color.BLACK);
 
         page1.layoutW = 300;
 
         doc.addPage(page1);
 
         UIAPage page2 = new UIAPage();
-        page2.addText("A second page\n", Font.getDefault(), Color.RED);
-        page2.addText("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", Font.font(10), Color.ROYALBLUE);
+        page2.addText("A second page\n", Font.font(22), Color.RED);
+        page2.addText("Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.", Font.font(14), Color.ROYALBLUE);
 
         page2.layoutW = 300;
 
@@ -121,23 +148,15 @@ public class DocumentModelSample implements Sample {
 
         doc.layout();
         doc.computeIndices(0);
+        doc.computeGlyphs(0);
 
         BorderPane root = new BorderPane();
+        EditorPane editorPane = new EditorPane(doc);
+        doc.setControl(editorPane);
 
-        Canvas canvas = new Canvas(400, 600) {
-            @Override
-            public Object queryAccessibleAttribute(AccessibleAttribute attribute, Object... parameters) {
-                if (UIA.isUIAQuery(attribute, parameters)) {
-                    return doc;
-                }
-                return super.queryAccessibleAttribute(attribute, parameters);
-            }
-        };
-        root.setCenter(canvas);
+        root.setCenter(editorPane);
 
-        doc.canvas = canvas;
-
-        doc.render(canvas.getGraphicsContext2D());
+        doc.canvas = editorPane.canvas;
 
         // text.render(canvas.getGraphicsContext2D());
 
@@ -148,7 +167,7 @@ public class DocumentModelSample implements Sample {
         // //.replaceAll("\n", "\u23CE\n")
         // //.replaceAll("\u0007", "|")
         // );
-        
+
 
         // Pane ov = new Pane();
         // ov.setStyle("-fx-background-color: transparent;");
@@ -200,5 +219,312 @@ public class DocumentModelSample implements Sample {
     @Override
     public String getName() {
         return "Document Model Sample";
+    }
+
+    public static class EditorPane extends AnchorPane {
+
+        final Canvas canvas;
+        private final UIADocument doc;
+        private final IntegerProperty caretOffset = new SimpleIntegerProperty(-1);
+
+        private final IntegerProperty selectionBegin = new SimpleIntegerProperty(-1);
+        private final IntegerProperty selectionEnd = new SimpleIntegerProperty(-1);
+
+        private Tooltip tt;
+        int cur = -1;
+
+        private boolean inMouseSelection = false;
+        private int mouseSelectionBegin = -1;
+
+        public EditorPane(UIADocument uiaDocument) {
+            this.doc = uiaDocument;
+
+            canvas = new Canvas() {
+
+            };
+
+            caretOffset.addListener(inv -> repaint());
+            selectionBegin.addListener(inv -> repaint());
+            selectionEnd.addListener(inv -> repaint());
+            focusedProperty().addListener(inv -> repaint());
+
+            canvas.addEventHandler(MouseEvent.MOUSE_PRESSED, evt -> {
+                requestFocus();
+
+                Optional<Glyph> glyph = pickGlyph(evt);
+                glyph.ifPresent(g -> {
+                    caretOffset.set(g.index);
+                    if (evt.isShiftDown() && selectionBegin.get() != -1) {
+                        selectionEnd.set(g.index);
+                    } else {
+                        selectionBegin.set(-1);
+                        selectionEnd.set(-1);
+                    }
+
+                    inMouseSelection = true;
+                    mouseSelectionBegin = g.index;
+                });
+
+            });
+
+            canvas.addEventHandler(MouseEvent.MOUSE_RELEASED, evt -> {
+
+                inMouseSelection = false;
+                mouseSelectionBegin = -1;
+            });
+
+            canvas.addEventHandler(MouseEvent.MOUSE_DRAGGED, evt -> {
+                if (inMouseSelection) {
+                    Optional<Glyph> glyph = pickGlyph(evt);
+                    glyph.ifPresent(g -> {
+                        selectionBegin.set(mouseSelectionBegin);
+                        selectionEnd.set(g.index);
+                        caretOffset.set(g.index);
+                    });
+                }
+            });
+
+            canvas.addEventHandler(MouseEvent.MOUSE_RELEASED, evt -> {
+
+            });
+
+            canvas.addEventHandler(MouseEvent.MOUSE_MOVED, evt -> {
+                Optional<Glyph> glyph = pickGlyph(evt);
+                if (glyph.isPresent()) {
+                    setCursor(Cursor.TEXT);
+                    Glyph g = glyph.get();
+                    if (g.index == cur) {
+                        return;
+                    } else {
+                        if (tt == null) {
+                            tt = new Tooltip();
+                        }
+                        tt.setText("index: " + g.index);
+                        cur = g.index;
+                        Point2D coords = canvas.localToScreen(g.x + g.w + 10, g.y + g.h + 10);
+                        tt.show(canvas, coords.getX(), coords.getY());
+                        Platform.runLater(() -> tt.show(canvas, coords.getX(), coords.getY()));
+                    }
+                } else {
+                    setCursor(null);
+                    if (tt != null) {
+                        tt.hide();
+                        cur = -1;
+                    }
+                }
+            });
+
+            setFocusTraversable(true);
+
+            final KeyCombination LEFT = KeyCombination.keyCombination("Left");;
+            final KeyCombination RIGHT = KeyCombination.keyCombination("Right");
+            final KeyCombination SHIFT_LEFT = KeyCombination.keyCombination("Shift+Left");
+            final KeyCombination SHIFT_RIGHT = KeyCombination.keyCombination("Shift+Right");
+            addEventHandler(KeyEvent.KEY_PRESSED, evt -> {
+                int offset = caretOffset.get();
+                int selBegin = selectionBegin.get();
+                int selEnd = selectionEnd.get();
+                if (LEFT.match(evt)) {
+                   if (offset != 0) offset -= 1;
+                   selBegin = -1;
+                   selEnd = -1;
+                   evt.consume();
+                }
+                if (RIGHT.match(evt)) {
+                    offset += 1;
+                    selBegin = -1;
+                    selEnd = -1;
+                    evt.consume();
+                }
+                if (SHIFT_LEFT.match(evt)) {
+                    if (selBegin == -1) selBegin = offset;
+                    if (offset != 0) offset -= 1;
+                    selEnd = offset;
+                    evt.consume();
+                }
+                if (SHIFT_RIGHT.match(evt)) {
+                    if (selBegin == -1) selBegin = offset;
+                    offset += 1;
+                    selEnd = offset;
+                    evt.consume();
+                }
+
+                caretOffset.set(limit(offset));
+                if (selBegin == selEnd) {
+                    selBegin = selEnd = -1;
+                }
+                selectionBegin.set(limit(selBegin));
+                selectionEnd.set(limit(selEnd));
+            });
+
+            getChildren().setAll(canvas);
+
+            AnchorPane.setTopAnchor(canvas, 0D);
+            AnchorPane.setRightAnchor(canvas, 0D);
+            AnchorPane.setBottomAnchor(canvas, 0D);
+            AnchorPane.setLeftAnchor(canvas, 0D);
+
+            caretOffset.addListener(observable -> {
+                doc.fireSelection();
+            });
+        }
+
+        private int limit(int index) {
+            if (index == -1) {
+                return index;
+            }
+            return Math.min(doc.getEnd(), Math.max(0, index));
+        }
+
+        private Optional<Glyph> pickGlyph(MouseEvent evt) {
+            double x = evt.getX();
+            double y = evt.getY();
+        /*
+            return doc.streamGlyphs().filter(g -> 
+                g.y <= y && g.y + g.h > y &&
+                g.x <= x && g.x + g.w > x)
+                .findFirst();
+*/
+            Iterator<Glyph> it = doc.streamGlyphs().iterator();
+           
+            while (it.hasNext()) {
+                Glyph cur = it.next();
+                double left = cur.x;
+                double middle = cur.x + cur.w / 2;
+                double right = cur.x + cur.w;
+
+                if (cur.y <= y && cur.y + cur.h > y) {
+
+                    if (left <= x && middle > x) {
+                        return Optional.of(cur);
+                    } 
+
+                    if (middle <= x && right > x) {
+                        if (it.hasNext()) {
+                            return Optional.of(it.next());
+                        }
+                    }
+
+                }
+            }
+
+            return Optional.empty();
+        }
+
+        public IntegerProperty caretOffsetProperty() {
+            return caretOffset;
+        }
+
+        public IntegerProperty selectionBeginProperty() {
+            return selectionBegin;
+        }
+
+        public IntegerProperty selectionEndProperty() {
+            return selectionEnd;
+        }
+
+        @Override
+        public Object queryAccessibleAttribute(AccessibleAttribute attribute, Object... parameters) {
+            if (UIA.isUIAQuery(attribute, parameters)) {
+                return doc;
+            }
+            return super.queryAccessibleAttribute(attribute, parameters);
+        }
+
+        private void repaint() {
+            requestLayout();
+        }
+
+        private void render() {
+            final GraphicsContext g2D = canvas.getGraphicsContext2D();
+            final double width = getWidth();
+            final double height = getHeight();
+
+            g2D.clearRect(0, 0, width, height);// reset/clean canvas
+            
+            doc.render(g2D);
+
+            drawFocusBorder(g2D);
+
+            
+
+           
+
+            g2D.setFill(Color.rgb(1, 0, 0, 0.2));
+            doc.streamGlyphs().forEach(g -> {
+                //g2D.fillRect(g.x, g.y, g.w, g.h);
+            });
+
+          
+            drawSelection(g2D);
+           
+
+            drawCaret(g2D);
+        }
+
+        @Override
+        protected void layoutChildren() {
+            super.layoutChildren();
+            final double width = getWidth();
+            final double height = getHeight();
+
+            canvas.setWidth(width);
+            canvas.setHeight(height);
+
+            render();
+        }
+
+        private void drawFocusBorder(GraphicsContext g2D) {
+            if (!isFocused()) {
+                return;
+            }
+
+            final Paint stroke = g2D.getStroke();
+            g2D.setStroke(Color.BLACK);
+
+            g2D.strokeRect(1, 1, getWidth() - 1, getHeight() - 1);
+
+            g2D.setStroke(stroke);
+        }
+
+        private void drawCaret(GraphicsContext gc) {
+            if (!isFocused()) {
+                return;
+            }
+            final int offset = caretOffset.get();
+
+            Optional<Glyph> glyph = doc.streamGlyphs().filter(g -> g.index == offset).findFirst();
+
+            glyph.ifPresent(g -> {
+                gc.setFill(Color.RED);
+                gc.fillRect(g.x - 3, g.y - 2, 6, 2);
+                gc.fillRect(g.x - 1, g.y, 2, g.h);
+                gc.fillRect(g.x - 3, g.y + g.h, 6, 2);
+            });
+        }
+
+        private void drawSelection(GraphicsContext gc) {
+
+            int lower = Math.min(selectionBegin.get(), selectionEnd.get());
+            int upper = Math.max(selectionBegin.get(), selectionEnd.get());
+
+            Supplier<Stream<Glyph>> selected = () -> doc.streamGlyphs().filter(g -> g.index >= lower && g.index < upper);
+
+            List<Bounds> perGlyph = selected.get().map(g -> new BoundingBox(g.x, g.y, g.w, g.h)).collect(Collectors.toList());
+            List<Bounds> merged = BaseModel.merge(perGlyph);
+            
+  
+            gc.setFill(Color.BLUE);
+            merged.forEach(m -> {
+                gc.fillRect(m.getMinX(), m.getMinY(), m.getWidth(), m.getHeight());
+            });
+            selected.get().forEach(g -> {
+                g.render.render(gc, Color.WHITE);
+            });
+
+
+        }
+
+
     }
 }

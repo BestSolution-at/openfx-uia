@@ -51,6 +51,7 @@ import com.sun.glass.ui.uia.provider.NativeITableItemProvider;
 import com.sun.glass.ui.uia.provider.NativeITableProvider;
 import com.sun.glass.ui.uia.provider.NativeITextChildProvider;
 import com.sun.glass.ui.uia.provider.NativeITextProvider;
+import com.sun.glass.ui.uia.provider.NativeITextProvider2;
 import com.sun.glass.ui.uia.provider.NativeIToggleProvider;
 import com.sun.glass.ui.uia.provider.NativeISelectionProvider;
 import com.sun.glass.ui.uia.provider.NativeISelectionItemProvider;
@@ -451,6 +452,7 @@ public class ProxyAccessible extends Accessible {
         });
     }
     private long IRawElementProviderFragmentRoot_GetFocus() {
+        System.err.println("GetFocus!! " + this);
         // Our only root is the scene itself, so GetFocus needs to be answered by the scene
         return Util.guard(() -> {
             checkGlass();
@@ -785,10 +787,16 @@ public class ProxyAccessible extends Accessible {
     }
 
     // ITextProvider2
-    // XXX GetCaretRange has 2 output arguments!!!
-    private long        ITextProvider2_GetCaretRange() { return 0L; }
-    private boolean     ITextProvider2_GetCaretRangeIsActive() { return false; }
-    private long        ITextProvider2_RangeFromAnnotation(long annotationElement) { return 0L; }
+    public static final class NCaretRangeResult {
+        public boolean isActive;
+        public long range;
+    }
+    private NCaretRangeResult   ITextProvider2_GetCaretRange() { 
+        return callProvider(NativeITextProvider2.class, NativeITextProvider2::GetCaretRange, null, null);
+    }
+    private long                ITextProvider2_RangeFromAnnotation(long annotationElement) {
+        return callProviderLong(NativeITextProvider2.class, prov -> prov.RangeFromAnnotation(annotationElement), 0L, 0L);
+    }
 
 
 

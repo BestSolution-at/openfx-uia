@@ -24,13 +24,18 @@
  */
 package uia.sample.samples.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import uia.sample.samples.model.Text.TextFragment;
+import uia.sample.samples.model.TextSupport.Glyph;
 
 public class Cell extends BaseModel {
 
@@ -45,6 +50,8 @@ public class Cell extends BaseModel {
 
     private Text textHelper;
 
+    private TextSupport textSupport;
+
     public boolean inRow(int row) {
         return this.row <= row && this.row + this.rowSpan > row;
     }
@@ -54,6 +61,8 @@ public class Cell extends BaseModel {
 
     public void setContent(String content) {
         this.content = content;// + "\u0007";
+        textSupport = new TextSupport();
+        /*
         textHelper = new Text() {
             @Override
             double computeParentLayoutX() {
@@ -72,21 +81,57 @@ public class Cell extends BaseModel {
                 return Cell.this.getEnd();
             }
         };
-        textHelper.addText(content/* + "\u0007"*/, Font.getDefault(), Color.BLACK);
+        textHelper.addText(content/* + "\u0007"*//*, Font.getDefault(), Color.BLACK);
+        */
 
     }
 
     @Override
     public int computeIndices(int curBegin) {
         begin = curBegin;
-        int length = textHelper.computeIndices(curBegin);
+        int length = content.length();
+        //int length = textHelper.computeIndices(curBegin);
+        end = begin + length;
+        return length;
+    }
+
+    private List<Glyph> localGlyphs = new ArrayList<>();
+
+    @Override
+    public int computeGlyphs(int beginIndex) {
+        begin = beginIndex;
+        int length = content.length();
+        //int length = textHelper.computeIndices(curBegin);
+
+        int idx = beginIndex;
+        if (textSupport != null) {
+            for (Glyph tg : textSupport.getGlyphList()) {
+                Glyph g = new Glyph();
+                g.x = tg.x;
+                g.y = tg.y;
+                g.w = tg.w;
+                g.h = tg.h;
+                g.render = tg.render;
+                g.index = idx;
+                localGlyphs.add(g);
+
+                idx ++;
+            }
+        }
+
         end = begin + length;
         return length;
     }
 
     @Override
+    public Stream<Glyph> streamGlyphs() {
+        return localGlyphs.stream();
+    }
+
+    @Override
     public List<Bounds> getTextBounds(int begin, int end) {
-        return textHelper.getTextBounds(begin, end);
+        return textSupport.getTextBounds(begin, end);
+        //return textHelper.getTextBounds(begin, end);
     }
 
     @Override
@@ -101,12 +146,21 @@ public class Cell extends BaseModel {
         layoutW = grid.colWidth * colSpan;
         layoutH = grid.rowHeight * rowSpan;
 
+        double textX = computeParentLayoutX() + layoutX + 5;
+        double textY = computeParentLayoutY() + layoutY + 15;
+
+
+        if (textSupport != null) {
+            textSupport.layout(getBegin(), textX, textY, layoutW - 10, Collections.singletonList(new TextFragment(content, Font.getDefault(), Color.BLACK)));
+        }
+        /*
         if (textHelper != null) {
             textHelper.layoutX = layoutX + 5;
-            textHelper.layoutY = layoutY + 25;
+            textHelper.layoutY = layoutY + 15;
             textHelper.layoutW = layoutW - 10;
             textHelper.layout();
         }
+        */
     }
 
     public Bounds computeCellBounds() {
@@ -146,11 +200,15 @@ public class Cell extends BaseModel {
         gc.setFill(Color.BLACK);
         gc.fillText("" + col + "/" + row, x + 5, y + 12);
         
+        if (textSupport != null) {
+            textSupport.render(gc);
+        }
+/*
         if (textHelper != null) {
            
             textHelper.render(gc);
         }
-
+*/
 
         // if (content != null) {
         //     gc.setFont(Font.font(14));
@@ -158,4 +216,9 @@ public class Cell extends BaseModel {
         // }
     }
     
+
+    @Override
+    public int pickText(double x, double y) {
+        return textSupport.pickText(x, y);
+    }
 }

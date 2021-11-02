@@ -1,7 +1,12 @@
 package uia.sample.samples.model;
 
 import java.text.BreakIterator;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
+import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.uia.ITextAttributeSupport;
 import javafx.uia.ITextRangeProvider;
@@ -257,7 +262,43 @@ public class UIATextRange implements ITextRangeProvider {
 
         @Override
         public Bounds[] GetBoundingRectangles() {
-            return root.getTextBounds(start, end).stream().map(b -> root.canvas.localToScreen(b)).toArray(size -> new Bounds[size]);
+
+            if (start == end) {
+               
+                Optional<Bounds> glyph = root.streamGlyphs().filter(g -> g.index == start)
+                .map(g -> new BoundingBox(g.x, g.y, g.w, g.h))
+                .map(root.canvas::localToScreen)
+                .findFirst();
+                System.err.println("degenerate " + glyph);
+                if (glyph.isPresent()) {
+                    return new Bounds[]{glyph.get()};
+                }
+            }
+
+            List<Bounds> perGlyph = root.streamGlyphs().filter(g -> g.index >= start && g.index < end).map(g -> new BoundingBox(g.x, g.y, g.w, g.h)).collect(Collectors.toList());
+
+            List<Bounds> merged = BaseModel.merge(perGlyph);
+            Bounds[] result = merged.stream().map(root.canvas::localToScreen).toArray(size -> new Bounds[size]);
+
+            // if we return the caret range it has a width of 0, which seems not to work -> so we set it to one
+            if (result.length == 1) {
+                if (result[0].getWidth() == 0) {
+                    result[0] = new BoundingBox(result[0].getMinX(), result[0].getMinY(), 1, result[0].getHeight());
+                }
+                System.err.println("single bounds " + result[0]);
+            }
+            System.err.println("Bounds: " + Arrays.toString(result));
+            return result;
+/*
+            Bounds[] result = root.getTextBounds(start, end).stream().map(b -> root.canvas.localToScreen(b)).toArray(size -> new Bounds[size]);
+            if (result.length == 1) {
+                if (result[0].getWidth() == 0) {
+                    result[0] = new BoundingBox(result[0].getMinX(), result[0].getMinY(), 1, result[0].getHeight());
+                }
+            }
+            System.err.println("GetBoundingRectangles() -> " + Arrays.toString(result));
+            return result;
+            */
         }
 
         @Override
@@ -537,7 +578,10 @@ public class UIATextRange implements ITextRangeProvider {
 
         @Override
         public void Select() {
-            
+            root.getControl().selectionBeginProperty().set(start);
+            root.getControl().selectionEndProperty().set(end);
+            root.getControl().caretOffsetProperty().set(end);
+            root.getControl().requestLayout(); // <- repaint
         }
 
         @Override

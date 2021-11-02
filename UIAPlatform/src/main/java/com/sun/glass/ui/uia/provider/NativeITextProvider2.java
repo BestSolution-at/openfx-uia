@@ -22,27 +22,13 @@
  * http://www.gnu.org/licenses/gpl.html
  * ----------------------------------------------------------------
  */
-package javafx.uia;
+package com.sun.glass.ui.uia.provider;
 
-public interface ITextProvider2 extends ITextProvider {
+import com.sun.glass.ui.uia.ProxyAccessible.NCaretRangeResult;
+
+public interface NativeITextProvider2 extends NativeITextProvider {
+
+    NCaretRangeResult GetCaretRange();
+    long RangeFromAnnotation(long annotationElement);
     
-    class TextProvider2Context {
-
-		public TextProvider2Context(IInitContext init, ITextProvider2 provider) {
-            // empty for now
-		}
-	}
-
-    static class CaretRangeResult {
-        public final boolean isActive;
-        public final ITextRangeProvider range;
-        public CaretRangeResult(ITextRangeProvider range, boolean isActive) {
-            this.range = range;
-            this.isActive = isActive;
-        }
-    } 
-
-    CaretRangeResult GetCaretRange();
-    ITextRangeProvider RangeFromAnnotation(IUIAElement annotationElement);
-
 }
