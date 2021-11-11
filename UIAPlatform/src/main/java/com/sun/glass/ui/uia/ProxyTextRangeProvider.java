@@ -41,6 +41,7 @@ import javafx.uia.ITextAttributeSupport;
 import javafx.uia.ITextRangeProvider;
 import javafx.uia.ITextRangeProvider2;
 import javafx.uia.IUIAElement;
+import javafx.uia.IUIAVirtualRootElement;
 import javafx.uia.IVariantConverter;
 import javafx.uia.TextAttributeValue;
 import javafx.uia.TextPatternRangeEndpoint;
@@ -329,7 +330,14 @@ public class ProxyTextRangeProvider {
         return Util.guard(() -> {
             IUIAElement[] childElements = impl.GetChildren();
             return Arrays.stream(childElements)
-            .map(element -> ProxyAccessibleRegistry.getInstance().getVirtualAccessible(accessible, element))
+            .map(element -> {
+                if (element instanceof IUIAVirtualRootElement) {
+                    return ProxyAccessibleRegistry.getInstance().findFXAccessible(element);
+                }
+                else {
+                    return ProxyAccessibleRegistry.getInstance().getVirtualAccessible(accessible, element);
+                }
+            })
             .mapToLong(ProxyAccessible::getNativeAccessible)
             .toArray();
         });
