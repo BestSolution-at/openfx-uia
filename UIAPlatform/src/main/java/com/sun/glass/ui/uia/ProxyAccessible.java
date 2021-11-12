@@ -70,6 +70,7 @@ import javafx.scene.AccessibleAttribute;
 import javafx.scene.Node;
 import javafx.uia.ExpandCollapseState;
 import javafx.uia.IUIAElement;
+import javafx.uia.IUIAVirtualElement;
 import javafx.uia.IUIAVirtualRootElement;
 import javafx.uia.StandardPatternIds;
 import javafx.uia.Variant;
@@ -79,6 +80,10 @@ public class ProxyAccessible extends Accessible {
 
     private static int next = 0;
     private final int num;
+
+    public int getNum() {
+        return num;
+    }
 
     public static void requireLibrary() {
 
@@ -108,6 +113,12 @@ public class ProxyAccessible extends Accessible {
 
     WinAccessible glass;
     WinAccessible glassRoot;
+
+    public StackTraceElement[] src;
+
+    private void saveCreationStack() {
+        src = Thread.currentThread().getStackTrace();
+    }
     
     /*package*/ ProxyAccessible() {
         this.num = next++;
@@ -121,6 +132,8 @@ public class ProxyAccessible extends Accessible {
         ProxyAccessibleRegistry.getInstance().registerNative(this, peer);
 
         glass = new WinAccessible(this);
+
+        saveCreationStack();
     }
 
     // this is the *virtual* Accessible
@@ -150,6 +163,8 @@ public class ProxyAccessible extends Accessible {
         if (uiaElement != null) {
             initializeVirtualElement(uiaElement);
         }
+
+        saveCreationStack();
     }
 
     @SuppressWarnings("unchecked")
@@ -171,6 +186,8 @@ public class ProxyAccessible extends Accessible {
 
     @Override
     public void dispose() {
+        System.err.println("DISPOSE " + this);
+
         super.dispose();
 
         if (peer != 0L) {
@@ -178,8 +195,28 @@ public class ProxyAccessible extends Accessible {
             peer = 0L;
         }
 
-        // TODO virtuals have no glass NPE!
-        glass.dispose();
+        if (glass != null) glass.dispose();
+
+        ProxyAccessibleRegistry.getInstance().unregister(this);
+
+        if (uiaElement instanceof IUIAVirtualRootElement) {
+            IUIAVirtualRootElement root = (IUIAVirtualRootElement) uiaElement;
+            for (IUIAElement child : root.getChildren()) {
+                ProxyAccessible virtual = ProxyAccessibleRegistry.getInstance().findVirtualAccessible(child);
+                if (virtual != null) {
+                    virtual.dispose();
+                }
+            }
+        } else if (uiaElement instanceof IUIAVirtualElement) {
+            IUIAVirtualElement root = (IUIAVirtualElement) uiaElement;
+            for (IUIAElement child : root.getChildren()) {
+                ProxyAccessible virtual = ProxyAccessibleRegistry.getInstance().findVirtualAccessible(child);
+                if (virtual != null) {
+                    virtual.dispose();
+                }
+            }
+        }
+
     }
 
     @Override
@@ -334,7 +371,12 @@ public class ProxyAccessible extends Accessible {
 
     @Override
     public String toString() {
-        return "ProxyAccessible" + num + "[" + glass + ", " + glassRoot + ", " + uiaElement + "]";
+        String glassStr = "" + glass;
+        if (glass != null) {
+            View view = glass.getView();
+            glassStr += " view: " + view;
+        }
+        return "ProxyAccessible" + num + "[" + glassStr  + ", " + glassRoot + ", " + uiaElement + "]";
     }
 
     public WinAccessible getGlassAccessible() {

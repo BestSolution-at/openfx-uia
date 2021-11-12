@@ -24,8 +24,11 @@
  */
 package com.sun.glass.ui.uia;
 
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import javafx.uia.IUIAElement;
 
@@ -44,6 +47,19 @@ public class ProxyAccessibleRegistry {
 
     public static ProxyAccessibleRegistry getInstance() {
         return INSTANCE;
+    }
+
+    public void unregister(ProxyAccessible accessible) {
+        natives.remove(accessible);
+        natives2.values().remove(accessible);
+        fxAccessibles.values().remove(accessible);
+        virtualAccessibles.values().remove(accessible);
+    }
+
+    public List<ProxyAccessible> getAccessibles() {
+        return natives.keySet().stream()
+        .sorted(Comparator.comparingInt(ProxyAccessible::getNum))
+        .collect(Collectors.toList());
     }
 
     public void registerFXAccessible(IUIAElement element, ProxyAccessible accessible) {
