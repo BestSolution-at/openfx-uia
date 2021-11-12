@@ -363,10 +363,6 @@ public class DocumentModelSample implements Sample {
             AnchorPane.setRightAnchor(canvas, 0D);
             AnchorPane.setBottomAnchor(canvas, 0D);
             AnchorPane.setLeftAnchor(canvas, 0D);
-
-            caretOffset.addListener(observable -> {
-                doc.fireSelection();
-            });
         }
 
         private int limit(int index) {

@@ -285,9 +285,9 @@ public class UIATextRange implements ITextRangeProvider {
                 if (result[0].getWidth() == 0) {
                     result[0] = new BoundingBox(result[0].getMinX(), result[0].getMinY(), 1, result[0].getHeight());
                 }
-                System.err.println("single bounds " + result[0]);
+                //System.err.println("single bounds " + result[0]);
             }
-            System.err.println("Bounds: " + Arrays.toString(result));
+            //System.err.println("Bounds: " + Arrays.toString(result));
             return result;
 /*
             Bounds[] result = root.getTextBounds(start, end).stream().map(b -> root.canvas.localToScreen(b)).toArray(size -> new Bounds[size]);

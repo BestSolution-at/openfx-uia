@@ -92,7 +92,7 @@ public class TextSupport {
     }
 
     public void render(GraphicsContext gc) {
-        System.err.println("render " + this + ": " + glyphList.size() + " glyphs");
+        //System.err.println("render " + this + ": " + glyphList.size() + " glyphs");
         for (Glyph g : glyphList) {
             g.render.render(gc, null);
         }   

@@ -32,9 +32,9 @@ import javafx.geometry.Point2D;
 public interface ITextProvider {
     
     class TextProviderContext {
-
+        public final IEvent TextSelectionChangedEvent;
 		public TextProviderContext(IInitContext init, ITextProvider provider) {
-            // empty for now
+            TextSelectionChangedEvent = init.addEvent(StandardEventIds.UIA_Text_TextSelectionChangedEventId);
 		}
 	}
 
