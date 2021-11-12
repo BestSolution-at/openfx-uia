@@ -269,7 +269,7 @@ public class UIATextRange implements ITextRangeProvider {
                 .map(g -> new BoundingBox(g.x, g.y, g.w, g.h))
                 .map(root.canvas::localToScreen)
                 .findFirst();
-                System.err.println("degenerate " + glyph);
+                //System.err.println("degenerate " + glyph);
                 if (glyph.isPresent()) {
                     return new Bounds[]{glyph.get()};
                 }
@@ -303,27 +303,16 @@ public class UIATextRange implements ITextRangeProvider {
 
         @Override
         public IUIAElement[] GetChildren() {
-
             return root.getTextChildren(start, end).stream().toArray(size -> new IUIAElement[size]);
-
-            // if (start < page1.getText().length() && end > page1.getText().length()) {
-            //     return documentElement.pages.toArray(new IUIAElement[0]);
-            // }
-
-
-            // // childEls should be initalized correctly becaus we call it in the constructor
-            // return getEmbedded(start, end).map(embedded -> {
-            //     if (embedded.getElement() != null) {
-            //         return embedded.getElement();
-            //     } else {
-            //         return childEls.get(embedded);
-            //     }
-            // }).toArray(size -> new IUIAElement[size]);
         }
 
         @Override
         public IUIAElement GetEnclosingElement() {
-            return root;
+            IModel enclosing = root.getTextEnclosing(start, end);
+            if (enclosing == null) { // maybe not needed?
+                enclosing = root;
+            }
+            return (IUIAElement) enclosing;
         }
 
         @Override

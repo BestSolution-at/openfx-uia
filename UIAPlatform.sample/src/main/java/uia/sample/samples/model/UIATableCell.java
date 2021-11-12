@@ -55,6 +55,9 @@ public class UIATableCell extends UIACell implements ITableItemProvider {
     public void initialize(IInitContext init) {
         super.initialize(init);
 
+        init.addIsControlElementProperty(() -> true);
+        init.addIsContentElementProperty(() -> true);
+
         //init.addNameProperty(this::getName);
     }
     

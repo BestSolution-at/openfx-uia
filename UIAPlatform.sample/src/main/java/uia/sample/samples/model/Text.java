@@ -216,7 +216,6 @@ public class Text extends BaseModel {
                 index += fragmentLength;
             }
 
-            System.err.println("Fragment Length " + fragment + " len = " + fragmentLength);
             length += fragmentLength;
         }
 

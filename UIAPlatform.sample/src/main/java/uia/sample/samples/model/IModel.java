@@ -36,5 +36,6 @@ public interface IModel {
 
     List<Bounds> getTextBounds(int begin, int end);
     List<IModel> getTextChildren(int begin, int end);
+    IModel getTextEnclosing(int begin, int end);
     
 }

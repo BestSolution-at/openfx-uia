@@ -25,6 +25,7 @@
 package uia.sample.samples.model;
 
 import javafx.uia.ControlType;
+import javafx.uia.IInitContext;
 import javafx.uia.ITableProvider;
 import javafx.uia.IUIAElement;
 import javafx.uia.RowOrColumnMajor;
@@ -58,5 +59,13 @@ public class UIATable extends UIAGrid implements ITableProvider {
     @Override
     public ControlType getControlType() {
         return ControlType.UIA_TableControlTypeId;
+    }
+
+    @Override
+    public void initialize(IInitContext init) {
+        super.initialize(init);
+
+        init.addIsControlElementProperty(() -> true);
+        init.addIsContentElementProperty(() -> true);
     }
 }

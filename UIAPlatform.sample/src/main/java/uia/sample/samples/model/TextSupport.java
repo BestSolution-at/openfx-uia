@@ -64,7 +64,6 @@ public class TextSupport {
             return;
         }
 
-        System.err.println("Layout text " + this);
         textLayout = com.sun.javafx.tk.Toolkit.getToolkit().getTextLayoutFactory().createLayout();
         if (layoutW != 0) {
             textLayout.setWrapWidth((float) layoutW);

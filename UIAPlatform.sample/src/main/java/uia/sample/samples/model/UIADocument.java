@@ -141,7 +141,6 @@ public class UIADocument extends UIACanvas implements ITextProvider, ITextProvid
     @Override
     public CaretRangeResult GetCaretRange() {
         final int caretPosition = getControl().caretOffsetProperty().get();
-        System.err.println("GetCaretRange() called => " + caretPosition);
         return new CaretRangeResult(degenerateRangeOf(caretPosition), true);
     }
 

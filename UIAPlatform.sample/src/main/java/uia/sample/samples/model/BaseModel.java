@@ -203,6 +203,21 @@ public abstract class BaseModel implements IModel {
         return result;
     }
 
+    @Override
+    public IModel getTextEnclosing(int begin, int end) {
+        if (begin >= getBegin() && end <= getEnd()) {
+            // within
+            for (IModel child : getModelChildren()) {
+                IModel childResult = child.getTextEnclosing(begin, end);
+                if (childResult != null) {
+                    return childResult;
+                }
+            }
+            return this;
+        }
+        return null;
+    }
+
     public static List<Bounds> merge(List<Bounds> input) {
         // simple bounds merging
         
