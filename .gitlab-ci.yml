@@ -30,6 +30,8 @@ build:
     - win64ps
   artifacts:
     paths:
+      - UIAPlatform.agent/build
+      - UIAPlatform.core/build
       - UIAPlatform/build
       - UIAPlatform.native/build
       - UIAPlatform.sample/build
