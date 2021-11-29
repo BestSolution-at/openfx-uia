@@ -22,11 +22,15 @@ repositories {
 
 configurations {
     agent
+    includedJars
 }
 
 dependencies {
     implementation project(":UIAPlatform")
     agent project(":UIAPlatform.agent")
+
+    includedJars project(":UIAPlatform.agent")
+    includedJars project(":UIAPlatform")
 }
 
 def getAgentJar() {
@@ -45,12 +49,12 @@ sourceSets {
 }
 
 task phatJar(type: Jar) {
-    dependsOn configurations.agent
+    dependsOn configurations.includedJars
 
     baseName "launcher"
     from sourceSets.launcher.output
-    from configurations.agent.files
-    from configurations.runtimeClasspath.files
+    from configurations.includedJars.files
+    //from configurations.runtimeClasspath.files
     from configurations.runtimeElements.artifacts.files
     manifest {
         attributes 'Main-Class': 'uia.sample.PlatformLauncher'
