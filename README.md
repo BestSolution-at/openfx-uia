@@ -2,6 +2,19 @@
 
 Full UIA Support for OpenJFX
 
+## Usage changes
+
+openfx-uia uses now an agent to instrument the jvm. The agent installs automatically the core into the ext classloader and hooks the accessible creation mechanism of javafx.   
+So the new requirements are as follows
+ * launch your jvm with the agent `-javaagent:UIAPlatform.agent.jar`
+ * add the library to your classpath `-cp UIAPlatform.jar`
+ 
+for example: `java -javaagent:UIAPlatform.agent.jar -cp UIAPlatform.jar;myCode.jar mycode.MyMain`
+
+The full sample launcher does it automatically for you. Only the environment variable `JDK8FX` needs to be set to your java 8 + fx home.
+
+the environment variables `java.ext.dirs`, `glass.platform` and `glass.accessible.force` are no longer required.
+
 ## Getting started
 
 To develop an application using openfx-uia you need the UIAPlatform.jar. It can be found in the following maven repo:
