@@ -38,10 +38,35 @@ configurations {
 
 dependencies {
     debugDll project(path: ":UIAPlatform.native", configuration: "debugRuntimeElements")
-    testImplementation("junit:junit:4.13")
+
+    implementation project(':UIAPlatform.core')
+}
+
+task writeServiceFiles() {
+    var services = [
+        "com.sun.glass.ui.uia.IAccessibleFactory": "com.sun.glass.ui.uia.UIAAccessibleFactory",
+    ]
+
+    services.each {
+        outputs.file(layout.buildDirectory.file("services/${it.key}"))
+    }
+    doLast {
+        outputs.files.each {
+            it.text = services.get(it.name)
+        }
+    }
 }
 
 jar {
     dependsOn configurations.debugDll
     from configurations.debugDll.files
+    
+    manifest {
+        //attributes('': '')
+    }
+
+    into("META-INF/services") {
+        from tasks.writeServiceFiles
+    }
+
 }

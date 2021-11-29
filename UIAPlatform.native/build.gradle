@@ -16,11 +16,15 @@ library {
 
 tasks.withType(CppCompile).configureEach {
     macros.put("BUILDING_DLL", null)
-    compilerArgs.add '-std=c++11'
+
+    compilerArgs.add '/std:c11'
+    compilerArgs.add '/O2'
 }
 
 tasks.withType(LinkSharedLibrary).configureEach {
     linkerArgs.add 'UIAutomationCore.lib'
+
+    linkerArgs.add '/OPT:REF,ICF,LBR'
 }
 
 

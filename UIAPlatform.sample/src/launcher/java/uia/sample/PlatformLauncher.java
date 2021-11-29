@@ -39,53 +39,35 @@ import java.util.stream.Collectors;
 
 public class PlatformLauncher {
 
-    static Path base;
-    static Path samples;
-    static Path platform;
-    
-    static Path getBase() throws IOException {
-        if (base == null) {
+    final static Path base;
+    final static Path samples;
+    final static Path platform;
+    final static Path agent;
+
+    static {
+        try {
             base = Files.createTempDirectory("openfx-uia-sample");
+            platform = extract("UIAPlatform.jar", base);
+            samples = extract("UIAPlatform.sample.jar", base);
+            agent = extract("UIAPlatform.agent.jar", base);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to launch", e);
         }
-        return base;
     }
 
-    static Path getSamplesJar() throws IOException {
-        if (samples == null) {
-            URL file = PlatformLauncher.class.getResource("/UIAPlatform.sample.jar");
-            samples= getBase().resolve("UIAPlatform.sample.jar");
-            Files.copy(file.openStream(), samples);
-        }
-        return samples;
-    }
-
-    static Path getPlatformJar() throws IOException {
-        if (platform == null) {
-            URL file = PlatformLauncher.class.getResource("/UIAPlatform.jar");
-            Path targetDir = getBase().resolve("ext");
-            Files.createDirectories(targetDir);
-            platform = targetDir.resolve("UIAPlatform.jar");
-            Files.copy(file.openStream(), platform);
-        }
-        return platform;
-    }
-    
-    static Path getDefaultExtPath() {
-        Path jdk8fx = Paths.get(System.getenv("JDK8FX"));
-        return jdk8fx.resolve("jre/lib/ext");
+    static Path extract(String name, Path targetDir) throws IOException {
+        URL file = PlatformLauncher.class.getResource("/" + name);
+        Files.createDirectories(targetDir);
+        Path target = targetDir.resolve(name);
+        Files.copy(file.openStream(), target);
+        return target;
     }
 
     static String getClasspath() throws IOException {
         List<Path> classpath = new ArrayList<>();
-        classpath.add(getSamplesJar());
+        classpath.add(platform);
+        classpath.add(samples);
         return classpath.stream().map(Object::toString).collect(Collectors.joining(System.getProperty("path.separator")));
-    }
-
-    static String getExtPath() throws IOException {
-        List<Path> extPath = new ArrayList<>();
-        extPath.add(getDefaultExtPath());
-        extPath.add(getPlatformJar().getParent());
-        return extPath.stream().map(Object::toString).collect(Collectors.joining(System.getProperty("path.separator")));
     }
 
     static String getJavaBinary() {
@@ -114,16 +96,9 @@ public class PlatformLauncher {
         }
          
         try {
-            
-            //Process p0 = new ProcessBuilder("dir", getClasspath()).start();
-            //inheritIO(p0.getInputStream(), System.out);
-            //inheritIO(p0.getErrorStream(), System.err);
-
             List<String> commandLine = Arrays.asList(
                 getJavaBinary(), 
-                "-Dglass.platform=UIA",
-                "-Dglass.accessible.force=true",
-                "-Djava.ext.dirs="+getExtPath(),
+                "-javaagent:"+agent,
                 "-cp", getClasspath(),
                 "uia.sample.Simple"
             );

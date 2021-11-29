@@ -1,0 +1,43 @@
+plugins {
+    id "java-library"
+}
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    withSourcesJar()
+
+    toolchain {
+        // since auto detection is disabled only the env var JDK8FX is picked up as java toolchain (see gradle.properties)
+        // it seems not possible to query for toolchains with included JavaFX...
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+}
+
+configurations {
+    repackageDeps
+    includeJars
+}
+
+dependencies {
+    compileOnly 'org.javassist:javassist:3.28.0-GA'
+    repackageDeps 'org.javassist:javassist:3.28.0-GA'
+
+    includeJars project(':UIAPlatform.core')
+}
+
+jar {
+    manifest {
+        attributes('Premain-Class': 'javafx.uia.agent.UIAPlatformAgent')
+    }
+
+    from configurations.includeJars.files
+
+    from {
+        configurations.repackageDeps.collect {
+            it.isDirectory() ? it : zipTree(it)
+        }
+    }
+}

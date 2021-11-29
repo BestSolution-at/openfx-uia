@@ -21,32 +21,16 @@ repositories {
 }
 
 configurations {
-    platformLib
+    agent
 }
 
 dependencies {
     implementation project(":UIAPlatform")
-    testImplementation("junit:junit:4.13")
-
-    platformLib project(":UIAPlatform") // used to determine the ext dir where the UIAPlatform.jar is located
-
-    implementation "org.asciidoctor:asciidoctorj:2.5.1"
+    agent project(":UIAPlatform.agent")
 }
 
-
-import java.nio.file.Paths
-def getJDKBase() {
-    Paths.get(javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(8)
-    }.get().metadata.installationPath.toString())
-}
-
-def getJDKExt() {
-    getJDKBase().resolve("jre/lib/ext").normalize()
-}
-
-def getPlatformExtPath() {
-    configurations.platformLib.files[0].parent
+def getAgentJar() {
+    configurations.agent.files[0]
 }
 
 sourceSets {
@@ -61,19 +45,22 @@ sourceSets {
 }
 
 task phatJar(type: Jar) {
-    dependsOn configurations.platformLib
+    dependsOn configurations.agent
 
     baseName "launcher"
     from sourceSets.launcher.output
-    from configurations.platformLib.files
+    from configurations.agent.files
+    from configurations.runtimeClasspath.files
     from configurations.runtimeElements.artifacts.files
     manifest {
         attributes 'Main-Class': 'uia.sample.PlatformLauncher'
     }
 }
-        
-task runWithPlatform(type: JavaExec) {
-	group = 'application'
+
+task runWithAgent(type: JavaExec) {
+    dependsOn configurations.agent
+
+  	group = 'application'
 	description = 'Runs the sample with the glass platfrom configured'
 
     javaLauncher = javaToolchains.launcherFor {
@@ -82,13 +69,14 @@ task runWithPlatform(type: JavaExec) {
 
 	classpath = sourceSets.main.runtimeClasspath
 	main = 'uia.sample.Simple'
-	systemProperty "java.ext.dirs", "${getJDKExt()};${getPlatformExtPath()}"
-    systemProperty "glass.platform", "UIA"
-    systemProperty "glass.accessible.force", true
+
+    jvmArgs "-javaagent:${getAgentJar()}"
 }
 
-task runWithPlatformDbg(type: JavaExec) {
-	group = 'application'
+task debugWithAgent(type: JavaExec) {
+    dependsOn configurations.agent
+    
+  	group = 'application'
 	description = 'Runs the sample with the glass platfrom configured'
 
     javaLauncher = javaToolchains.launcherFor {
@@ -97,9 +85,8 @@ task runWithPlatformDbg(type: JavaExec) {
 
 	classpath = sourceSets.main.runtimeClasspath
 	main = 'uia.sample.Simple'
-	systemProperty "java.ext.dirs", "${getJDKExt()};${getPlatformExtPath()}"
-    systemProperty "glass.platform", "UIA"
-    systemProperty "glass.accessible.force", true
 
+    jvmArgs "-javaagent:${getAgentJar()}"
     jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,address=5005'
 }
+

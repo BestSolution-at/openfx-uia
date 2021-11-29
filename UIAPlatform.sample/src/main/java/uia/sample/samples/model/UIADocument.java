@@ -3,21 +3,17 @@ package uia.sample.samples.model;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.uia.ControlType;
-import javafx.uia.IEvent;
 import javafx.uia.IInitContext;
 import javafx.uia.IProperty;
-import javafx.uia.ITextProvider;
 import javafx.uia.ITextProvider2;
 import javafx.uia.ITextRangeProvider;
 import javafx.uia.IUIAElement;
-import javafx.uia.StandardEventIds;
 import javafx.uia.StandardPropertyIds;
 import javafx.uia.StandardVariantConverters;
 import javafx.uia.SupportedTextSelection;
-
 import uia.sample.samples.DocumentModelSample.EditorPane;
 
-public class UIADocument extends UIACanvas implements ITextProvider, ITextProvider2 {
+public class UIADocument extends UIACanvas implements /*ITextProvider,*/ ITextProvider2 {
 
     private EditorPane control;
 

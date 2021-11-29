@@ -1,4 +1,13 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+    }
+}
+
 rootProject.name = "openfx-uia"
+include "UIAPlatform.core"
 include "UIAPlatform"
+include "UIAPlatform.agent"
 include "UIAPlatform.native"
 include "UIAPlatform.sample"
+

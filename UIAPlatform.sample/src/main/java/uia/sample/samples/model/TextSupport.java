@@ -18,6 +18,7 @@ import uia.sample.samples.model.Text.EmbedFragment;
 import uia.sample.samples.model.Text.IFragment;
 import uia.sample.samples.model.Text.TextFragment;
 
+@SuppressWarnings("restriction")
 public class TextSupport {
     
     @FunctionalInterface
@@ -125,7 +126,7 @@ public class TextSupport {
         for (com.sun.javafx.scene.text.TextLine line : textLayout.getLines()) {
             RectBounds lineBounds = line.getBounds();
             lineHeight = lineBounds.getHeight();
-            float lineX = lineBounds.getMinX();
+            //float lineX = lineBounds.getMinX();
             double lineXOffset = 0;
             for (com.sun.javafx.scene.text.GlyphList run : line.getRuns()) {
                 com.sun.javafx.text.TextRun run1 = (com.sun.javafx.text.TextRun) run;
@@ -240,7 +241,7 @@ public class TextSupport {
         for (com.sun.javafx.scene.text.TextLine line : textLayout.getLines()) {
             RectBounds lineBounds = line.getBounds();
             lineHeight = lineBounds.getHeight();
-            float lineX = lineBounds.getMinX();
+            //float lineX = lineBounds.getMinX();
 
             double lineXOffset = 0;
 

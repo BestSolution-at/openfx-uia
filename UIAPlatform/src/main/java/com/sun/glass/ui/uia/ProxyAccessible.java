@@ -25,12 +25,10 @@
 package com.sun.glass.ui.uia;
 
 import java.lang.reflect.Method;
-import java.net.URL;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
@@ -42,25 +40,25 @@ import com.sun.glass.ui.View;
 import com.sun.glass.ui.uia.glass.WinAccessible;
 import com.sun.glass.ui.uia.glass.WinVariant;
 import com.sun.glass.ui.uia.provider.NativeIAnnotationProvider;
+import com.sun.glass.ui.uia.provider.NativeIDockProvider;
+import com.sun.glass.ui.uia.provider.NativeIExpandCollapseProvider;
 import com.sun.glass.ui.uia.provider.NativeIGridItemProvider;
 import com.sun.glass.ui.uia.provider.NativeIGridProvider;
 import com.sun.glass.ui.uia.provider.NativeIInvokeProvider;
+import com.sun.glass.ui.uia.provider.NativeIRangeValueProvider;
 import com.sun.glass.ui.uia.provider.NativeIScrollItemProvider;
 import com.sun.glass.ui.uia.provider.NativeIScrollProvider;
+import com.sun.glass.ui.uia.provider.NativeISelectionItemProvider;
+import com.sun.glass.ui.uia.provider.NativeISelectionProvider;
 import com.sun.glass.ui.uia.provider.NativeITableItemProvider;
 import com.sun.glass.ui.uia.provider.NativeITableProvider;
 import com.sun.glass.ui.uia.provider.NativeITextChildProvider;
 import com.sun.glass.ui.uia.provider.NativeITextProvider;
 import com.sun.glass.ui.uia.provider.NativeITextProvider2;
 import com.sun.glass.ui.uia.provider.NativeIToggleProvider;
-import com.sun.glass.ui.uia.provider.NativeISelectionProvider;
-import com.sun.glass.ui.uia.provider.NativeISelectionItemProvider;
-import com.sun.glass.ui.uia.provider.NativeIExpandCollapseProvider;
 import com.sun.glass.ui.uia.provider.NativeITransformProvider;
 import com.sun.glass.ui.uia.provider.NativeIValueProvider;
-import com.sun.glass.ui.uia.provider.NativeIRangeValueProvider;
 import com.sun.glass.ui.uia.provider.NativeIWindowProvider;
-import com.sun.glass.ui.uia.provider.NativeIDockProvider;
 import com.sun.glass.ui.uia.provider.UIAElementAdapter;
 import com.sun.javafx.tk.quantum.QuantumToolkit;
 
@@ -85,20 +83,26 @@ public class ProxyAccessible extends Accessible {
         return num;
     }
 
+    private static void reportEnvironment() {
+		Logger.debug(ProxyAccessible.class, () -> "Environment: ");
+		Arrays.stream(new String[] {
+			"java.vendor",
+			"java.version", 
+			"java.vm.version",
+			"javafx.version",
+			"javafx.runtime.version"
+		}).forEach(prop -> Logger.debug(ProxyAccessible.class, () -> "\t" + prop + ": " + System.getProperty(prop)));
+	}
+
     public static void requireLibrary() {
 
     }
     
     private static native void _initIDs();
     static {
-        // TODO better library loading - maybe look at how glass does it?
+        reportEnvironment();
         try {
-            URL library = ProxyAccessible.class.getResource("/UIAPlatform.dll");
-            Path libDir = Files.createTempDirectory("openfx-uia");
-            Path lib = libDir.resolve("UIAPlatform.dll");
-            Files.copy(library.openStream(), lib);
-            Logger.debug(ProxyAccessible.class, () -> "Using " + lib.toString());
-            System.load(lib.toString());
+            System.load(LibMan.uiaPlatformDll.toString());
 
         } catch (Exception e) {
             Logger.fatal(ProxyAccessible.class, () -> "Exception during initialization", e);
@@ -445,7 +449,7 @@ public class ProxyAccessible extends Accessible {
     private int[] IRawElementProviderFragment_GetRuntimeId() {
         return callElementIntArrayW(UIAElementAdapter::GetRuntimeId, WinAccessible::GetRuntimeId, new int[0]);
     }
-    private long IRawElementProviderFragment_Navigate(int direction) {
+    public long IRawElementProviderFragment_Navigate(int direction) {
         return callElementLongW(el -> el.Navigate(direction), glass -> glass.Navigate(direction), 0L);
     }
     private void IRawElementProviderFragment_SetFocus() {

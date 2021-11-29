@@ -3,13 +3,11 @@ package uia.sample.samples.model;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.sun.javafx.geom.RectBounds;
 
-import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -171,7 +169,7 @@ public class Text extends BaseModel {
                 List<GlyphData> data = textSupport.getFragmentData(textFragment);
 
                 Glyph lastGlyph = null;
-                String source = textFragment.getContent();
+                //String source = textFragment.getContent();
                 for (int sourceIdx = 0; sourceIdx < textFragment.content.length(); sourceIdx ++) {
                     if (sourceIdx < data.size()) {
                         GlyphData tg = data.get(sourceIdx);

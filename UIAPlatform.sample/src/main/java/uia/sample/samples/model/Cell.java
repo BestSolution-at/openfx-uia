@@ -48,8 +48,6 @@ public class Cell extends BaseModel {
 
     private String content;
 
-    private Text textHelper;
-
     private TextSupport textSupport;
 
     public boolean inRow(int row) {
