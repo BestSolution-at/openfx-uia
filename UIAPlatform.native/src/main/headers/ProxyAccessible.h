@@ -49,6 +49,7 @@ class ProxyAccessible : public IRawElementProviderSimple,
     public IToggleProvider,
     public IExpandCollapseProvider,
     public ITransformProvider,
+    public ITransformProvider2,
     public IScrollProvider,
     public IScrollItemProvider,
     public IWindowProvider,
@@ -220,6 +221,13 @@ public:
     IFACEMETHODIMP GetCaretRange(BOOL *isActive, ITextRangeProvider **pRetVal);
     IFACEMETHODIMP RangeFromAnnotation(IRawElementProviderSimple *annotationElement, ITextRangeProvider **pRetVal);
 
+    // ITransformPRovider2
+    IFACEMETHODIMP get_CanZoom(BOOL* pRetVal);
+    IFACEMETHODIMP get_ZoomLevel(double* pRetVal);
+    IFACEMETHODIMP get_ZoomMinimum(double* pRetVal);
+    IFACEMETHODIMP get_ZoomMaximum(double* pRetVal);
+    IFACEMETHODIMP Zoom(double zoom);
+    IFACEMETHODIMP ZoomByUnit(ZoomUnit zoomUnit);
 
     static HRESULT copyVariant(JNIEnv* env, jobject jVariant, VARIANT* pRetVal);
     static HRESULT copyString(JNIEnv* env, jstring jString, BSTR* pbstrVal);

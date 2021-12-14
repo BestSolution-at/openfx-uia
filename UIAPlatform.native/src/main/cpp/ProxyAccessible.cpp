@@ -109,6 +109,14 @@ static jmethodID mid_ITransformProvider_Move;
 static jmethodID mid_ITransformProvider_Resize;
 static jmethodID mid_ITransformProvider_Rotate;
 
+/* ITransformProvider2 */
+static jmethodID mid_ITransformProvider2_get_CanZoom;
+static jmethodID mid_ITransformProvider2_get_ZoomLevel;
+static jmethodID mid_ITransformProvider2_get_ZoomMinimum;
+static jmethodID mid_ITransformProvider2_get_ZoomMaximum;
+static jmethodID mid_ITransformProvider2_Zoom;
+static jmethodID mid_ITransformProvider2_ZoomByUnit;
+
 static jmethodID mid_IScrollProvider_Scroll;
 static jmethodID mid_IScrollProvider_SetScrollPercent;
 static jmethodID mid_IScrollProvider_get_HorizontallyScrollable;
@@ -417,6 +425,9 @@ IFACEMETHODIMP ProxyAccessible::QueryInterface(REFIID riid, void** ppInterface)
     }
     else if (riid == __uuidof(ITransformProvider)) {
         *ppInterface = static_cast<ITransformProvider*>(this);
+    }
+    else if (riid == __uuidof(ITransformProvider2)) {
+        *ppInterface = static_cast<ITransformProvider2*>(this);
     }
     else if (riid == __uuidof(IScrollProvider)) {
         *ppInterface = static_cast<IScrollProvider*>(this);
@@ -1443,6 +1454,50 @@ IFACEMETHODIMP ProxyAccessible::RangeFromAnnotation(IRawElementProviderSimple *a
     return hr;
 }
 
+// ITransformProvider2
+IFACEMETHODIMP ProxyAccessible::get_CanZoom(BOOL* pRetVal) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    *pRetVal = env->CallBooleanMethod(m_jAccessible, mid_ITransformProvider2_get_CanZoom);
+    if (CheckAndClearException(env)) return E_FAIL;
+    return S_OK;
+}
+IFACEMETHODIMP ProxyAccessible::get_ZoomLevel(double* pRetVal) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    *pRetVal = env->CallDoubleMethod(m_jAccessible, mid_ITransformProvider2_get_ZoomLevel);
+    if (CheckAndClearException(env)) return E_FAIL;
+    return S_OK;
+}
+IFACEMETHODIMP ProxyAccessible::get_ZoomMinimum(double* pRetVal) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    *pRetVal = env->CallDoubleMethod(m_jAccessible, mid_ITransformProvider2_get_ZoomMinimum);
+    if (CheckAndClearException(env)) return E_FAIL;
+    return S_OK;
+}
+IFACEMETHODIMP ProxyAccessible::get_ZoomMaximum(double* pRetVal) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    *pRetVal = env->CallDoubleMethod(m_jAccessible, mid_ITransformProvider2_get_ZoomMaximum);
+    if (CheckAndClearException(env)) return E_FAIL;
+    return S_OK;
+}
+IFACEMETHODIMP ProxyAccessible::Zoom(double zoom) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    env->CallVoidMethod(m_jAccessible, mid_ITransformProvider2_Zoom, zoom);
+    if (CheckAndClearException(env)) return E_FAIL;
+    return S_OK;
+}
+IFACEMETHODIMP ProxyAccessible::ZoomByUnit(ZoomUnit zoomUnit) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    env->CallVoidMethod(m_jAccessible, mid_ITransformProvider2_ZoomByUnit, (jint) zoomUnit);
+    if (CheckAndClearException(env)) return E_FAIL;
+    return S_OK;
+}
+
 /***********************************************/
 /*                  JNI                        */
 /***********************************************/
@@ -1610,6 +1665,20 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1initIDs
     mid_ITransformProvider_Resize = env->GetMethodID(jClass, "ITransformProvider_Resize", "(DD)V");
     if (env->ExceptionCheck()) return;
     mid_ITransformProvider_Rotate = env->GetMethodID(jClass, "ITransformProvider_Rotate", "(D)V");
+    if (env->ExceptionCheck()) return;
+
+    /* ITransformProvider2 */
+    mid_ITransformProvider2_get_CanZoom = env->GetMethodID(jClass, "ITransformProvider2_get_CanZoom", "()Z");
+    if (env->ExceptionCheck()) return;
+    mid_ITransformProvider2_get_ZoomLevel = env->GetMethodID(jClass, "ITransformProvider2_get_ZoomLevel", "()D");
+    if (env->ExceptionCheck()) return;
+    mid_ITransformProvider2_get_ZoomMinimum = env->GetMethodID(jClass, "ITransformProvider2_get_ZoomMinimum", "()D");
+    if (env->ExceptionCheck()) return;
+    mid_ITransformProvider2_get_ZoomMaximum = env->GetMethodID(jClass, "ITransformProvider2_get_ZoomMaximum", "()D");
+    if (env->ExceptionCheck()) return;
+    mid_ITransformProvider2_Zoom = env->GetMethodID(jClass, "ITransformProvider2_Zoom", "(D)V");
+    if (env->ExceptionCheck()) return;
+    mid_ITransformProvider2_ZoomByUnit = env->GetMethodID(jClass, "ITransformProvider2_ZoomByUnit", "(I)V");
     if (env->ExceptionCheck()) return;
 
     /* IScrollProvider */

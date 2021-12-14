@@ -55,6 +55,7 @@ import javafx.uia.ITextProvider;
 import javafx.uia.ITextProvider2;
 import javafx.uia.IToggleProvider;
 import javafx.uia.ITransformProvider;
+import javafx.uia.ITransformProvider2;
 import javafx.uia.IUIAElement;
 import javafx.uia.IValueProvider;
 import javafx.uia.IWindowProvider;
@@ -97,6 +98,7 @@ public class ProviderDescriptor<JavaType, NativeType> {
             register(StandardPatternIds.UIA_ExpandCollapsePatternId, IExpandCollapseProvider.class, NativeIExpandCollapseProvider.class, ExpandCollapseProviderAdapter::new);
 
             register(StandardPatternIds.UIA_TransformPatternId, ITransformProvider.class, NativeITransformProvider.class, TransformProviderAdapter::new);
+            register(StandardPatternIds.UIA_TransformPattern2Id, ITransformProvider2.class, NativeITransformProvider2.class, TransformProvider2Adapter::new);
 
             register(StandardPatternIds.UIA_DockPatternId, IDockProvider.class, NativeIDockProvider.class, DockProviderAdapter::new);
 
