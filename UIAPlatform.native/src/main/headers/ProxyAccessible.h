@@ -36,6 +36,7 @@ class ProxyAccessible : public IRawElementProviderSimple,
     public IRawElementProviderAdviseEvents,
     public IInvokeProvider,
     public ISelectionProvider,
+    public ISelectionProvider2,
     public ISelectionItemProvider,
     public IRangeValueProvider,
     public IValueProvider,
@@ -233,6 +234,12 @@ public:
     // ISynchronizedInputProvider
     IFACEMETHODIMP Cancel();
     IFACEMETHODIMP StartListening(SynchronizedInputType inputType);
+
+    // ISelectionProvider2
+    IFACEMETHODIMP get_CurrentSelectedItem(IRawElementProviderSimple **pRetVal);
+    IFACEMETHODIMP get_FirstSelectedItem(IRawElementProviderSimple **pRetVal);
+    IFACEMETHODIMP get_LastSelectedItem(IRawElementProviderSimple **pRetVal);
+    IFACEMETHODIMP get_ItemCount(int *pRetVal);
 
     // ITransformPRovider2
     IFACEMETHODIMP get_CanZoom(BOOL* pRetVal);

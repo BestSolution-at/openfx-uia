@@ -24,49 +24,16 @@
  */
 package com.sun.glass.ui.uia.provider;
 
-import java.util.Arrays;
-import java.util.Optional;
-
 import com.sun.glass.ui.uia.ProxyAccessible;
 import com.sun.glass.ui.uia.ProxyAccessibleRegistry;
 
 import javafx.uia.ISelectionProvider2;
 import javafx.uia.IUIAElement;
 
-public class SelectionProvider2Adapter extends SelectionProviderAdapter implements NativeISelectionProvider2 {
+public class SelectionProvider2Adapter extends BaseAdapter<ISelectionProvider2> implements NativeISelectionProvider2 {
 
     public SelectionProvider2Adapter(ProxyAccessible accessible, ISelectionProvider2 provider) {
         super(accessible, provider);
-    }
-
-    @Override
-    public boolean get_CanSelectMultiple() {
-        return provider.get_CanSelectMultiple();
-    }
-
-    @Override
-    public boolean get_IsSelectionRequired() {
-        return provider.get_IsSelectionRequired();
-    }
-
-    @Override
-    public long[] GetSelection() {
-        return
-        Arrays.stream(provider.GetSelection())
-        .mapToLong(element -> {
-            return Optional.ofNullable(element)
-            .map(el -> {
-                ProxyAccessible acc = ProxyAccessibleRegistry.getInstance().findFXAccessible(el);
-                if (acc == null) {
-                    acc = ProxyAccessibleRegistry.getInstance().getVirtualAccessible(accessible, el);
-                }
-                return acc;
-            })
-            .map(ProxyAccessible::getNativeAccessible)
-            .orElse(0L);
-        })
-        .filter(value -> value != 0)
-        .toArray();
     }
 
     @Override

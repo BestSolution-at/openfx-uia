@@ -50,6 +50,7 @@ import com.sun.glass.ui.uia.provider.NativeIScrollItemProvider;
 import com.sun.glass.ui.uia.provider.NativeIScrollProvider;
 import com.sun.glass.ui.uia.provider.NativeISelectionItemProvider;
 import com.sun.glass.ui.uia.provider.NativeISelectionProvider;
+import com.sun.glass.ui.uia.provider.NativeISelectionProvider2;
 import com.sun.glass.ui.uia.provider.NativeITableItemProvider;
 import com.sun.glass.ui.uia.provider.NativeITableProvider;
 import com.sun.glass.ui.uia.provider.NativeITextChildProvider;
@@ -888,6 +889,21 @@ public class ProxyAccessible extends Accessible {
     private void ISynchronizedItemProvider_StartListening(int inputType) {
         callProvider(NativeISynchronizedInputProvider.class, provider -> provider.StartListening(inputType));
     }
+
+    // ISelectionProvider2
+    private int ISelectionProvider2_get_ItemCount() {
+        return callProviderInt(NativeISelectionProvider2.class, NativeISelectionProvider2::get_ItemCount, 0, 0);
+    }
+    private long ISelectionProvider2_get_CurrentSelectedItem() {
+        return callProviderLong(NativeISelectionProvider2.class, NativeISelectionProvider2::get_CurrentSelectedItem, 0L, 0L);
+    }
+    private long ISelectionProvider2_get_FirstSelectedItem() {
+        return callProviderLong(NativeISelectionProvider2.class, NativeISelectionProvider2::get_FirstSelectedItem, 0L, 0L);
+    }
+    private long ISelectionProvider2_get_LastSelectedItem() {
+        return callProviderLong(NativeISelectionProvider2.class, NativeISelectionProvider2::get_LastSelectedItem, 0L, 0L);
+    }
+
 
     // Utility functions
 

@@ -184,6 +184,12 @@ static jmethodID mid_IVirtualizedItemProvider_Realize;
 static jmethodID mid_ISynchronizedInputProvider_Cancel;
 static jmethodID mid_ISynchronizedInputProvider_StartListening;
 
+// ISelectionProvider2
+static jmethodID mid_ISelectionProvider2_get_ItemCount;
+static jmethodID mid_ISelectionProvider2_get_CurrentSelectedItem;
+static jmethodID mid_ISelectionProvider2_get_FirstSelectedItem;
+static jmethodID mid_ISelectionProvider2_get_LastSelectedItem;
+
 /* Variant Field IDs */
 static jfieldID fid_vt;
 static jfieldID fid_iVal;
@@ -400,6 +406,9 @@ IFACEMETHODIMP ProxyAccessible::QueryInterface(REFIID riid, void** ppInterface)
     }
     else if (riid == __uuidof(ISelectionProvider)) {
         *ppInterface = static_cast<ISelectionProvider*>(this);
+    }
+    else if (riid == __uuidof(ISelectionProvider2)) {
+        *ppInterface = static_cast<ISelectionProvider2*>(this);
     }
     else if (riid == __uuidof(ISelectionItemProvider)) {
         *ppInterface = static_cast<ISelectionItemProvider*>(this);
@@ -1561,6 +1570,36 @@ IFACEMETHODIMP ProxyAccessible::StartListening(SynchronizedInputType inputType) 
     return S_OK;
 }
 
+// ISelectionProvider2
+IFACEMETHODIMP ProxyAccessible::get_CurrentSelectedItem(IRawElementProviderSimple **pRetVal) {
+    if (pRetVal == NULL) return E_INVALIDARG;
+    IUnknown* ptr = NULL;
+    HRESULT hr = callLongMethod(mid_ISelectionProvider2_get_CurrentSelectedItem, &ptr);
+    *pRetVal = static_cast<IRawElementProviderSimple*>(ptr);
+    return hr;
+}
+IFACEMETHODIMP ProxyAccessible::get_FirstSelectedItem(IRawElementProviderSimple **pRetVal) {
+    if (pRetVal == NULL) return E_INVALIDARG;
+    IUnknown* ptr = NULL;
+    HRESULT hr = callLongMethod(mid_ISelectionProvider2_get_FirstSelectedItem, &ptr);
+    *pRetVal = static_cast<IRawElementProviderSimple*>(ptr);
+    return hr;
+}
+IFACEMETHODIMP ProxyAccessible::get_LastSelectedItem(IRawElementProviderSimple **pRetVal) {
+    if (pRetVal == NULL) return E_INVALIDARG;
+    IUnknown* ptr = NULL;
+    HRESULT hr = callLongMethod(mid_ISelectionProvider2_get_LastSelectedItem, &ptr);
+    *pRetVal = static_cast<IRawElementProviderSimple*>(ptr);
+    return hr;
+}
+IFACEMETHODIMP ProxyAccessible::get_ItemCount(int *pRetVal) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    *pRetVal = (int) env->CallIntMethod(m_jAccessible, mid_ISelectionProvider2_get_ItemCount);
+    if (CheckAndClearException(env)) return E_FAIL;
+    return S_OK;
+}
+
 /***********************************************/
 /*                  JNI                        */
 /***********************************************/
@@ -1850,7 +1889,15 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1initIDs
     mid_ISynchronizedInputProvider_Cancel = env->GetMethodID(jClass, "ISynchronizedItemProvider_Cancel", "()V");
     if (env->ExceptionCheck()) return;
     mid_ISynchronizedInputProvider_StartListening = env->GetMethodID(jClass, "ISynchronizedItemProvider_StartListening", "(I)V");
-
+    // ISelectionProvider2
+    mid_ISelectionProvider2_get_ItemCount = env->GetMethodID(jClass, "ISelectionProvider2_get_ItemCount", "()I");
+    if (env->ExceptionCheck()) return;
+    mid_ISelectionProvider2_get_CurrentSelectedItem = env->GetMethodID(jClass, "ISelectionProvider2_get_CurrentSelectedItem", "()J");
+    if (env->ExceptionCheck()) return;
+    mid_ISelectionProvider2_get_FirstSelectedItem = env->GetMethodID(jClass, "ISelectionProvider2_get_FirstSelectedItem", "()J");
+    if (env->ExceptionCheck()) return;
+    mid_ISelectionProvider2_get_LastSelectedItem = env->GetMethodID(jClass, "ISelectionProvider2_get_LastSelectedItem", "()J");
+    if (env->ExceptionCheck()) return;
 
     /* Variant */
     jclass jVariantClass = env->FindClass("com/sun/glass/ui/uia/glass/WinVariant");

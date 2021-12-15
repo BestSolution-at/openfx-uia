@@ -36,14 +36,15 @@ public interface ISelectionProvider2 extends ISelectionProvider {
 	 * The context object encapsulates the functionality to fire property changes and events.
 	 * </p>
 	 */
-	class SelectionProvider2Context extends SelectionProviderContext {
+	class SelectionProvider2Context {
+        public final IEvent Selection_Invalidated;
         public final IProperty<IUIAElement> CurrentSelectedItem;
         public final IProperty<IUIAElement> FirstSelectedItem;
         public final IProperty<IUIAElement> LastSelectedItem;
         public final IProperty<Integer> ItemCount;
 
 		public SelectionProvider2Context(IInitContext init, ISelectionProvider2 provider) {
-            super(init, provider);
+            Selection_Invalidated = init.addEvent(StandardEventIds.UIA_Selection_InvalidatedEventId);
             CurrentSelectedItem = init.addProperty(StandardPropertyIds.UIA_Selection2CurrentSelectedItemPropertyId, provider::get_CurrentSelectedItem, StandardVariantConverters.UNKNOWN_IUIAElement);
             FirstSelectedItem = init.addProperty(StandardPropertyIds.UIA_Selection2FirstSelectedItemPropertyId, provider::get_FirstSelectedItem, StandardVariantConverters.UNKNOWN_IUIAElement);
             LastSelectedItem = init.addProperty(StandardPropertyIds.UIA_Selection2LastSelectedItemPropertyId, provider::get_LastSelectedItem, StandardVariantConverters.UNKNOWN_IUIAElement);

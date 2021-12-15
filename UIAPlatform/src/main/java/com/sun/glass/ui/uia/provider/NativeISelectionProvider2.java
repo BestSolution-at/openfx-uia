@@ -24,7 +24,7 @@
  */
 package com.sun.glass.ui.uia.provider;
 
-public interface NativeISelectionProvider2 extends NativeISelectionProvider {
+public interface NativeISelectionProvider2 {
     long get_CurrentSelectedItem();
     long get_FirstSelectedItem();
     long get_LastSelectedItem();
