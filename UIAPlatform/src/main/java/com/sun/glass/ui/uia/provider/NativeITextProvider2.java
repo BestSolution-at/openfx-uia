@@ -26,7 +26,7 @@ package com.sun.glass.ui.uia.provider;
 
 import com.sun.glass.ui.uia.ProxyAccessible.NCaretRangeResult;
 
-public interface NativeITextProvider2 extends NativeITextProvider {
+public interface NativeITextProvider2 {
 
     NCaretRangeResult GetCaretRange();
     long RangeFromAnnotation(long annotationElement);
