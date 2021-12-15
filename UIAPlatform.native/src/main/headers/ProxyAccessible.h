@@ -60,6 +60,7 @@ class ProxyAccessible : public IRawElementProviderSimple,
     public IDropTargetProvider,
     public IItemContainerProvider,
     public IMultipleViewProvider,
+    public ISynchronizedInputProvider,
     public IVirtualizedItemProvider
 {
 
@@ -228,6 +229,10 @@ public:
 
     // IVirtualizedItemProvider
     IFACEMETHODIMP Realize();
+
+    // ISynchronizedInputProvider
+    IFACEMETHODIMP Cancel();
+    IFACEMETHODIMP StartListening(SynchronizedInputType inputType);
 
     // ITransformPRovider2
     IFACEMETHODIMP get_CanZoom(BOOL* pRetVal);

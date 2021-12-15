@@ -61,6 +61,7 @@ import com.sun.glass.ui.uia.provider.NativeITransformProvider;
 import com.sun.glass.ui.uia.provider.NativeITransformProvider2;
 import com.sun.glass.ui.uia.provider.NativeIValueProvider;
 import com.sun.glass.ui.uia.provider.NativeIWindowProvider;
+import com.sun.glass.ui.uia.provider.NativeISynchronizedInputProvider;
 import com.sun.glass.ui.uia.provider.NativeIVirtualizedItemProvider;
 import com.sun.glass.ui.uia.provider.UIAElementAdapter;
 import com.sun.javafx.tk.quantum.QuantumToolkit;
@@ -878,6 +879,14 @@ public class ProxyAccessible extends Accessible {
     // IVirtualizedItemProvider
     private void IVirtualizedItemProvider_Realize() {
         callProvider(NativeIVirtualizedItemProvider.class, NativeIVirtualizedItemProvider::Realize);
+    }
+
+    // ISynchronizedInputProvider
+    private void ISynchronizedItemProvider_Cancel() {
+        callProvider(NativeISynchronizedInputProvider.class, NativeISynchronizedInputProvider::Cancel);
+    }
+    private void ISynchronizedItemProvider_StartListening(int inputType) {
+        callProvider(NativeISynchronizedInputProvider.class, provider -> provider.StartListening(inputType));
     }
 
     // Utility functions

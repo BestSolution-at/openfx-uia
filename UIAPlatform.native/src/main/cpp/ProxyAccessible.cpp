@@ -180,6 +180,10 @@ static jmethodID mid_ITextEditProvider_GetConversionTarget;
 // IVirtualizedItemProvider
 static jmethodID mid_IVirtualizedItemProvider_Realize;
 
+// ISynchronizedInputProvider
+static jmethodID mid_ISynchronizedInputProvider_Cancel;
+static jmethodID mid_ISynchronizedInputProvider_StartListening;
+
 /* Variant Field IDs */
 static jfieldID fid_vt;
 static jfieldID fid_iVal;
@@ -468,6 +472,9 @@ IFACEMETHODIMP ProxyAccessible::QueryInterface(REFIID riid, void** ppInterface)
     }
     else if (riid == __uuidof(ITextChildProvider)) {
         *ppInterface = static_cast<ITextChildProvider*>(this);
+    }
+    else if (riid == __uuidof(ISynchronizedInputProvider)) {
+        *ppInterface = static_cast<ISynchronizedInputProvider*>(this);
     }
     else if (riid == __uuidof(IVirtualizedItemProvider)) {
         *ppInterface = static_cast<IVirtualizedItemProvider*>(this);
@@ -1536,6 +1543,24 @@ IFACEMETHODIMP ProxyAccessible::Realize() {
     return S_OK;
 }
 
+// ISynchronizedInputProvider
+IFACEMETHODIMP ProxyAccessible::Cancel() {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    env->CallVoidMethod(m_jAccessible, mid_ISynchronizedInputProvider_Cancel);
+    if (CheckAndClearException(env)) return E_FAIL;
+    return S_OK;
+}
+IFACEMETHODIMP ProxyAccessible::StartListening(SynchronizedInputType inputType) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    env->CallVoidMethod(m_jAccessible, mid_ISynchronizedInputProvider_StartListening, (jint) inputType);
+    // TODO this method should return E_INVALIDOPERATION if it is already listening
+    // since the java api has no HRESULT it is not implemented
+    if (CheckAndClearException(env)) return E_FAIL;
+    return S_OK;
+}
+
 /***********************************************/
 /*                  JNI                        */
 /***********************************************/
@@ -1821,7 +1846,12 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1initIDs
     // IVirtualizedItemProvider
     mid_IVirtualizedItemProvider_Realize = env->GetMethodID(jClass, "IVirtualizedItemProvider_Realize", "()V");
     if (env->ExceptionCheck()) return;
-    
+    // ISynchronizdInputProvider
+    mid_ISynchronizedInputProvider_Cancel = env->GetMethodID(jClass, "ISynchronizedItemProvider_Cancel", "()V");
+    if (env->ExceptionCheck()) return;
+    mid_ISynchronizedInputProvider_StartListening = env->GetMethodID(jClass, "ISynchronizedItemProvider_StartListening", "(I)V");
+
+
     /* Variant */
     jclass jVariantClass = env->FindClass("com/sun/glass/ui/uia/glass/WinVariant");
     if (env->ExceptionCheck()) return;

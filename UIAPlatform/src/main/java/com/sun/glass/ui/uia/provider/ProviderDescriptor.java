@@ -48,6 +48,7 @@ import javafx.uia.IScrollProvider;
 import javafx.uia.ISelectionItemProvider;
 import javafx.uia.ISelectionProvider;
 import javafx.uia.ISelectionProvider2;
+import javafx.uia.ISynchronizedInputProvider;
 import javafx.uia.ITableItemProvider;
 import javafx.uia.ITableProvider;
 import javafx.uia.ITextChildProvider;
@@ -110,6 +111,7 @@ public class ProviderDescriptor<JavaType, NativeType> {
             register(StandardPatternIds.UIA_ValuePatternId, IValueProvider.class, NativeIValueProvider.class, ValueProviderAdapter::new);
             register(StandardPatternIds.UIA_RangeValuePatternId, IRangeValueProvider.class, NativeIRangeValueProvider.class, RangeValueProviderAdapter::new);
         
+            register(StandardPatternIds.UIA_SynchronizedInputPatternId, ISynchronizedInputProvider.class, NativeISynchronizedInputProvider.class, SynchronizedInputProviderAdapter::new);
             register(StandardPatternIds.UIA_VirtualizedItemPatternId, IVirtualizedItemProvider.class, NativeIVirtualizedItemProvider.class, VirtualizedItemProviderAdapter::new);
         }
 
