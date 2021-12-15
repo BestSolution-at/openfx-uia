@@ -55,8 +55,10 @@ import com.sun.glass.ui.uia.provider.NativeITableProvider;
 import com.sun.glass.ui.uia.provider.NativeITextChildProvider;
 import com.sun.glass.ui.uia.provider.NativeITextProvider;
 import com.sun.glass.ui.uia.provider.NativeITextProvider2;
+import com.sun.glass.ui.uia.provider.NativeITextEditProvider;
 import com.sun.glass.ui.uia.provider.NativeIToggleProvider;
 import com.sun.glass.ui.uia.provider.NativeITransformProvider;
+import com.sun.glass.ui.uia.provider.NativeITransformProvider2;
 import com.sun.glass.ui.uia.provider.NativeIValueProvider;
 import com.sun.glass.ui.uia.provider.NativeIWindowProvider;
 import com.sun.glass.ui.uia.provider.UIAElementAdapter;
@@ -718,6 +720,27 @@ public class ProxyAccessible extends Accessible {
     private void ITransformProvider_Rotate(double degrees) {
         callProviderW(NativeITransformProvider.class, provider -> provider.Rotate(degrees), glass -> glass.Rotate(degrees));
     }
+
+    // ITransformProvider2
+    private boolean ITransformProvider2_get_CanZoom() {
+        return callProviderBoolean(NativeITransformProvider2.class, NativeITransformProvider2::get_CanZoom, false, false);
+    }
+    private double ITransformProvider2_get_ZoomLevel() {
+        return callProviderDouble(NativeITransformProvider2.class, NativeITransformProvider2::get_ZoomLevel, 1, 1);
+    }
+    private double ITransformProvider2_get_ZoomMinimum() {
+        return callProviderDouble(NativeITransformProvider2.class, NativeITransformProvider2::get_ZoomMinimum, 1, 1);
+    }
+    private double ITransformProvider2_get_ZoomMaximum() {
+        return callProviderDouble(NativeITransformProvider2.class, NativeITransformProvider2::get_ZoomMaximum, 1, 1);
+    }
+    private void ITransformProvider2_Zoom(double zoom) {
+        callProvider(NativeITransformProvider2.class, provider -> provider.Zoom(zoom));
+    }
+    private void ITransformProvider2_ZoomByUnit(int zoomUnit) {
+        callProvider(NativeITransformProvider2.class, provider -> provider.ZoomByUnit(zoomUnit));
+    }
+
     /***********************************************/
     /*             IScrollProvider                 */
     /***********************************************/
@@ -843,7 +866,13 @@ public class ProxyAccessible extends Accessible {
     private long                ITextProvider2_RangeFromAnnotation(long annotationElement) {
         return callProviderLong(NativeITextProvider2.class, prov -> prov.RangeFromAnnotation(annotationElement), 0L, 0L);
     }
-
+    // ITextEditProvider
+    private long ITextEditProvider_GetActiveComposition() {
+        return callProviderLong(NativeITextEditProvider.class, NativeITextEditProvider::GetActiveComposition, 0L, 0L);
+    }
+    private long ITextEditProvider_GetConversionTarget() {
+        return callProviderLong(NativeITextEditProvider.class, NativeITextEditProvider::GetConversionTarget, 0L, 0L);
+    }
 
 
     // Utility functions
@@ -1016,6 +1045,8 @@ public class ProxyAccessible extends Accessible {
         }, errorValue);
     }
 
+
+
     <P> double callProviderDoubleW(Class<P> providerType, ToDoubleFunction<P> method, ToDoubleFunction<WinAccessible> glassMethod, double errorValue) {
         return Util.guard(() -> {
             P provider = getNativeProvider(providerType);
@@ -1024,6 +1055,17 @@ public class ProxyAccessible extends Accessible {
             } else {
                 checkGlass();
                 return glassMethod.applyAsDouble(glass);
+            } 
+        }, errorValue);
+    }
+
+    <P> double callProviderDouble(Class<P> providerType, ToDoubleFunction<P> method, double noProviderValue, double errorValue) {
+        return Util.guard(() -> {
+            P provider = getNativeProvider(providerType);
+            if (provider != null) {
+                return method.applyAsDouble(provider);
+            } else {
+                return noProviderValue;
             } 
         }, errorValue);
     }

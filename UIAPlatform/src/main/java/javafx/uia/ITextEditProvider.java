@@ -37,7 +37,7 @@ public interface ITextEditProvider extends ITextProvider {
         public final IEvent ConversionTargetChanged;
         public final IEvent TextChanged;
         public final ITextEditTextChangedEvent TextEditTextChanged;
-		public TextEditProviderContext(IInitContext init, ITextProvider provider) {
+		public TextEditProviderContext(IInitContext init, ITextEditProvider provider) {
             ConversionTargetChanged = init.addEvent(StandardEventIds.UIA_TextEdit_ConversionTargetChangedEventId);
             TextChanged = init.addEvent(StandardEventIds.UIA_TextEdit_TextChangedEventId);
             TextEditTextChanged = init.addTextEditTextChangedEvent();

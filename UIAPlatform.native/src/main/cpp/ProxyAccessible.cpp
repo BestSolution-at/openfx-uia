@@ -173,6 +173,10 @@ static jmethodID mid_ITextChildProvider_get_TextRange;
 static jmethodID mid_ITextProvider2_GetCaretRange;
 static jmethodID mid_ITextProvider2_RangeFromAnnotation;
 
+// ITextEditProvider
+static jmethodID mid_ITextEditProvider_GetActiveComposition;
+static jmethodID mid_ITextEditProvider_GetConversionTarget;
+
 /* Variant Field IDs */
 static jfieldID fid_vt;
 static jfieldID fid_iVal;
@@ -404,6 +408,9 @@ IFACEMETHODIMP ProxyAccessible::QueryInterface(REFIID riid, void** ppInterface)
     }
     else if (riid == __uuidof(ITextProvider2)) {
         *ppInterface = static_cast<ITextProvider2*>(this);
+    }
+    else if (riid == __uuidof(ITextEditProvider)) {
+        *ppInterface = static_cast<ITextEditProvider*>(this);
     }
     else if (riid == __uuidof(IGridProvider)) {
         *ppInterface = static_cast<IGridProvider*>(this);
@@ -1454,6 +1461,22 @@ IFACEMETHODIMP ProxyAccessible::RangeFromAnnotation(IRawElementProviderSimple *a
     return hr;
 }
 
+// ITextEditProvider
+IFACEMETHODIMP ProxyAccessible::GetActiveComposition(ITextRangeProvider **pRetVal) {
+    if (pRetVal == NULL) return E_INVALIDARG;
+    IUnknown* ptr = NULL;
+    HRESULT hr = callLongMethod(mid_ITextEditProvider_GetActiveComposition, &ptr);
+    *pRetVal = static_cast<ITextRangeProvider*>(ptr);
+    return hr;
+}
+IFACEMETHODIMP ProxyAccessible::GetConversionTarget(ITextRangeProvider **pRetVal) {
+    if (pRetVal == NULL) return E_INVALIDARG;
+    IUnknown* ptr = NULL;
+    HRESULT hr = callLongMethod(mid_ITextEditProvider_GetConversionTarget, &ptr);
+    *pRetVal = static_cast<ITextRangeProvider*>(ptr);
+    return hr;
+}
+
 // ITransformProvider2
 IFACEMETHODIMP ProxyAccessible::get_CanZoom(BOOL* pRetVal) {
     JNIEnv* env = GetEnv();
@@ -1775,7 +1798,11 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1initIDs
     if (env->ExceptionCheck()) return;
     mid_ITextProvider2_RangeFromAnnotation = env->GetMethodID(jClass, "ITextProvider2_RangeFromAnnotation", "(J)J");
     if (env->ExceptionCheck()) return;
-
+    // ITextEditProvider
+    mid_ITextEditProvider_GetActiveComposition = env->GetMethodID(jClass, "ITextEditProvider_GetActiveComposition", "()J");
+    if (env->ExceptionCheck()) return;
+    mid_ITextEditProvider_GetConversionTarget = env->GetMethodID(jClass, "ITextEditProvider_GetConversionTarget", "()J");
+    if (env->ExceptionCheck()) return;
 
     /* Variant */
     jclass jVariantClass = env->FindClass("com/sun/glass/ui/uia/glass/WinVariant");

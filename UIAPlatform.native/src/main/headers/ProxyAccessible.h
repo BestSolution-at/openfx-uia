@@ -41,6 +41,7 @@ class ProxyAccessible : public IRawElementProviderSimple,
     public IValueProvider,
     public ITextProvider,
     public ITextProvider2,
+    public ITextEditProvider,
     public ITextChildProvider,
     public IGridProvider,
     public IGridItemProvider,
@@ -220,6 +221,9 @@ public:
     // ITextProvider2
     IFACEMETHODIMP GetCaretRange(BOOL *isActive, ITextRangeProvider **pRetVal);
     IFACEMETHODIMP RangeFromAnnotation(IRawElementProviderSimple *annotationElement, ITextRangeProvider **pRetVal);
+    // ITextEditProvider
+    IFACEMETHODIMP GetActiveComposition(ITextRangeProvider **pRetVal);
+    IFACEMETHODIMP GetConversionTarget(ITextRangeProvider **pRetVal);
 
     // ITransformPRovider2
     IFACEMETHODIMP get_CanZoom(BOOL* pRetVal);

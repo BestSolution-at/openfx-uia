@@ -51,6 +51,7 @@ import javafx.uia.ISelectionProvider2;
 import javafx.uia.ITableItemProvider;
 import javafx.uia.ITableProvider;
 import javafx.uia.ITextChildProvider;
+import javafx.uia.ITextEditProvider;
 import javafx.uia.ITextProvider;
 import javafx.uia.ITextProvider2;
 import javafx.uia.IToggleProvider;
@@ -79,7 +80,8 @@ public class ProviderDescriptor<JavaType, NativeType> {
             register(StandardPatternIds.UIA_InvokePatternId, IInvokeProvider.class, NativeIInvokeProvider.class, InvokeProviderAdapter::new);
             register(StandardPatternIds.UIA_TextPatternId, ITextProvider.class, NativeITextProvider.class, TextProviderAdapter::new);
             register(StandardPatternIds.UIA_TextPattern2Id, ITextProvider2.class, NativeITextProvider2.class, TextProviderAdapter2::new);
-            
+            register(StandardPatternIds.UIA_TextEditPatternId, ITextEditProvider.class, NativeITextEditProvider.class, TextEditProviderAdapter::new);
+
             register(StandardPatternIds.UIA_TextChildPatternId, ITextChildProvider.class, NativeITextChildProvider.class, TextChildProviderAdapter::new);
 
             register(StandardPatternIds.UIA_ScrollPatternId, IScrollProvider.class, NativeIScrollProvider.class, ScrollProviderAdapter::new);
@@ -141,11 +143,14 @@ public class ProviderDescriptor<JavaType, NativeType> {
     }
 
     public NativeType createAdapter(ProxyAccessible accessible, JavaType javaInstance) {
-        return factory.apply(accessible, javaInstance);
+        NativeType result = factory.apply(accessible, javaInstance);
+        System.err.println("Creating Adapter for '" + javaInstance + "': '"+result+"'");
+        return result;
     }
 
     public ProviderRegistry.ProviderInstance<JavaType, NativeType> createInstance(IInitContext init, ProxyAccessible accessible, IUIAElement element) {
         JavaType javaInstance = element.getProvider(javaType);
+        System.err.println("-> for: " + javaType);
         return new ProviderRegistry.ProviderInstance<>(init, accessible, this, element, Objects.requireNonNull(javaInstance));
     }
 
