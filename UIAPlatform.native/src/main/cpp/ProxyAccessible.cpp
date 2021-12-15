@@ -177,6 +177,9 @@ static jmethodID mid_ITextProvider2_RangeFromAnnotation;
 static jmethodID mid_ITextEditProvider_GetActiveComposition;
 static jmethodID mid_ITextEditProvider_GetConversionTarget;
 
+// IVirtualizedItemProvider
+static jmethodID mid_IVirtualizedItemProvider_Realize;
+
 /* Variant Field IDs */
 static jfieldID fid_vt;
 static jfieldID fid_iVal;
@@ -465,6 +468,9 @@ IFACEMETHODIMP ProxyAccessible::QueryInterface(REFIID riid, void** ppInterface)
     }
     else if (riid == __uuidof(ITextChildProvider)) {
         *ppInterface = static_cast<ITextChildProvider*>(this);
+    }
+    else if (riid == __uuidof(IVirtualizedItemProvider)) {
+        *ppInterface = static_cast<IVirtualizedItemProvider*>(this);
     }
     else {
         *ppInterface = NULL;
@@ -1521,6 +1527,15 @@ IFACEMETHODIMP ProxyAccessible::ZoomByUnit(ZoomUnit zoomUnit) {
     return S_OK;
 }
 
+// IVirtualizedItemProvider
+IFACEMETHODIMP ProxyAccessible::Realize() {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    env->CallVoidMethod(m_jAccessible, mid_IVirtualizedItemProvider_Realize);
+    if (CheckAndClearException(env)) return E_FAIL;
+    return S_OK;
+}
+
 /***********************************************/
 /*                  JNI                        */
 /***********************************************/
@@ -1803,7 +1818,10 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1initIDs
     if (env->ExceptionCheck()) return;
     mid_ITextEditProvider_GetConversionTarget = env->GetMethodID(jClass, "ITextEditProvider_GetConversionTarget", "()J");
     if (env->ExceptionCheck()) return;
-
+    // IVirtualizedItemProvider
+    mid_IVirtualizedItemProvider_Realize = env->GetMethodID(jClass, "IVirtualizedItemProvider_Realize", "()V");
+    if (env->ExceptionCheck()) return;
+    
     /* Variant */
     jclass jVariantClass = env->FindClass("com/sun/glass/ui/uia/glass/WinVariant");
     if (env->ExceptionCheck()) return;

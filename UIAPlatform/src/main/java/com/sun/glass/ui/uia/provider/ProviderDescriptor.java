@@ -59,6 +59,7 @@ import javafx.uia.ITransformProvider;
 import javafx.uia.ITransformProvider2;
 import javafx.uia.IUIAElement;
 import javafx.uia.IValueProvider;
+import javafx.uia.IVirtualizedItemProvider;
 import javafx.uia.IWindowProvider;
 import javafx.uia.StandardPatternIds;
 
@@ -108,6 +109,8 @@ public class ProviderDescriptor<JavaType, NativeType> {
             
             register(StandardPatternIds.UIA_ValuePatternId, IValueProvider.class, NativeIValueProvider.class, ValueProviderAdapter::new);
             register(StandardPatternIds.UIA_RangeValuePatternId, IRangeValueProvider.class, NativeIRangeValueProvider.class, RangeValueProviderAdapter::new);
+        
+            register(StandardPatternIds.UIA_VirtualizedItemPatternId, IVirtualizedItemProvider.class, NativeIVirtualizedItemProvider.class, VirtualizedItemProviderAdapter::new);
         }
 
         static <JavaType, NativeType> boolean isAvailable(IPatternId id) {
@@ -143,14 +146,11 @@ public class ProviderDescriptor<JavaType, NativeType> {
     }
 
     public NativeType createAdapter(ProxyAccessible accessible, JavaType javaInstance) {
-        NativeType result = factory.apply(accessible, javaInstance);
-        System.err.println("Creating Adapter for '" + javaInstance + "': '"+result+"'");
-        return result;
+        return factory.apply(accessible, javaInstance);
     }
 
     public ProviderRegistry.ProviderInstance<JavaType, NativeType> createInstance(IInitContext init, ProxyAccessible accessible, IUIAElement element) {
         JavaType javaInstance = element.getProvider(javaType);
-        System.err.println("-> for: " + javaType);
         return new ProviderRegistry.ProviderInstance<>(init, accessible, this, element, Objects.requireNonNull(javaInstance));
     }
 

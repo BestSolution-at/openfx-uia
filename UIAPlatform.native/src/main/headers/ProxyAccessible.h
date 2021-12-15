@@ -59,7 +59,8 @@ class ProxyAccessible : public IRawElementProviderSimple,
     public IDragProvider,
     public IDropTargetProvider,
     public IItemContainerProvider,
-    public IMultipleViewProvider
+    public IMultipleViewProvider,
+    public IVirtualizedItemProvider
 {
 
 public:
@@ -224,6 +225,9 @@ public:
     // ITextEditProvider
     IFACEMETHODIMP GetActiveComposition(ITextRangeProvider **pRetVal);
     IFACEMETHODIMP GetConversionTarget(ITextRangeProvider **pRetVal);
+
+    // IVirtualizedItemProvider
+    IFACEMETHODIMP Realize();
 
     // ITransformPRovider2
     IFACEMETHODIMP get_CanZoom(BOOL* pRetVal);
