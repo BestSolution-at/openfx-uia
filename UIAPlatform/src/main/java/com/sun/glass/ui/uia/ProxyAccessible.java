@@ -65,6 +65,7 @@ import com.sun.glass.ui.uia.provider.NativeIValueProvider;
 import com.sun.glass.ui.uia.provider.NativeIWindowProvider;
 import com.sun.glass.ui.uia.provider.NativeISynchronizedInputProvider;
 import com.sun.glass.ui.uia.provider.NativeIVirtualizedItemProvider;
+import com.sun.glass.ui.uia.provider.NativeIMultipleViewProvider;
 import com.sun.glass.ui.uia.provider.UIAElementAdapter;
 import com.sun.javafx.tk.quantum.QuantumToolkit;
 
@@ -846,10 +847,18 @@ public class ProxyAccessible extends Accessible {
         return callProviderLong(NativeIItemContainerProvider.class, provider -> provider.FindItemByProperty(pStartAfter, propertyId, pVariant), 0L, 0L);
     }
     // IMultipleViewProvider
-    private int         IMultipleViewProvider_get_CurrentView() {return 0;}
-    private int[]       IMultipleViewProvider_GetSupportedViews() { return new int[0]; }
-    private String      IMultipleViewProvider_GetViewName(int viewId) { return ""; }
-    private void        IMultipleViewProvider_SetCurrentView(int viewId) {}
+    private int         IMultipleViewProvider_get_CurrentView() {
+        return callProviderInt(NativeIMultipleViewProvider.class, NativeIMultipleViewProvider::get_CurrentView, 0, 0);
+    }
+    private int[]       IMultipleViewProvider_GetSupportedViews() {
+        return callProvider(NativeIMultipleViewProvider.class, NativeIMultipleViewProvider::GetSupportedViews, new int[]{}, new int[]{});
+    }
+    private String      IMultipleViewProvider_GetViewName(int viewId) {
+        return callProvider(NativeIMultipleViewProvider.class, provider -> provider.GetViewName(viewId), "", "");
+    }
+    private void        IMultipleViewProvider_SetCurrentView(int viewId) {
+        callProvider(NativeIMultipleViewProvider.class, provider -> provider.SetCurrentView(viewId));
+    }
 
     // ITextChildProvider
     private long ITextChildProvider_get_TextContainer() {
@@ -1075,7 +1084,6 @@ public class ProxyAccessible extends Accessible {
             } 
         }, errorValue);
     }
-
 
 
     <P> double callProviderDoubleW(Class<P> providerType, ToDoubleFunction<P> method, ToDoubleFunction<WinAccessible> glassMethod, double errorValue) {

@@ -1415,7 +1415,7 @@ IFACEMETHODIMP ProxyAccessible::get_CurrentView(int *pRetVal) {
 }
 IFACEMETHODIMP ProxyAccessible::GetSupportedViews(SAFEARRAY** pRetVal) {
     if (pRetVal == NULL) return E_INVALIDARG;
-     return callArrayMethod(mid_IMultipleViewProvider_GetSupportedViews, VT_I4, pRetVal);
+    return callArrayMethod(mid_IMultipleViewProvider_GetSupportedViews, VT_I4, pRetVal);
 }
 IFACEMETHODIMP ProxyAccessible::GetViewName(int viewId, BSTR *pRetVal) {
     JNIEnv* env = GetEnv();

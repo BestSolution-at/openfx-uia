@@ -41,6 +41,7 @@ import javafx.uia.IGridItemProvider;
 import javafx.uia.IGridProvider;
 import javafx.uia.IInitContext;
 import javafx.uia.IInvokeProvider;
+import javafx.uia.IMultipleViewProvider;
 import javafx.uia.IPatternId;
 import javafx.uia.IRangeValueProvider;
 import javafx.uia.IScrollItemProvider;
@@ -110,7 +111,9 @@ public class ProviderDescriptor<JavaType, NativeType> {
             
             register(StandardPatternIds.UIA_ValuePatternId, IValueProvider.class, NativeIValueProvider.class, ValueProviderAdapter::new);
             register(StandardPatternIds.UIA_RangeValuePatternId, IRangeValueProvider.class, NativeIRangeValueProvider.class, RangeValueProviderAdapter::new);
-        
+            
+            register(StandardPatternIds.UIA_MultipleViewPatternId, IMultipleViewProvider.class, NativeIMultipleViewProvider.class, MultipleViewProviderAdapter::new);
+            
             register(StandardPatternIds.UIA_SynchronizedInputPatternId, ISynchronizedInputProvider.class, NativeISynchronizedInputProvider.class, SynchronizedInputProviderAdapter::new);
             register(StandardPatternIds.UIA_VirtualizedItemPatternId, IVirtualizedItemProvider.class, NativeIVirtualizedItemProvider.class, VirtualizedItemProviderAdapter::new);
         }
