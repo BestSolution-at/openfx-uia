@@ -62,7 +62,8 @@ class ProxyAccessible : public IRawElementProviderSimple,
     public IItemContainerProvider,
     public IMultipleViewProvider,
     public ISynchronizedInputProvider,
-    public IVirtualizedItemProvider
+    public IVirtualizedItemProvider,
+    public IStylesProvider
 {
 
 public:
@@ -228,6 +229,15 @@ public:
     IFACEMETHODIMP GetActiveComposition(ITextRangeProvider **pRetVal);
     IFACEMETHODIMP GetConversionTarget(ITextRangeProvider **pRetVal);
 
+    // IStylesProvider
+    IFACEMETHODIMP get_ExtendedProperties(BSTR* pRetVal);
+    IFACEMETHODIMP get_FillColor(int* pRetVal);
+    IFACEMETHODIMP get_FillPatternColor(int* pRetVal);
+    IFACEMETHODIMP get_FillPatternStyle(BSTR* pRetVal);
+    IFACEMETHODIMP get_Shape(BSTR* pRetVal);
+    IFACEMETHODIMP get_StyleId(int* pRetVal);
+    IFACEMETHODIMP get_StyleName(BSTR* pRetVal);
+
     // IVirtualizedItemProvider
     IFACEMETHODIMP Realize();
 
@@ -241,7 +251,7 @@ public:
     IFACEMETHODIMP get_LastSelectedItem(IRawElementProviderSimple **pRetVal);
     IFACEMETHODIMP get_ItemCount(int *pRetVal);
 
-    // ITransformPRovider2
+    // ITransformProvider2
     IFACEMETHODIMP get_CanZoom(BOOL* pRetVal);
     IFACEMETHODIMP get_ZoomLevel(double* pRetVal);
     IFACEMETHODIMP get_ZoomMinimum(double* pRetVal);

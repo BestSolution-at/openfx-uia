@@ -49,6 +49,7 @@ import javafx.uia.IScrollProvider;
 import javafx.uia.ISelectionItemProvider;
 import javafx.uia.ISelectionProvider;
 import javafx.uia.ISelectionProvider2;
+import javafx.uia.IStylesProvider;
 import javafx.uia.ISynchronizedInputProvider;
 import javafx.uia.ITableItemProvider;
 import javafx.uia.ITableProvider;
@@ -113,9 +114,11 @@ public class ProviderDescriptor<JavaType, NativeType> {
             register(StandardPatternIds.UIA_RangeValuePatternId, IRangeValueProvider.class, NativeIRangeValueProvider.class, RangeValueProviderAdapter::new);
             
             register(StandardPatternIds.UIA_MultipleViewPatternId, IMultipleViewProvider.class, NativeIMultipleViewProvider.class, MultipleViewProviderAdapter::new);
-            
+
             register(StandardPatternIds.UIA_SynchronizedInputPatternId, ISynchronizedInputProvider.class, NativeISynchronizedInputProvider.class, SynchronizedInputProviderAdapter::new);
             register(StandardPatternIds.UIA_VirtualizedItemPatternId, IVirtualizedItemProvider.class, NativeIVirtualizedItemProvider.class, VirtualizedItemProviderAdapter::new);
+
+            register(StandardPatternIds.UIA_StylesPatternId, IStylesProvider.class, NativeIStylesProvider.class, StylesProviderAdapter::new);
         }
 
         static <JavaType, NativeType> boolean isAvailable(IPatternId id) {

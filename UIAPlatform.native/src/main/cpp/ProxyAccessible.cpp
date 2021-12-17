@@ -180,6 +180,15 @@ static jmethodID mid_ITextEditProvider_GetConversionTarget;
 // IVirtualizedItemProvider
 static jmethodID mid_IVirtualizedItemProvider_Realize;
 
+// IStylesProvider
+static jmethodID mid_IStylesProvider_get_ExtendedProperties;
+static jmethodID mid_IStylesProvider_get_FillColor;
+static jmethodID mid_IStylesProvider_get_FillPatternColor;
+static jmethodID mid_IStylesProvider_get_FillPatternStyle;
+static jmethodID mid_IStylesProvider_get_Shape;
+static jmethodID mid_IStylesProvider_get_StyleId;
+static jmethodID mid_IStylesProvider_get_StyleName;
+
 // ISynchronizedInputProvider
 static jmethodID mid_ISynchronizedInputProvider_Cancel;
 static jmethodID mid_ISynchronizedInputProvider_StartListening;
@@ -487,6 +496,9 @@ IFACEMETHODIMP ProxyAccessible::QueryInterface(REFIID riid, void** ppInterface)
     }
     else if (riid == __uuidof(IVirtualizedItemProvider)) {
         *ppInterface = static_cast<IVirtualizedItemProvider*>(this);
+    }
+    else if (riid == __uuidof(IStylesProvider)) {
+        *ppInterface = static_cast<IStylesProvider*>(this);
     }
     else {
         *ppInterface = NULL;
@@ -1552,6 +1564,61 @@ IFACEMETHODIMP ProxyAccessible::Realize() {
     return S_OK;
 }
 
+// IStylesProvider
+IFACEMETHODIMP ProxyAccessible::get_ExtendedProperties(BSTR* pRetVal) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    jstring str = (jstring)env->CallObjectMethod(m_jAccessible, mid_IStylesProvider_get_ExtendedProperties);
+    if (CheckAndClearException(env)) return E_FAIL;
+    HRESULT res = ProxyAccessible::copyString(env, str, pRetVal);
+    return res;  
+}
+IFACEMETHODIMP ProxyAccessible::get_FillColor(int* pRetVal) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    *pRetVal = (int) env->CallIntMethod(m_jAccessible, mid_IStylesProvider_get_FillColor);
+    if (CheckAndClearException(env)) return E_FAIL;
+    return S_OK;
+}
+IFACEMETHODIMP ProxyAccessible::get_FillPatternColor(int* pRetVal) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    *pRetVal = (int) env->CallIntMethod(m_jAccessible, mid_IStylesProvider_get_FillPatternColor);
+    if (CheckAndClearException(env)) return E_FAIL;
+    return S_OK;
+}
+IFACEMETHODIMP ProxyAccessible::get_FillPatternStyle(BSTR* pRetVal) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    jstring str = (jstring)env->CallObjectMethod(m_jAccessible, mid_IStylesProvider_get_FillPatternStyle);
+    if (CheckAndClearException(env)) return E_FAIL;
+    HRESULT res = ProxyAccessible::copyString(env, str, pRetVal);
+    return res;   
+}
+IFACEMETHODIMP ProxyAccessible::get_Shape(BSTR* pRetVal) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    jstring str = (jstring)env->CallObjectMethod(m_jAccessible, mid_IStylesProvider_get_Shape);
+    if (CheckAndClearException(env)) return E_FAIL;
+    HRESULT res = ProxyAccessible::copyString(env, str, pRetVal);
+    return res;
+}
+IFACEMETHODIMP ProxyAccessible::get_StyleId(int* pRetVal) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    *pRetVal = (int) env->CallIntMethod(m_jAccessible, mid_IStylesProvider_get_StyleId);
+    if (CheckAndClearException(env)) return E_FAIL;
+    return S_OK;
+}
+IFACEMETHODIMP ProxyAccessible::get_StyleName(BSTR* pRetVal) {
+    JNIEnv* env = GetEnv();
+    if (env == NULL) return E_FAIL;
+    jstring str = (jstring)env->CallObjectMethod(m_jAccessible, mid_IStylesProvider_get_StyleName);
+    if (CheckAndClearException(env)) return E_FAIL;
+    HRESULT res = ProxyAccessible::copyString(env, str, pRetVal);
+    return res;
+}
+
 // ISynchronizedInputProvider
 IFACEMETHODIMP ProxyAccessible::Cancel() {
     JNIEnv* env = GetEnv();
@@ -1899,6 +1966,22 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1initIDs
     mid_ISelectionProvider2_get_LastSelectedItem = env->GetMethodID(jClass, "ISelectionProvider2_get_LastSelectedItem", "()J");
     if (env->ExceptionCheck()) return;
 
+    // IStylesProvider
+    mid_IStylesProvider_get_ExtendedProperties = env->GetMethodID(jClass, "IStylesProvider_get_ExtendedProperties", "()Ljava/lang/String;");
+    if (env->ExceptionCheck()) return;
+    mid_IStylesProvider_get_FillColor = env->GetMethodID(jClass, "IStylesProvider_get_FillColor", "()I");
+    if (env->ExceptionCheck()) return;
+    mid_IStylesProvider_get_FillPatternColor = env->GetMethodID(jClass, "IStylesProvider_get_FillPatternColor", "()I");
+    if (env->ExceptionCheck()) return;
+    mid_IStylesProvider_get_FillPatternStyle = env->GetMethodID(jClass, "IStylesProvider_get_FillPatternStyle", "()Ljava/lang/String;");
+    if (env->ExceptionCheck()) return;
+    mid_IStylesProvider_get_Shape = env->GetMethodID(jClass, "IStylesProvider_get_Shape", "()Ljava/lang/String;");
+    if (env->ExceptionCheck()) return;
+    mid_IStylesProvider_get_StyleId = env->GetMethodID(jClass, "IStylesProvider_get_StyleId", "()I");
+    if (env->ExceptionCheck()) return;
+    mid_IStylesProvider_get_StyleName = env->GetMethodID(jClass, "IStylesProvider_get_StyleName", "()Ljava/lang/String;");
+    if (env->ExceptionCheck()) return;
+    
     /* Variant */
     jclass jVariantClass = env->FindClass("com/sun/glass/ui/uia/glass/WinVariant");
     if (env->ExceptionCheck()) return;

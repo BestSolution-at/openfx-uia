@@ -66,6 +66,7 @@ import com.sun.glass.ui.uia.provider.NativeIWindowProvider;
 import com.sun.glass.ui.uia.provider.NativeISynchronizedInputProvider;
 import com.sun.glass.ui.uia.provider.NativeIVirtualizedItemProvider;
 import com.sun.glass.ui.uia.provider.NativeIMultipleViewProvider;
+import com.sun.glass.ui.uia.provider.NativeIStylesProvider;
 import com.sun.glass.ui.uia.provider.UIAElementAdapter;
 import com.sun.javafx.tk.quantum.QuantumToolkit;
 
@@ -858,6 +859,29 @@ public class ProxyAccessible extends Accessible {
     }
     private void        IMultipleViewProvider_SetCurrentView(int viewId) {
         callProvider(NativeIMultipleViewProvider.class, provider -> provider.SetCurrentView(viewId));
+    }
+
+    // IStylesProvider
+    private String IStylesProvider_get_ExtendedProperties() {
+        return callProvider(NativeIStylesProvider.class, NativeIStylesProvider::get_ExtendedProperties, "", "");
+    }
+    private int IStylesProvider_get_FillColor() {
+        return callProviderInt(NativeIStylesProvider.class, NativeIStylesProvider::get_FillColor, 0, 0);
+    }
+    private int IStylesProvider_get_FillPatternColor() {
+        return callProviderInt(NativeIStylesProvider.class, NativeIStylesProvider::get_FillPatternColor, 0, 0);
+    }
+    private String IStylesProvider_get_FillPatternStyle() {
+        return callProvider(NativeIStylesProvider.class, NativeIStylesProvider::get_FillPatternStyle, "", "");
+    }   
+    private String IStylesProvider_get_Shape() {
+        return callProvider(NativeIStylesProvider.class, NativeIStylesProvider::get_Shape, "", "");
+    }
+    private int IStylesProvider_get_StyleId() {
+        return callProviderInt(NativeIStylesProvider.class, NativeIStylesProvider::get_StyleId, 0, 0);
+    }
+    private String IStylesProvider_get_StyleName() {
+        return callProvider(NativeIStylesProvider.class, NativeIStylesProvider::get_StyleName, "", "");
     }
 
     // ITextChildProvider
