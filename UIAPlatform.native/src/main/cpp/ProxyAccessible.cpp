@@ -1436,14 +1436,14 @@ IFACEMETHODIMP ProxyAccessible::SetCurrentView(int viewId) {
 IFACEMETHODIMP ProxyAccessible::get_TextContainer(IRawElementProviderSimple **pRetVal) {
     if (pRetVal == NULL) return E_INVALIDARG;
     IUnknown* ptr = NULL;
-    HRESULT hr = callLongMethod(mid_IItemContainerProvider_FindItemByProperty, &ptr);
+    HRESULT hr = callLongMethod(mid_ITextChildProvider_get_TextContainer, &ptr);
     *pRetVal = static_cast<IRawElementProviderSimple*>(ptr);
     return hr;
 }
 IFACEMETHODIMP ProxyAccessible::get_TextRange(ITextRangeProvider **pRetVal) {
     if (pRetVal == NULL) return E_INVALIDARG;
     IUnknown* ptr = NULL;
-    HRESULT hr = callLongMethod(mid_IItemContainerProvider_FindItemByProperty, &ptr);
+    HRESULT hr = callLongMethod(mid_ITextChildProvider_get_TextRange, &ptr);
     *pRetVal = static_cast<ITextRangeProvider*>(ptr);
     return hr;
 }
