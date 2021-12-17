@@ -1401,7 +1401,7 @@ IFACEMETHODIMP ProxyAccessible::get_DropTargetEffects(SAFEARRAY** pRetVal) {
 IFACEMETHODIMP ProxyAccessible::FindItemByProperty(IRawElementProviderSimple *pStartAfter, PROPERTYID propertyID, VARIANT value, IRawElementProviderSimple **pFound) {
     if (pFound == NULL) return E_INVALIDARG;
     IUnknown* ptr = NULL;
-    HRESULT hr = callLongMethod(mid_IItemContainerProvider_FindItemByProperty, &ptr);
+    HRESULT hr = callLongMethod(mid_IItemContainerProvider_FindItemByProperty, &ptr, (jlong) pStartAfter, (jint) propertyID, (jlong) (&value));
     *pFound = static_cast<IRawElementProviderSimple*>(ptr);
     return hr;
 }

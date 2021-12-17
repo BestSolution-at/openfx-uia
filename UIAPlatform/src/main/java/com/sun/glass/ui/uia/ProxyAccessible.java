@@ -40,6 +40,7 @@ import com.sun.glass.ui.View;
 import com.sun.glass.ui.uia.glass.WinAccessible;
 import com.sun.glass.ui.uia.glass.WinVariant;
 import com.sun.glass.ui.uia.provider.NativeIAnnotationProvider;
+import com.sun.glass.ui.uia.provider.NativeIItemContainerProvider;
 import com.sun.glass.ui.uia.provider.NativeIDockProvider;
 import com.sun.glass.ui.uia.provider.NativeIExpandCollapseProvider;
 import com.sun.glass.ui.uia.provider.NativeIGridItemProvider;
@@ -842,7 +843,7 @@ public class ProxyAccessible extends Accessible {
     private String[]    IDropTargetProvider_get_DropTargetEffects() { return new String[0]; }
     // IItemContainerProvider
     private long        IItemContainerProvider_FindItemByProperty(long pStartAfter, int propertyId, long pVariant) {
-        return 0L;
+        return callProviderLong(NativeIItemContainerProvider.class, provider -> provider.FindItemByProperty(pStartAfter, propertyId, pVariant), 0L, 0L);
     }
     // IMultipleViewProvider
     private int         IMultipleViewProvider_get_CurrentView() {return 0;}
