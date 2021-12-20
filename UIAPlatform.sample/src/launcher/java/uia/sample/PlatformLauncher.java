@@ -100,6 +100,7 @@ public class PlatformLauncher {
                 getJavaBinary(), 
                 "-javaagent:"+agent,
                 "-cp", getClasspath(),
+                "-Duia.log="+Boolean.getBoolean("uia.log"),
                 "uia.sample.Simple"
             );
             System.err.println("Launching " + commandLine);

@@ -29,6 +29,8 @@ package uia.sample;
 import java.util.Arrays;
 import java.util.List;
 
+//import com.sun.glass.ui.uia.AccessibleMonitor;
+
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -41,6 +43,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
+import uia.sample.samples.AllDummyProviders;
 import uia.sample.samples.CanvasWithVirtualChildren;
 import uia.sample.samples.DocumentModelSample;
 import uia.sample.samples.SimpleAsyncContentLoadedEvent;
@@ -68,8 +71,22 @@ import uia.sample.samples.ToggleProviderSample;
 
 public class Simple extends Application {
 
+    static class MenuListCell extends ListCell<Sample> {
+        @Override
+        protected  void updateItem(Sample sample, boolean empty) {
+            super.updateItem(sample, empty);
+            if (empty) {
+                setText("");
+            } else {
+                setText(sample.getName());
+            }
+        }
+    }
+
     @Override
     public void start(Stage primaryStage) throws Exception {
+
+        //new AccessibleMonitor();
 
         BorderPane root = new BorderPane();
 
@@ -77,6 +94,7 @@ public class Simple extends Application {
         root.setPrefSize(800, 600);
 
         List<Sample> samples = Arrays.asList(
+            new AllDummyProviders(),
             new SimpleUIAElement(), 
             new SimpleUIAElementWithProperties(),
             new ToggleProviderSample(), 
@@ -130,19 +148,7 @@ public class Simple extends Application {
 
         ListView<Sample> nav = new ListView<>();
         nav.setItems(FXCollections.observableArrayList(samples));
-        nav.setCellFactory(list -> {
-            return new ListCell<Sample>() {
-                @Override
-                protected  void updateItem(Sample sample, boolean empty) {
-                    super.updateItem(sample, empty);
-                    if (empty) {
-                        setText("");
-                    } else {
-                        setText(sample.getName());
-                    }
-                }
-            };
-        });
+        nav.setCellFactory(list -> new MenuListCell());
         nav.getSelectionModel().selectedItemProperty().addListener((obs, ol, ne) -> {
             if (ne != null) {
                 Node sample = ne.getSample();

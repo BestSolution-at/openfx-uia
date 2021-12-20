@@ -74,6 +74,7 @@ task runWithAgent(type: JavaExec) {
 	classpath = sourceSets.main.runtimeClasspath
 	main = 'uia.sample.Simple'
 
+    systemProperties "uia.log": false
     jvmArgs "-javaagent:${getAgentJar()}"
 }
 
@@ -90,6 +91,7 @@ task debugWithAgent(type: JavaExec) {
 	classpath = sourceSets.main.runtimeClasspath
 	main = 'uia.sample.Simple'
 
+    systemProperties "uia.log": true
     jvmArgs "-javaagent:${getAgentJar()}"
     jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,address=5005'
 }
