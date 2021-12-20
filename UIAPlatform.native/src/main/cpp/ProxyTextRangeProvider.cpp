@@ -382,6 +382,7 @@ extern "C" JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyTextRangeProvid
     if (env->ExceptionCheck()) return;
     
     mid_ShowContextMenu = env->GetMethodID(jClass, "ShowContextMenu", "()V");
+    if (env->ExceptionCheck()) return;
 }
 
 
