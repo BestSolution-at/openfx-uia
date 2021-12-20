@@ -2,7 +2,48 @@
 
 Full UIA Support for OpenJFX
 
-## Supported Providers
+# Getting It
+
+ https://maven.bestsolution.at/repos/releases/   
+ Group ID: at.bestsolution.openfx-uia    
+
+ You need the artifacts `UIAPlatform` and `UIAPlatform.agent` to develop an application.
+
+ The agent adds `UIAPlatform.core` to the ext classpath and hooks the Accessible creation mechanism of javafx, while `UIAPlatform` contains the library and provides the API.
+
+ `UIAPlatform.sample` contains some samples and   
+ `UIAPlatform.fullsample` contains a self running jar launcher for the samples with all dependencies. It only needs the environment variable `JDK8FX` set to your java 8 + fx home.
+
+# Usage
+
+ * add `UIAPlatform.jar` to your classpath
+ * launch your application with `-javaagent:UIAPlatform.agent.jar`
+
+To create an UIA Element you have to implement a `IUIAElement` for it. There is also a `IUIAVirtualRootElement` for virtual roots and a `IUIAVirtaulElement` for virtual children. A virtual root is a JavaFX node with virtual children (the javafx children are no longer visible for the a11y). This can be used for example if you render on a canvas and want to add a11y information to the rendered content.
+
+The UIA Element als may implement UIA Providers (see the [list of supported providers](#supported-providers))
+
+To connect your UIA Element with a javafx node you have to extend the javafx node and overwrite `queryAccessibleAttribute()` with the following code:
+
+```java
+@Override
+public Object queryAccessibleAttribute(AccessibleAttribute attribute, Object... parameters) {
+  if (UIA.isUIAQuery(attribute, parameters)) {
+    return yourUIAElementInstance;
+  }
+  return super.queryAccessibleAttribute(attribute, parameters);
+}
+```
+
+You can look at the `UIAPlatform.sample` sources for further examples.
+
+For how to use UIA look at the Microsoft documentation (here is a link to the [Control Pattern Interfaces](https://docs.microsoft.com/en-us/windows/win32/winauto/uiauto-cpinterfaces))
+
+## Logging
+
+ to enable logging add `-Duia.log=true`
+
+# Supported Providers
 
 | Provider                      |
 | ------------------------      |
@@ -36,50 +77,11 @@ Full UIA Support for OpenJFX
 | IVirtualizedItemProvider      |
 | IWindowProvider               |
 
+# Differences between UIA and openfx-uia
 
-## Usage changes
-
-openfx-uia uses now an agent to instrument the jvm. The agent installs automatically the core into the ext classloader and hooks the accessible creation mechanism of javafx.   
-So the new requirements are as follows
- * launch your jvm with the agent `-javaagent:UIAPlatform.agent.jar`
- * add the library to your classpath `-cp UIAPlatform.jar`
- 
-for example: `java -javaagent:UIAPlatform.agent.jar -cp UIAPlatform.jar;myCode.jar mycode.MyMain`
-
-The full sample launcher does it automatically for you. Only the environment variable `JDK8FX` needs to be set to your java 8 + fx home.
-
-the environment variables `java.ext.dirs`, `glass.platform` and `glass.accessible.force` are no longer required.
-
-## Getting started
-
-To develop an application using openfx-uia you need the UIAPlatform.jar. It can be found in the following maven repo:
-
- https://maven.bestsolution.at/repos/releases/   
- Group ID: at.bestsolution.openfx-uia    
- Artifact ID: UIAPlatform    
- Version: 1.0.0-m2  
-
- For development it is sufficent to have the jar on the classpath. However to launch an application the following points need to be followed:
-
-  * The jar needs to be put on the ext classpath next to the javafx jar
-    * This can either be achived by copying the jar into your JDK installation or
-    * by providing the system property `java.ext.dirs` This property takes a list of paths. for example `$YOURJDK/jre/lib/ext;$YOUR_FOLDER_WHERE_THE_JAR_IS`
-      Note: if you use `java.ext.dirs` you need to point to the folder where UIAPlatform.jar is located, not to the jar itself
-  * The platform needs to be selected by using the system property `glass.platform` it needs to set to `UIA`. => `-Dglass.platform=UIA`
-  * Glass needs to be instructed to always use a11y, even if it does not know the platform. This is done by providing `-Dglass.accessible.force=true`
-
-
-  Here is a full example:
-
-  JDK8FX points to a java jdk with FX included    
-  UIA points to a folder where UIAPlatform.jar is    
-
-  ```
-  $JDK8FX/bin/java -Djava.ext.dirs=$JDK8FX/jre/lib/ext;$UIA -Dglass.platform=UIA -Dglass.accessible.force=true your.application.MainClass
-  ```
-
-### Running the samples
-
-The artifact UIAPlatform.fullsample includes all samples, the UIAPlatform and a launcher. It can be directly started with 
-`java -jar UIAPlatform.fullsample.jar`.
-However it requires the env variable `JDK8FX` to be set to your Java 8 with FX.
+ * The simple interfaces (`IRawElementPoviderSimple`, ...) are not supported and replaced by the `IUIAElement` and `IUIAVirtualRootElement`  
+ * `IRawElementPRoviderFragment#Navigate()` cannot be implementeted, instead `IUIAVirtualRootElement#getChildren()` `IUIAVirtualElement#getChildren()` and `IUIAVirtualElement#getParent()` is provided.
+ * Returing `HRESULT` is not supported.
+ * Most types are provided in a java friendly way. Type names should be the same as in the C API.
+ * Events are encapsulated in `IEvent` objects which can be obtained from the initialze method in the providers (There are also Context objects in the providers which provider the default events)
+ * Property Change events are encapsulated in `IProperty` objects which can be obtained from the initialize method in the providers (Those are also provided by the Context objects)
