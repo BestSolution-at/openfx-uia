@@ -198,7 +198,7 @@ public class ProxyAccessible extends Accessible {
 
     @Override
     public void dispose() {
-        System.err.println("DISPOSE " + this);
+        Logger.debug(this, () -> "DISPOSE " + this);
 
         super.dispose();
 
@@ -506,7 +506,6 @@ public class ProxyAccessible extends Accessible {
         });
     }
     private long IRawElementProviderFragmentRoot_GetFocus() {
-        System.err.println("GetFocus!! " + this);
         // Our only root is the scene itself, so GetFocus needs to be answered by the scene
         return Util.guard(() -> {
             checkGlass();

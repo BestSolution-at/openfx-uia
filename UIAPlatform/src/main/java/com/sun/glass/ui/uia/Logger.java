@@ -27,6 +27,7 @@ package com.sun.glass.ui.uia;
 import java.util.function.Supplier;
 
 public class Logger {
+    private static boolean LOG = Boolean.getBoolean("uia.log");
 
     public static enum Level {
         DEBUG, WARNING, ERROR, FATAL
@@ -37,9 +38,11 @@ public class Logger {
     }
 
     public static void log(Object source, Level level, Supplier<String> message, Exception e) {
-        System.err.println("[" + level + "] " + source + ": " + message.get());
-        if (e != null) {
-            e.printStackTrace();
+        if (LOG) {
+            System.err.println("[" + level + "] " + source + ": " + message.get());
+            if (e != null) {
+                e.printStackTrace();
+            }
         }
     }
 

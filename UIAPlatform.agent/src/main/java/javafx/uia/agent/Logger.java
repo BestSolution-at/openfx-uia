@@ -27,7 +27,11 @@ package javafx.uia.agent;
 import java.util.function.Supplier;
 
 public class Logger {
+    private static boolean LOG = Boolean.getBoolean("uia.log");
+    
     public static void debug(Class<?> source, Supplier<String> msg) {
-        System.err.println("UIAPlatform.agent: " + msg.get());
+        if (LOG) {
+            System.err.println("UIAPlatform.agent: " + msg.get());
+        }
     }
 }

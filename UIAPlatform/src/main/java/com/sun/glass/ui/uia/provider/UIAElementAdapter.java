@@ -24,16 +24,20 @@
  */
 package com.sun.glass.ui.uia.provider;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import com.sun.glass.ui.uia.Logger;
 import com.sun.glass.ui.uia.ProxyAccessible;
 import com.sun.glass.ui.uia.ProxyAccessibleRegistry;
 import com.sun.glass.ui.uia.glass.WinVariant;
+import com.sun.glass.ui.uia.provider.ProviderRegistry.ProviderInstance;
 
 import javafx.uia.IActiveTextPositionChangedEvent;
 import javafx.uia.IAsyncContentLoadedEvent;
@@ -137,10 +141,18 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
 
 
         // pattern provider init
+        List<ProviderInstance<?, ?>> adapters = new ArrayList<>();
         for (ProviderDescriptor<?, ?> descriptor : ProviderDescriptor.Registry.getAvailable()) {
             if (element.isProviderAvailable(descriptor.javaType)) {
-                providerRegistry.register(descriptor.createInstance(init, accessible, element));
+                ProviderInstance<?, ?> providerInstance = descriptor.createInstance(init, accessible, element);
+                adapters.add(providerInstance);
+                providerRegistry.register(providerInstance);
             }
+        }
+
+        Logger.debug(this, () -> "Element init " + element);
+        for (ProviderInstance<?, ?> p : adapters) {
+            Logger.debug(this, () -> " * " + p.descriptor.javaType);
         }
     }
 
