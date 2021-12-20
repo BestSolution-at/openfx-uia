@@ -319,10 +319,16 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
                             } 
 
                         case NavigateDirection_NextSibling:
+                            if (isVirtualRoot(element)) {
+                                return accessible.getGlassAccessible().Navigate(direction);
+                            }
                             Optional<IUIAElement> nextSibling = findNextSibling(element);
                             log(element, "Next Sibling: " + nextSibling);
                             return nextSibling.flatMap(this::getNative).orElse(0L);
                         case NavigateDirection_PreviousSibling:
+                            if (isVirtualRoot(element)) {
+                                return accessible.getGlassAccessible().Navigate(direction);
+                            }
                             Optional<IUIAElement> prevSibling = findPreviousSibling(element);
                             log(element, "Prev Sibling: " + prevSibling);
                             return prevSibling.flatMap(this::getNative).orElse(0L);
