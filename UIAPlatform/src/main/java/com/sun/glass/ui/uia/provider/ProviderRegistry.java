@@ -101,7 +101,7 @@ public class ProviderRegistry {
     @SuppressWarnings("unchecked")
     public <NativeType> NativeType getNativeInstance(Class<NativeType> nativeType) {
         ProviderInstance<?, NativeType> instance = (ProviderInstance<?, NativeType>) byNativeType.get(nativeType);
-        return instance.nativeInstance;
+        return instance != null ? instance.nativeInstance : null;
     }
 
     @SuppressWarnings("unchecked")
