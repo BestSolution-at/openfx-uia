@@ -2,6 +2,41 @@
 
 Full UIA Support for OpenJFX
 
+## Supported Providers
+
+| Provider                      |
+| ------------------------      |
+| IAnnotationProvider           |
+| IDockProvider                 |
+| IExpandCollapseProvider       |
+| IGridItemProvider             |
+| IGridProvider                 |
+| IInvokeProvider               |
+| IMultipleViewContainer        |
+| IRangeValueProvider           |
+| IScrollItemProvider           |
+| IScrollProvider               |
+| ISelectionItemProvider        |
+| ISelectionProvider            |
+| ISelectionProvider2           |
+| IStylesProvider               |
+| ISynchronziedInputProvider    |
+| ITableItemProvider            |
+| ITableProvider                |
+| ITextChildProvider            |
+| ITextEditProvider             |
+| ITextProvider                 |
+| ITextProvider2                |
+| ITextRangeProvider            |
+| ITextRangeProvider2           |
+| IToggleProvider               |
+| ITransformProvider            |
+| ITransformProvider2           |
+| IValueProvider                |
+| IVirtualizedItemProvider      |
+| IWindowProvider               |
+
+
 ## Usage changes
 
 openfx-uia uses now an agent to instrument the jvm. The agent installs automatically the core into the ext classloader and hooks the accessible creation mechanism of javafx.   
