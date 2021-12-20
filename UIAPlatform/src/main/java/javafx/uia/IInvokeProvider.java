@@ -33,7 +33,16 @@ package javafx.uia;
  * Controls implement IInvokeProvider if the same behavior is not exposed through another control pattern provider. For example, if the Invoke method of a control performs the same action as the IExpandCollapseProvider::Expand or Collapse method, the control should not also implement IInvokeProvider.
  * </p>
  */
-public interface IInvokeProvider {
+public interface IInvokeProvider extends IInitable {
+
+	/**
+	 * context object for IInvokeProvider
+	 */
+	class InvokeProviderContext {
+		public InvokeProviderContext(IInitContext init, IInvokeProvider provider) {
+			// empty
+		}
+	}
 
 	/**
 	 * Sends a request to activate a control and initiate its single, unambiguous action.
