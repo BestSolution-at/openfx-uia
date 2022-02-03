@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Bounds;
@@ -41,6 +42,7 @@ import javafx.scene.Scene;
 import javafx.scene.input.KeyCombination;
 import com.sun.glass.ui.Accessible;
 import com.sun.glass.ui.View;
+import com.sun.glass.ui.uia.Logger;
 import com.sun.glass.ui.uia.ProxyAccessible;
 
 import static javafx.scene.AccessibleAttribute.*;
@@ -281,6 +283,20 @@ public final class WinAccessible extends Accessible {
         //}
     }
 
+    private boolean firstFocusEvent = true;
+
+    private void delay(Runnable action, long time) {
+      Thread delayThread = new Thread(() -> {
+        try {
+          Thread.sleep(time);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+        Platform.runLater(action);
+      });
+      delayThread.setDaemon(true);
+      delayThread.start();
+    }
 
     @Override
     public void sendNotification(AccessibleAttribute notification) {
@@ -292,15 +308,29 @@ public final class WinAccessible extends Accessible {
                     // This is a Scene
                     long focus = GetFocus();
                     if (focus != 0) {
-                        UiaRaiseAutomationEvent(focus, UIA_AutomationFocusChangedEventId);
+                        Logger.debug(this, () -> "->FocusChanged with View, " + focus);
+                        if (this.firstFocusEvent) {
+                          delay(() -> {
+                            Logger.debug(this, () -> "RESEND ->FocusChanged with View, " + focus);
+                            UiaRaiseAutomationEvent(focus, UIA_AutomationFocusChangedEventId);
+                          }, 15);
+                          this.firstFocusEvent = false;
+                        } else {
+                          UiaRaiseAutomationEvent(focus, UIA_AutomationFocusChangedEventId);
+                        }
                     }
                 } else {
                     // This is a Scene.transientFocusContainer
                     Node node = (Node)getAttribute(FOCUS_NODE);
                     if (node != null) {
+                      Logger.debug(this, () -> "->FocusChanged transientFocusContainer");
                         UiaRaiseAutomationEvent(getNativeAccessible(node), UIA_AutomationFocusChangedEventId);
+
+
+
                     } else {
                         // Delegate back to the Scene if the transient focus owner is null
+                        Logger.debug(this, () -> "->FocusChanged delegate");
                         Scene scene = (Scene)getAttribute(SCENE);
                         Accessible acc = getAccessible(scene);
                         if (acc != null) {
