@@ -29,7 +29,7 @@
 #include <UIAutomation.h>
 #include "ProxyAccessible.h"
 
-class ProxyTextRangeProvider : public ITextRangeProvider, public ITextRangeProvider2 {
+class ProxyTextRangeProvider : /*public ITextRangeProvider,*/ public ITextRangeProvider2 {
 
 public:
     ProxyTextRangeProvider(JNIEnv* env, jobject jTextRangeProvider, ProxyAccessible* glassProvider);
@@ -70,6 +70,8 @@ private:
     ULONG m_refCount;
     jobject m_jTextRangeProvider;  // The GlobalRef Java side object
     ProxyAccessible* m_glassAccessible;
+
+    IFACEMETHODIMP getTargetRange(ITextRangeProvider* targetRange, ProxyTextRangeProvider** pResult);
 };
 
 

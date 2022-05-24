@@ -25,6 +25,8 @@
 
 package com.sun.glass.ui.uia.glass;
 
+import com.sun.glass.ui.uia.ProxyTextRangeProvider;
+
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -224,8 +226,10 @@ public final class WinAccessible extends Accessible {
     private int id;
 
     /* Text Support */
-    private WinTextRangeProvider documentRange;
-    private WinTextRangeProvider selectionRange;
+    // private WinTextRangeProvider documentRange;
+    // private WinTextRangeProvider selectionRange;
+    private ProxyTextRangeProvider documentRange;
+    private ProxyTextRangeProvider selectionRange;
 
     /* The lastIndex is used by parents to keep track of the index of the last child
      * returned in Navigate. It is very common for Narrator to traverse the children
@@ -239,7 +243,7 @@ public final class WinAccessible extends Accessible {
     //private native long _createGlassAccessible();
 
     /* Releases the GlassAccessible and deletes the GlobalRef */
-    private native void _destroyGlassAccessible(long accessible);
+    // private native void _destroyGlassAccessible(long accessible);
 
     private static long UiaRaiseAutomationEvent(long pProvider, int id) {
         return ProxyAccessible.UiaRaiseAutomationEvent(pProvider, id);
@@ -390,9 +394,9 @@ public final class WinAccessible extends Accessible {
             case SELECTION_END:
                 if (selectionRange != null) {
                     Integer start = (Integer)getAttribute(SELECTION_START);
-                    boolean newStart = start != null && start != selectionRange.getStart();
+                    boolean newStart = start != null && start != selectionRange.glassImpl.getStart();
                     Integer end = (Integer)getAttribute(SELECTION_END);
-                    boolean newEnd = end != null && end != selectionRange.getEnd();
+                    boolean newEnd = end != null && end != selectionRange.glassImpl.getEnd();
                     /* Sending unnecessary selection changed events causes Narrator
                      * not to focus an empty text control when clicking.
                      */
@@ -1227,7 +1231,12 @@ public final class WinAccessible extends Accessible {
             case TEXT_FIELD:
             case TEXT_AREA: {
                 if (selectionRange == null) {
-                    selectionRange = new WinTextRangeProvider(this);
+                    selectionRange = ProxyTextRangeProvider.wrap(proxy, new WinTextRangeProvider(this));
+                    // selectionRange = new ProxyTextRangeProvider(proxy, new WinTextRangeProvider(this));
+                    selectionRange.setOnNativeDelete(() -> {
+                      this.selectionRange = null;
+                      System.err.println("selectionRange auto clear");
+                    });
                 }
                 Integer result = (Integer)getAttribute(SELECTION_START);
                 int start = result != null ? result : 0;
@@ -1242,10 +1251,13 @@ public final class WinAccessible extends Accessible {
                     }
                 }
                 if (length != -1 && end <= length) {
-                    selectionRange.setRange(start, end);
+                    selectionRange.glassImpl.setRange(start, end);
                 } else {
-                    selectionRange.setRange(0, 0);
+                    selectionRange.glassImpl.setRange(0, 0);
                 }
+
+
+
                 return new long[] {selectionRange.getNativeProvider()};
             }
             default:
@@ -1432,7 +1444,8 @@ public final class WinAccessible extends Accessible {
         if (offset != null) {
             WinTextRangeProvider range = new WinTextRangeProvider(this);
             range.setRange(offset, offset);
-            return range.getNativeProvider();
+            // return new ProxyTextRangeProvider(proxy, range).getNativeProvider();
+            return ProxyTextRangeProvider.wrapNative(proxy, range);
         }
         return 0;
     }
@@ -1440,11 +1453,16 @@ public final class WinAccessible extends Accessible {
     public long get_DocumentRange() {
         if (isDisposed()) return 0;
         if (documentRange == null) {
-            documentRange = new WinTextRangeProvider(this);
+          documentRange = ProxyTextRangeProvider.wrap(proxy, new WinTextRangeProvider(this));
+            // documentRange = new ProxyTextRangeProvider(proxy, new WinTextRangeProvider(this));
+            documentRange.setOnNativeDelete(() -> {
+              this.documentRange = null;
+              System.err.println("documentRange auto clear");
+            });
         }
         String text = (String)getAttribute(TEXT);
         if (text == null) return 0;
-        documentRange.setRange(0, text.length());
+        documentRange.glassImpl.setRange(0, text.length());
         return documentRange.getNativeProvider();
     }
 

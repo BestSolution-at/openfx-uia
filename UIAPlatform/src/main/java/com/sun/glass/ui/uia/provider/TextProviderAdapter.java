@@ -26,7 +26,6 @@ package com.sun.glass.ui.uia.provider;
 
 import com.sun.glass.ui.uia.ProxyAccessible;
 import com.sun.glass.ui.uia.ProxyAccessibleRegistry;
-import com.sun.glass.ui.uia.ProxyTextRangeProvider;
 
 import javafx.geometry.Point2D;
 import javafx.uia.ITextProvider;
@@ -39,25 +38,10 @@ public class TextProviderAdapter extends BaseAdapter<ITextProvider> implements N
         super(accessible, provider);
     }
 
-    private long toNative(ITextRangeProvider provider) {
-        ProxyTextRangeProvider proxy = new ProxyTextRangeProvider(accessible, provider);
-        return proxy.getNativeProvider();
-    }
-
-    private long[] toNative(ITextRangeProvider[] providers) {
-        long result[] = new long[providers.length];
-        for (int i = 0; i < providers.length; i++) {
-            result[i] = toNative(providers[i]);
-        }
-        return result;
-    }
-
-
 
     @Override
     public long get_DocumentRange() {
-        ITextRangeProvider range = provider.get_DocumentRange();
-        return toNative(range);
+        return wrapNative(provider.get_DocumentRange());
     }
 
     @Override
@@ -67,14 +51,12 @@ public class TextProviderAdapter extends BaseAdapter<ITextProvider> implements N
 
     @Override
     public long[] GetSelection() {
-        ITextRangeProvider[] ranges = provider.GetSelection();
-        return toNative(ranges);
+        return wrapNative(provider.GetSelection());
     }
 
     @Override
     public long[] GetVisibleRanges() {
-        ITextRangeProvider[] ranges = provider.GetVisibleRanges();
-        return toNative(ranges);
+        return wrapNative(provider.GetVisibleRanges());
     }
 
     @Override
@@ -82,15 +64,14 @@ public class TextProviderAdapter extends BaseAdapter<ITextProvider> implements N
         ProxyAccessible acc = ProxyAccessibleRegistry.getInstance().getByNative(childElement);
         IUIAElement el = acc.getUIAElement();
         
-        ITextRangeProvider range = provider.RangeFromChild(el);
-        return toNative(range);
+        return wrapNative(provider.RangeFromChild(el));
     }
 
     @Override
     public long RangeFromPoint(double x, double y) {
         ITextRangeProvider range = provider.RangeFromPoint(new Point2D(x, y));
         if (range != null) {
-            return toNative(range);
+            return wrapNative(range);
         } else {
             return 0L;
         }

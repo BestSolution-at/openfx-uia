@@ -82,17 +82,9 @@ public abstract class BaseAdapter<T> {
         Logger.debug(this, () -> "UiaRaiseNotificationEvent => 0x" + Long.toHexString(result));
     }
 
-    private long getNativeTextRange(ITextRangeProvider textRange) {
-        if (textRange == null) {
-            return 0;
-        }
-        ProxyTextRangeProvider proxy = new ProxyTextRangeProvider(accessible, textRange);
-        return proxy.getNativeProvider();
-    }
-
     protected void UiaRaiseActiveTextPositionChangedEvent(ITextRangeProvider textRange) {
         Logger.debug(this, () -> "UiaRaiseActiveTextPositionChangedEvent(" + textRange + ")");
-        long result = Windows.UiaRaiseActiveTextPositionChangedEvent(accessible.getNativeAccessible(), getNativeTextRange(textRange));
+        long result = Windows.UiaRaiseActiveTextPositionChangedEvent(accessible.getNativeAccessible(), wrapNative(textRange));
         Logger.debug(this, () -> "UiaRaiseActiveTextPositionChangedEvent => 0x" + Long.toHexString(result));
     }
 
@@ -107,4 +99,16 @@ public abstract class BaseAdapter<T> {
         long result = Windows.UiaRaiseStructureChangedEvent(accessible.getNativeAccessible(), structureChangeType.getNativeValue(), runtimeId);
         Logger.debug(this, () -> "UiaRaiseStructureChangedEvent => 0x" + Long.toHexString(result));   
     }
+
+    protected long wrapNative(ITextRangeProvider textRange) {
+      return ProxyTextRangeProvider.wrapNative(accessible, textRange);
+    }
+
+    protected long[] wrapNative(ITextRangeProvider[] providers) {
+      long result[] = new long[providers.length];
+      for (int i = 0; i < providers.length; i++) {
+          result[i] = wrapNative(providers[i]);
+      }
+      return result;
+  }
 }

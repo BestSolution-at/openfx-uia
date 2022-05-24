@@ -79,6 +79,7 @@
 
 JavaVM* GetJVM();
 JNIEnv* GetEnv();
+HRESULT GetEnv(JNIEnv** pResult);
 
 // Returns JNI_TRUE if there are exceptions
 jboolean CheckAndClearException(JNIEnv* env);

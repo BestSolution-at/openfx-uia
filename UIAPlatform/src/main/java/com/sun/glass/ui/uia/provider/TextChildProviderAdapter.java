@@ -26,21 +26,14 @@ package com.sun.glass.ui.uia.provider;
 
 import com.sun.glass.ui.uia.ProxyAccessible;
 import com.sun.glass.ui.uia.ProxyAccessibleRegistry;
-import com.sun.glass.ui.uia.ProxyTextRangeProvider;
 
 import javafx.uia.ITextChildProvider;
-import javafx.uia.ITextRangeProvider;
 import javafx.uia.IUIAElement;
 
 public class TextChildProviderAdapter extends BaseAdapter<ITextChildProvider> implements NativeITextChildProvider {
 
     public TextChildProviderAdapter(ProxyAccessible accessible, ITextChildProvider provider) {
         super(accessible, provider);
-    }
-
-    private long toNative(ITextRangeProvider provider) {
-        ProxyTextRangeProvider proxy = new ProxyTextRangeProvider(accessible, provider);
-        return proxy.getNativeProvider();
     }
 
     @Override
@@ -52,8 +45,7 @@ public class TextChildProviderAdapter extends BaseAdapter<ITextChildProvider> im
 
     @Override
     public long get_TextRange() {
-        ITextRangeProvider range = provider.get_TextRange();
-        return toNative(range);
+        return wrapNative(provider.get_TextRange());
     }
 
 }

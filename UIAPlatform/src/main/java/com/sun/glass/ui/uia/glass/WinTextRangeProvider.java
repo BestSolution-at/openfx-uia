@@ -38,12 +38,12 @@ import javafx.scene.text.FontWeight;
  * GlassTextRangeProvider implements ITextRangeProvider.
  */
 @SuppressWarnings("restriction")
-class WinTextRangeProvider {
+public class WinTextRangeProvider {
 
-    private native static void _initIDs();
-    static {
-        _initIDs();
-    }
+    // private native static void _initIDs();
+    // static {
+    //     _initIDs();
+    // }
 
     /* TextPatternRangeEndpoint */
     private static final int TextPatternRangeEndpoint_Start    = 0;
@@ -70,26 +70,39 @@ class WinTextRangeProvider {
     private int id;
     private int start, end;
     private WinAccessible accessible;
-    private long peer;
+    // private long peer;
     /* Creates a GlassTextRangeProvider linked to the caller (GlobalRef) */
-    private native long _createTextRangeProvider(long accessible);
+    // private native long _createTextRangeProvider(long accessible);
 
     /* Releases the GlassTextRangeProvider and deletes the GlobalRef */
-    private native void _destroyTextRangeProvider(long textRangeProvider);
+    // private native void _destroyTextRangeProvider(long textRangeProvider);
 
     WinTextRangeProvider(WinAccessible accessible) {
         this.accessible = accessible;
-        peer = _createTextRangeProvider(accessible.getNativeAccessible());
+        // peer = _createTextRangeProvider(accessible.getNativeAccessible());
         id = idCount++;
     }
 
-    long getNativeProvider() {
-        return peer;
-    }
+    // long getNativeProvider() {
+    //     return peer;
+    // }
 
     void dispose() {
-        _destroyTextRangeProvider(peer);
-        peer = 0L;
+        // _destroyTextRangeProvider(peer);
+        // peer = 0L;
+    }
+
+    public void onNativeDelete() {
+      if (this.nativeDeleteCallback != null) {
+        this.nativeDeleteCallback.run();;
+        this.nativeDeleteCallback = null;
+      }
+    }
+
+    private Runnable nativeDeleteCallback;
+
+    public void setOnNativeDelete(Runnable cb) {
+      this.nativeDeleteCallback = cb;
     }
 
     void setRange(int start, int end) {
@@ -123,7 +136,7 @@ class WinTextRangeProvider {
     /***********************************************/
     /*            ITextRangeProvider               */
     /***********************************************/
-    private long Clone() {
+    public WinTextRangeProvider Clone() {
         WinTextRangeProvider clone = new WinTextRangeProvider(accessible);
         clone.setRange(start, end);
 
@@ -131,21 +144,21 @@ class WinTextRangeProvider {
          * This mean JFX does not keep a reference to this object, consequently it does not
          * need to free it.
          */
-        return clone.getNativeProvider();
+        return clone;
     }
 
-    private boolean Compare(WinTextRangeProvider range) {
+    public boolean Compare(WinTextRangeProvider range) {
         if (range == null) return false;
         return accessible == range.accessible && start == range.start && end == range.end;
     }
 
-    private int CompareEndpoints(int endpoint, WinTextRangeProvider targetRange, int targetEndpoint) {
+    public int CompareEndpoints(int endpoint, WinTextRangeProvider targetRange, int targetEndpoint) {
         int offset = endpoint == TextPatternRangeEndpoint_Start ? start : end;
         int targetOffset = targetEndpoint == TextPatternRangeEndpoint_Start ? targetRange.start : targetRange.end;
         return offset - targetOffset;
     }
 
-    private void ExpandToEnclosingUnit(int unit) {
+    public void ExpandToEnclosingUnit(int unit) {
         String text = (String)getAttribute(TEXT);
         if (text == null) return;
         int length = text.length();
@@ -225,15 +238,15 @@ class WinTextRangeProvider {
         end = Math.max(start, Math.min(end, length));
     }
 
-    private long FindAttribute(int attributeId, WinVariant val, boolean backward) {
+    public long FindAttribute(int attributeId, WinVariant val, boolean backward) {
         System.err.println("FindAttribute NOT IMPLEMENTED");
         return 0;
     }
 
-    private long FindText(String text, boolean backward, boolean ignoreCase) {
-        if (text == null) return 0;
+    public WinTextRangeProvider FindText(String text, boolean backward, boolean ignoreCase) {
+        if (text == null) return null;
         String documentText = (String)getAttribute(TEXT);
-        if (documentText == null) return 0;
+        if (documentText == null) return null;
         String rangeText = documentText.substring(start, end);
         if (ignoreCase) {
             rangeText = rangeText.toLowerCase();
@@ -245,13 +258,13 @@ class WinTextRangeProvider {
         } else {
             index = rangeText.indexOf(text);
         }
-        if (index == -1) return 0;
+        if (index == -1) return null;
         WinTextRangeProvider result = new WinTextRangeProvider(accessible);
         result.setRange(start + index, start + index + text.length());
-        return result.getNativeProvider();
+        return result;
     }
 
-    private WinVariant GetAttributeValue(int attributeId) {
+    public WinVariant GetAttributeValue(int attributeId) {
         WinVariant variant = null;
         switch (attributeId) {
             case UIA_FontNameAttributeId: {
@@ -304,7 +317,7 @@ class WinTextRangeProvider {
         return variant;
     }
 
-    private double[] GetBoundingRectangles() {
+    public double[] GetBoundingRectangles() {
         String text = (String)getAttribute(TEXT);
         if (text == null) return null;
         int length = text.length();
@@ -337,11 +350,11 @@ class WinTextRangeProvider {
         return null;
     }
 
-    private long GetEnclosingElement() {
+    public long GetEnclosingElement() {
         return accessible.getNativeAccessible();
     }
 
-    private String GetText(int maxLength) {
+    public String GetText(int maxLength) {
         String text = (String)getAttribute(TEXT);
         if (text == null) return null;
         int endOffset = maxLength != -1 ? Math.min(end, start + maxLength) : end;
@@ -349,7 +362,7 @@ class WinTextRangeProvider {
         return text.substring(start, endOffset);
     }
 
-    private int Move(int unit, final int requestedCount) {
+    public int Move(int unit, final int requestedCount) {
         if (requestedCount == 0) return 0;
         String text = (String)getAttribute(TEXT);
         if (text == null) return 0;
@@ -453,7 +466,7 @@ class WinTextRangeProvider {
         return actualCount;
     }
 
-    private int MoveEndpointByUnit(int endpoint, int unit, final int requestedCount) {
+    public int MoveEndpointByUnit(int endpoint, int unit, final int requestedCount) {
         if (requestedCount == 0) return 0;
         String text = (String)getAttribute(TEXT);
         if (text == null) return 0;
@@ -558,7 +571,7 @@ class WinTextRangeProvider {
         return actualCount;
     }
 
-    private void MoveEndpointByRange(int endpoint, WinTextRangeProvider targetRange, int targetEndpoint) {
+    public void MoveEndpointByRange(int endpoint, WinTextRangeProvider targetRange, int targetEndpoint) {
         String text = (String)getAttribute(TEXT);
         if (text == null) return;
         int length = text.length();
@@ -578,25 +591,25 @@ class WinTextRangeProvider {
         end = Math.max(start, Math.min(end, length));
     }
 
-    private void Select() {
+    public void Select() {
         accessible.executeAction(AccessibleAction.SET_TEXT_SELECTION, start, end);
     }
 
-    private void AddToSelection() {
+    public void AddToSelection() {
         /* Only possible for multi selection text view */
 //        accessible.executeAction(Action.ADD_TO_SELECTION, start, end);
     }
 
-    private void RemoveFromSelection() {
+    public void RemoveFromSelection() {
         /* Only possible for multi selection text view */
 //        accessible.executeAction(Action.REMOVE_FROM_SELECTION, start, end);
     }
 
-    private void ScrollIntoView(boolean alignToTop) {
+    public void ScrollIntoView(boolean alignToTop) {
         accessible.executeAction(AccessibleAction.SHOW_TEXT_RANGE, start, end);
     }
 
-    private long[] GetChildren() {
+    public long[] GetChildren() {
         /* Not embedded object support currently */
         return new long[0];
     }

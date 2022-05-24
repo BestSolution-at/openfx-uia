@@ -47,6 +47,15 @@ JNIEnv* GetEnv()
     return (JNIEnv*)env;
 }
 
+HRESULT GetEnv(JNIEnv** pResult) {
+  JNIEnv* env;
+  jint rc = jvm->GetEnv((void**) &env, JNI_VERSION_1_2);
+  if (0 != rc) return E_FAIL;
+  if (env == NULL) return E_FAIL;
+  *pResult = env;
+  return S_OK;
+}
+
 jboolean CheckAndClearException(JNIEnv* env)
 {
     jthrowable t = env->ExceptionOccurred();

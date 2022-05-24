@@ -27,10 +27,8 @@ package com.sun.glass.ui.uia.provider;
 import com.sun.glass.ui.uia.ProxyAccessible;
 import com.sun.glass.ui.uia.ProxyAccessible.NCaretRangeResult;
 import com.sun.glass.ui.uia.ProxyAccessibleRegistry;
-import com.sun.glass.ui.uia.ProxyTextRangeProvider;
 
 import javafx.uia.ITextProvider2;
-import javafx.uia.ITextRangeProvider;
 import javafx.uia.IUIAElement;
 
 public class TextProviderAdapter2 extends BaseAdapter<ITextProvider2> implements NativeITextProvider2 {
@@ -39,17 +37,12 @@ public class TextProviderAdapter2 extends BaseAdapter<ITextProvider2> implements
         super(accessible, provider);
     }
 
-    private long toNative(ITextRangeProvider provider) {
-        ProxyTextRangeProvider proxy = new ProxyTextRangeProvider(accessible, provider);
-        return proxy.getNativeProvider();
-    }
-
     @Override
     public NCaretRangeResult GetCaretRange() {
         ITextProvider2.CaretRangeResult result = provider.GetCaretRange();
         NCaretRangeResult r = new NCaretRangeResult();
         r.isActive = result.isActive;
-        r.range = toNative(result.range);
+        r.range = wrapNative(result.range);
         return r;
     }
 
@@ -58,8 +51,7 @@ public class TextProviderAdapter2 extends BaseAdapter<ITextProvider2> implements
         ProxyAccessible acc = ProxyAccessibleRegistry.getInstance().getByNative(annotationElement);
         IUIAElement el = acc.getUIAElement();
 
-        ITextRangeProvider range = provider.RangeFromAnnotation(el);
-        return toNative(range);
+        return wrapNative(provider.RangeFromAnnotation(el));
     }
 
 }

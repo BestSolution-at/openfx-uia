@@ -259,18 +259,9 @@ public:
     IFACEMETHODIMP Zoom(double zoom);
     IFACEMETHODIMP ZoomByUnit(ZoomUnit zoomUnit);
 
-    static HRESULT copyVariant(JNIEnv* env, jobject jVariant, VARIANT* pRetVal);
-    static HRESULT copyString(JNIEnv* env, jstring jString, BSTR* pbstrVal);
-    static HRESULT copyList(JNIEnv* env, jarray list, SAFEARRAY** pparrayVal, VARTYPE vt);
-
 private:
     virtual ~ProxyAccessible();
 
-    /* Call the method specified by 'mid', AddRef the returning ptr (expects result to be IUnkonwn) */
-    virtual HRESULT callLongMethod(jmethodID mid, IUnknown** pRetVal, ...);
-
-    /* Call the method specified by 'mid' and converts the returning jarray to a SAFEARRAY */
-    virtual HRESULT callArrayMethod(jmethodID mid, VARTYPE vt, SAFEARRAY** pRetVal);
 
     ULONG m_refCount;
     jobject m_jAccessible;  // The GlobalRef Java side object

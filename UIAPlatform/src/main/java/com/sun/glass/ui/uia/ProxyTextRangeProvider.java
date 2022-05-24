@@ -31,6 +31,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.sun.glass.ui.uia.glass.WinVariant;
+import com.sun.glass.ui.uia.glass.WinTextRangeProvider;
 import com.sun.glass.ui.uia.provider.Convert;
 import com.sun.glass.ui.uia.winapi.Windows;
 
@@ -49,6 +50,12 @@ import javafx.uia.TextUnit;
 import javafx.uia.Variant;
 
 public class ProxyTextRangeProvider {
+
+    public static class TextRangeProviderException extends RuntimeException {
+      public TextRangeProviderException(String msg) {
+        super(msg);
+      }
+    }
     
     private native static void _initIDs();
     static {
@@ -65,7 +72,8 @@ public class ProxyTextRangeProvider {
     private ProxyAccessible accessible;
     private long peer;
 
-    private ITextRangeProvider impl;
+    private ITextRangeProvider uiaImpl;
+    public WinTextRangeProvider glassImpl;
 
 
     private static int idCount = 1;
@@ -92,30 +100,77 @@ public class ProxyTextRangeProvider {
         
     };
 
-    public ProxyTextRangeProvider(ProxyAccessible accessible, ITextRangeProvider impl) {
+    private ProxyTextRangeProvider(ProxyAccessible accessible, WinTextRangeProvider glassImpl) {
+      this.accessible = accessible;
+      this.glassImpl = glassImpl;
+      setOnNativeDelete(this.glassImpl::onNativeDelete);
+      peer = _createTextRangeProvider(accessible.getNativeAccessible());
+      id = idCount++;
 
-        if (impl == null) {
+      Logger.debug(this, () -> "ProxyTextRangeProvider(glass) created. acc=" + accessible);
+    }
+
+    private ProxyTextRangeProvider(ProxyAccessible accessible, ITextRangeProvider uiaImpl) {
+        if (uiaImpl == null) {
             Logger.debug(this, () -> "ProxyTextRangeProvider cannot be created without an ITextRangeProvider");
-            throw new NullPointerException("impl is null!");
+            throw new NullPointerException("uiaImpl is null!");
         }
 
         this.accessible = accessible;
-        this.impl = impl;
+        this.uiaImpl = uiaImpl;
         peer = _createTextRangeProvider(accessible.getNativeAccessible());
         id = idCount++;
 
-        Logger.debug(this, () -> "ProxyTextRangeProvider created. acc=" + accessible);
+        Logger.debug(this, () -> "ProxyTextRangeProvider(uia) created. acc=" + accessible);
 
-        impl.initialize(support);
+        uiaImpl.initialize(support);
+    }
+
+    public static ProxyTextRangeProvider wrap(ProxyAccessible accessible, ITextRangeProvider provider) {
+      return new ProxyTextRangeProvider(accessible, provider);
+    }
+
+    public static ProxyTextRangeProvider wrap(ProxyAccessible accessible, WinTextRangeProvider provider) {
+      return new ProxyTextRangeProvider(accessible, provider);
+    }
+
+    public static long wrapNative(ProxyAccessible accessible, ITextRangeProvider provider) {
+      return wrap(accessible, provider).getNativeProvider();
+    }
+
+    public static long wrapNative(ProxyAccessible accessible, WinTextRangeProvider provider) {
+      return wrap(accessible, provider).getNativeProvider();
+    }
+
+    public boolean isUIA() {
+      return uiaImpl != null;
+    }
+
+    public boolean isGlass() {
+      return glassImpl != null;
     }
 
     public long getNativeProvider() {
         return peer;
     }
 
-    void dispose() {
+    public void dispose() {
         _destroyTextRangeProvider(peer);
         peer = 0L;
+    }
+
+    private void onNativeDelete() {
+      System.err.println("TextRange was deleted by refcount.");
+      if (this.nativeDeleteCallback != null) {
+        this.nativeDeleteCallback.run();;
+        this.nativeDeleteCallback = null;
+      }
+    }
+
+    private Runnable nativeDeleteCallback;
+
+    public void setOnNativeDelete(Runnable cb) {
+      this.nativeDeleteCallback = cb;
     }
 
 
@@ -124,10 +179,17 @@ public class ProxyTextRangeProvider {
     /***********************************************/
     private long Clone() {
         return Util.guard(() -> {
-            ITextRangeProvider clone = impl.Clone();
-            
-            ProxyTextRangeProvider cloneProxy = new ProxyTextRangeProvider(accessible, clone);
-            return cloneProxy.getNativeProvider();
+
+            if (this.isUIA()) {
+              long r = wrapNative(accessible, uiaImpl.Clone());
+              InstanceTracker.setReason(r, "Clone");
+              return r;
+            } else if (this.isGlass()) {
+              return wrapNative(accessible, glassImpl.Clone());
+            } else {
+              throw new TextRangeProviderException("provider missing");
+            }
+
 
             /* Note: Currently Clone() natively does not call AddRef() on the returned object.
             * This mean JFX does not keep a reference to this object, consequently it does not
@@ -138,19 +200,37 @@ public class ProxyTextRangeProvider {
 
     private boolean Compare(ProxyTextRangeProvider range) {
         return Util.guard(() -> {
-            return impl.Compare(range.impl);
+          if (this.isUIA() && range.isUIA()) {
+            return this.uiaImpl.Compare(range.uiaImpl);
+          } else if (this.isGlass() && range.isGlass()) {
+            return this.glassImpl.Compare(range.glassImpl);
+          } else {
+            throw new TextRangeProviderException("provider mismatch");
+          }
         });
     }
 
     private int CompareEndpoints(int endpoint, ProxyTextRangeProvider targetRange, int targetEndpoint) {
         return Util.guard(() -> {
-            return impl.CompareEndpoints(TextPatternRangeEndpoint.fromNativeValue(endpoint).get(), targetRange.impl, TextPatternRangeEndpoint.fromNativeValue(targetEndpoint).get());
+          if (this.isUIA() && targetRange.isUIA()) {
+            return uiaImpl.CompareEndpoints(TextPatternRangeEndpoint.fromNativeValue(endpoint).get(), targetRange.uiaImpl, TextPatternRangeEndpoint.fromNativeValue(targetEndpoint).get());
+          } else if (this.isGlass() && targetRange.isGlass()) {
+            return glassImpl.CompareEndpoints(endpoint, targetRange.glassImpl, targetEndpoint);
+          } else {
+            throw new TextRangeProviderException("provider mismatch");
+          }
         });
     }
 
     private void ExpandToEnclosingUnit(int unit) {
         Util.guard(() -> {
-            impl.ExpandToEnclosingUnit(TextUnit.fromNativeValue(unit).get());
+          if (this.isUIA()) {
+            uiaImpl.ExpandToEnclosingUnit(TextUnit.fromNativeValue(unit).get());
+          } else if (this.isGlass()) {
+            glassImpl.ExpandToEnclosingUnit(unit);
+          } else {
+            throw new TextRangeProviderException("provider missing");
+          }
         });
     }
 
@@ -183,6 +263,7 @@ public class ProxyTextRangeProvider {
 
     private long FindAttribute(int attributeId, long variantValue, boolean backward) {
         return Util.guard(() -> {
+          if (this.isUIA()) {
             try {
                 ITextAttributeId id = ITextAttributeId.fromNativeValue(attributeId);
                 javafx.uia.FindAttribute<Object> findAttribute = findAttributes.get(id);
@@ -192,8 +273,7 @@ public class ProxyTextRangeProvider {
                     Object value = converter.toObject(variant);
                     ITextRangeProvider range = findAttribute.findAttribute(backward, value);
                     if (range != null) {
-                        ProxyTextRangeProvider proxy = new ProxyTextRangeProvider(accessible, range);
-                        return proxy.getNativeProvider();
+                        return wrapNative(accessible, range);
                     } else {
                         return 0L;
                     }
@@ -206,6 +286,14 @@ public class ProxyTextRangeProvider {
                 e.printStackTrace();
                 return 0L;
             }
+          } else if (this.isGlass()) {
+            // TODO convert variant
+            // but since glass FindAttribute always returns 0 we do it here
+            return 0L;
+            // return glassImpl.FindAttribute(attributeId, val, backward);
+          } else {
+            throw new TextRangeProviderException("provider missing");
+          }
         }, 0L);
     }
 
@@ -215,13 +303,19 @@ public class ProxyTextRangeProvider {
 
     private long FindText(String text, boolean backward, boolean ignoreCase) {
         return Util.guard(() -> {
-            ITextRangeProvider range = impl.FindText(text, backward, ignoreCase);
+          if (this.isUIA()) {
+            ITextRangeProvider range = uiaImpl.FindText(text, backward, ignoreCase);
             if (range != null) {
-                ProxyTextRangeProvider proxy = new ProxyTextRangeProvider(accessible, range);
-                return proxy.getNativeProvider();
+                return wrapNative(accessible, range);
             } else {
                 return 0L;
             }
+          } else if (this.isGlass()) {
+            WinTextRangeProvider glass = glassImpl.FindText(text, backward, ignoreCase);
+            return wrapNative(accessible, glass);
+          } else {
+            throw new TextRangeProviderException("provider missing");
+          }
         }, 0L);
     }
 
@@ -231,6 +325,7 @@ public class ProxyTextRangeProvider {
 
     private WinVariant GetAttributeValue(int attributeId) {
         return Util.guard(() -> {
+          if (this.isUIA()) {
             ITextAttributeId id = ITextAttributeId.fromNativeValue(attributeId);
 
             Supplier<TextAttributeValue<Object>> getter = attribs.get(id);
@@ -251,20 +346,31 @@ public class ProxyTextRangeProvider {
             } else {
                 return Variant.vt_empty().toWinVariant();
             }
-
+          } else if (this.isGlass()) {
+            return this.glassImpl.GetAttributeValue(attributeId);
+          } else {
+            throw new TextRangeProviderException("provider missing");
+          }
         }, Variant.vt_empty().toWinVariant());
     }
 
     private double[] GetBoundingRectangles() {
         return Util.guard(() -> {
-            Bounds[] bounds = impl.GetBoundingRectangles();
+          if (this.isUIA()) {
+            Bounds[] bounds = uiaImpl.GetBoundingRectangles();
             return Convert.convertBoundsArrayDouble(bounds);
+          } else if (this.isGlass()) {
+            return glassImpl.GetBoundingRectangles();
+          } else {
+            throw new TextRangeProviderException("provider missing");
+          }
         });
     }
 
     private long GetEnclosingElement() {
         return Util.guard(() -> {
-            return (long) Optional.ofNullable(impl.GetEnclosingElement())
+          if (this.isUIA()) {
+            return (long) Optional.ofNullable(uiaImpl.GetEnclosingElement())
             .map(element -> {
                 // since GetEnclosingElement navigates upwards we must not create a virtual accessible for a fx element
                 ProxyAccessible acc = ProxyAccessibleRegistry.getInstance().findFXAccessible(element);
@@ -275,60 +381,116 @@ public class ProxyTextRangeProvider {
             })
             .map(ProxyAccessible::getNativeAccessible)
             .orElse(0L);
+          } else if (this.isGlass()) {
+            return glassImpl.GetEnclosingElement();
+          } else {
+            throw new TextRangeProviderException("provider missing");
+          }
         });
     }
 
     private String GetText(int maxLength) {
         return Util.guard(() -> {
-            return impl.GetText(maxLength);
+          if (this.isUIA()) {
+            return uiaImpl.GetText(maxLength);
+          } else if (this.isGlass()) {
+            return glassImpl.GetText(maxLength);
+          } else {
+            throw new TextRangeProviderException("provider missing");
+          }
         });
     }
 
     private int Move(int unit, final int requestedCount) {
         return Util.guard(() -> {
-            return impl.Move(TextUnit.fromNativeValue(unit).get(), requestedCount);
+          if (this.isUIA()) {
+            return uiaImpl.Move(TextUnit.fromNativeValue(unit).get(), requestedCount);
+          } else if (this.isGlass()) {
+            return glassImpl.Move(unit, requestedCount);
+          } else {
+            throw new TextRangeProviderException("provider missing");
+          }
         });
     }
 
     private int MoveEndpointByUnit(int endpoint, int unit, final int requestedCount) {
         return Util.guard(() -> {
-            return impl.MoveEndpointByUnit(TextPatternRangeEndpoint.fromNativeValue(endpoint).get(), TextUnit.fromNativeValue(unit).get(), requestedCount);
+          if (this.isUIA()) {
+            return uiaImpl.MoveEndpointByUnit(TextPatternRangeEndpoint.fromNativeValue(endpoint).get(), TextUnit.fromNativeValue(unit).get(), requestedCount);
+          } else if (this.isGlass()) {
+            return glassImpl.MoveEndpointByUnit(endpoint, unit, requestedCount);
+          } else {
+            throw new TextRangeProviderException("provider missing");
+          }
         });
     }
 
     private void MoveEndpointByRange(int endpoint, ProxyTextRangeProvider targetRange, int targetEndpoint) {
+      System.err.println("MoveEndpointByRange: " + endpoint + ", " + targetRange + ", " + targetEndpoint);
         Util.guard(() -> {
-            impl.MoveEndpointByRange(TextPatternRangeEndpoint.fromNativeValue(endpoint).get(), targetRange.impl, TextPatternRangeEndpoint.fromNativeValue(targetEndpoint).get());
+          if (this.isUIA() && targetRange.isUIA()) {
+            uiaImpl.MoveEndpointByRange(TextPatternRangeEndpoint.fromNativeValue(endpoint).get(), targetRange.uiaImpl, TextPatternRangeEndpoint.fromNativeValue(targetEndpoint).get());
+          } else if (this.isGlass() && targetRange.isGlass()) {
+            glassImpl.MoveEndpointByRange(endpoint, targetRange.glassImpl, targetEndpoint);
+          } else {
+            throw new TextRangeProviderException("provider missing");
+          }
         });
     }
 
     private void Select() {
         Util.guard(() -> {
-            impl.Select();
+          if (this.isUIA()) {
+            uiaImpl.Select();
+          } else if (this.isGlass()) {
+            glassImpl.Select();
+          } else {
+            throw new TextRangeProviderException("provider missing");
+          }
         });
     }
 
     private void AddToSelection() {
         Util.guard(() -> {
-            impl.AddToSelection();
+          if (this.isUIA()) {
+            uiaImpl.AddToSelection();
+          } else if (this.isGlass()) {
+            glassImpl.AddToSelection();
+          } else {
+            throw new TextRangeProviderException("provider missing");
+          }
         });
     }
 
     private void RemoveFromSelection() {
         Util.guard(() -> {
-            impl.RemoveFromSelection();
+          if (this.isUIA()) {
+            uiaImpl.RemoveFromSelection();
+          } else if (this.isGlass()) {
+            glassImpl.RemoveFromSelection();
+          } else {
+            throw new TextRangeProviderException("provider missing");
+          }
+           
         });
     }
 
     private void ScrollIntoView(boolean alignToTop) {
         Util.guard(() -> {
-            impl.ScrollIntoView(alignToTop);
+          if (this.isUIA()) {
+            uiaImpl.ScrollIntoView(alignToTop);
+          } else if (this.isGlass()) {
+            glassImpl.ScrollIntoView(alignToTop);
+          } else {
+            throw new TextRangeProviderException("provider missing");
+          }
         });
     }
 
     private long[] GetChildren() {
         return Util.guard(() -> {
-            IUIAElement[] childElements = impl.GetChildren();
+          if (this.isUIA()) {
+            IUIAElement[] childElements = uiaImpl.GetChildren();
             return Arrays.stream(childElements)
             .map(element -> {
                 if (element instanceof IUIAVirtualRootElement) {
@@ -340,6 +502,11 @@ public class ProxyTextRangeProvider {
             })
             .mapToLong(ProxyAccessible::getNativeAccessible)
             .toArray();
+          } else if (this.isGlass()) {
+            return glassImpl.GetChildren();
+          } else {
+            throw new TextRangeProviderException("provider missing");
+          }
         });
     }
 
@@ -348,10 +515,16 @@ public class ProxyTextRangeProvider {
     /***********************************************/
     private void ShowContextMenu() {
         Util.guard(() -> {
+          if (this.isUIA()) {
             // TODO disable ITextRangeProvider2 interface in IUnknown casting if not available
-            if (impl instanceof ITextRangeProvider2) {
-                ((ITextRangeProvider2) impl).ShowContextMenu();
+            if (uiaImpl instanceof ITextRangeProvider2) {
+                ((ITextRangeProvider2) uiaImpl).ShowContextMenu();
             }
+          } else if (this.isGlass()) {
+            // NOOP
+          } else {
+            throw new TextRangeProviderException("provider missing");
+          }
         });
     }
 

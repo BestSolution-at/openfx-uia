@@ -26,6 +26,10 @@
 #include "ProxyTextRangeProvider.h"
 #include "ProxyAccessible.h"
 
+#include "JniUtil.h"
+
+#include "InstanceTracker.h"
+
 /* TextRangeProvider Method IDs */
 static jmethodID mid_Clone;
 static jmethodID mid_Compare;
@@ -47,21 +51,35 @@ static jmethodID mid_RemoveFromSelection;
 static jmethodID mid_ScrollIntoView;
 static jmethodID mid_GetChildren;
 
+static jmethodID mid_onNativeDelete;
+
 static jmethodID mid_ShowContextMenu;
 
 ProxyTextRangeProvider::ProxyTextRangeProvider(JNIEnv* env, jobject jTextRangeProvider, ProxyAccessible* glassAccessible)
 : m_refCount(1)
 {
-    m_jTextRangeProvider = env->NewGlobalRef(jTextRangeProvider);
-    m_glassAccessible = glassAccessible;
-    m_glassAccessible->AddRef();
+  m_jTextRangeProvider = env->NewGlobalRef(jTextRangeProvider);
+  m_glassAccessible = glassAccessible;
+  m_glassAccessible->AddRef();
+
+  InstanceTracker::create(this);
+  InstanceTracker::setType(this, "ProxyTextRangeProvider");
+  InstanceTracker::setJava(this, jTextRangeProvider);
 }
 
 ProxyTextRangeProvider::~ProxyTextRangeProvider()
 {
-    JNIEnv* env = GetEnv();
-    if (env) env->DeleteGlobalRef(m_jTextRangeProvider);
+  JNIEnv* env;
+  HRESULT hr;
+
+  hr = GetEnv(&env);
+  if (SUCCEEDED(hr)) {
+    env->DeleteGlobalRef(m_jTextRangeProvider);
     m_glassAccessible->Release();
+    InstanceTracker::destroy(this);
+  } else {
+    print_hr(hr);
+  }
 }
 
 /***********************************************/
@@ -69,256 +87,373 @@ ProxyTextRangeProvider::~ProxyTextRangeProvider()
 /***********************************************/
 IFACEMETHODIMP_(ULONG) ProxyTextRangeProvider::AddRef()
 {
-    return InterlockedIncrement(&m_refCount);
+  InstanceTracker::addRef(this);
+  return InterlockedIncrement(&m_refCount);
 }
 
 IFACEMETHODIMP_(ULONG) ProxyTextRangeProvider::Release()
 {
-    long val = InterlockedDecrement(&m_refCount);
-    if (val == 0) {
-        delete this;
-    }
-    return val;
+  InstanceTracker::release(this);
+  long val = InterlockedDecrement(&m_refCount);
+  if (val == 0) {
+    JNIEnv* env = GetEnv();
+    env->CallVoidMethod(m_jTextRangeProvider, mid_onNativeDelete);
+    delete this;
+  }
+  return val;
 }
 
 IFACEMETHODIMP ProxyTextRangeProvider::QueryInterface(REFIID riid, void** ppInterface)
 {
-    if (riid == __uuidof(IUnknown)) {
-        *ppInterface = static_cast<ITextRangeProvider*>(this);
-    } else if (riid == __uuidof(ITextRangeProvider)) {
-        *ppInterface = static_cast<ITextRangeProvider*>(this);
-    } else if (riid == __uuidof(ITextRangeProvider2)) {
-        *ppInterface = static_cast<ITextRangeProvider2*>(this);
-    } else {
-        *ppInterface = NULL;
-        return E_NOINTERFACE;
-    }
+  if (riid == __uuidof(IUnknown)) {
+      *ppInterface = static_cast<ITextRangeProvider*>(this);
+  } else if (riid == __uuidof(ITextRangeProvider)) {
+      *ppInterface = static_cast<ITextRangeProvider*>(this);
+  } else if (riid == __uuidof(ITextRangeProvider2)) {
+      *ppInterface = static_cast<ITextRangeProvider2*>(this);
+  } else {
+      *ppInterface = NULL;
+      return E_NOINTERFACE;
+  }
 
-    this->AddRef();
-    return S_OK;
+  this->AddRef();
+  return S_OK;
 }
 
 /***********************************************/
 /*             ITextRangeProvider              */
 /***********************************************/
-IFACEMETHODIMP ProxyTextRangeProvider::Clone(ITextRangeProvider **pRetVal)
+IFACEMETHODIMP ProxyTextRangeProvider::Clone(ITextRangeProvider **pResult)
 {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    jlong ptr = env->CallLongMethod(m_jTextRangeProvider, mid_Clone);
-    if (CheckAndClearException(env)) return E_FAIL;
-    ProxyTextRangeProvider* gtrp = reinterpret_cast<ProxyTextRangeProvider*>(ptr);
+  if (pResult == NULL) return E_INVALIDARG;
 
-    /* This code is intentionally commented.
-     * JavaFX returns a new ITextRangeProvider instance each time.
-     * The caller holds the only reference to this object.
-     */
-//    if (gtrp) gtrp->AddRef();
+  HRESULT hr;
+  JNIEnv* env;
 
-    *pRetVal = static_cast<ITextRangeProvider*>(gtrp);
-    return S_OK;
+  hr = GetEnv(&env);
+  return_on_fail(hr);
+
+  jlong pointer;
+  hr = JniUtil::callLongMethod(env, m_jTextRangeProvider, mid_Clone, &pointer);
+  return_on_fail(hr);
+
+  ProxyTextRangeProvider* result = reinterpret_cast<ProxyTextRangeProvider*>(pointer);
+  
+  *pResult = result;
+  return hr;
 }
 
-IFACEMETHODIMP ProxyTextRangeProvider::Compare(ITextRangeProvider *range, BOOL *pRetVal)
+IFACEMETHODIMP ProxyTextRangeProvider::Compare(ITextRangeProvider *targetRange, BOOL *pResult)
 {
-    ProxyTextRangeProvider* proxyRange = reinterpret_cast<ProxyTextRangeProvider*>(range);
-    if (proxyRange == NULL ||  proxyRange->m_jTextRangeProvider == NULL) {
-        *pRetVal = FALSE;
-        return S_OK;
-    }
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallBooleanMethod(m_jTextRangeProvider, mid_Compare, proxyRange->m_jTextRangeProvider);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+  if (pResult == NULL) return E_INVALIDARG;
+
+  JNIEnv* env;
+  HRESULT hr;
+
+  hr = GetEnv(&env);
+  return_on_fail(hr);
+
+  ProxyTextRangeProvider* target;
+  hr = getTargetRange(targetRange, &target);
+  return_on_fail(hr);
+
+  jboolean result;
+  hr = JniUtil::callBooleanMethod(env, m_jTextRangeProvider, mid_Compare, &result, target->m_jTextRangeProvider);
+  return_on_fail(hr);
+
+  *pResult = JniUtil::toBOOL(result);
+  return hr;
 }
 
 IFACEMETHODIMP ProxyTextRangeProvider::CompareEndpoints(TextPatternRangeEndpoint endpoint, ITextRangeProvider *targetRange,
-                                                        TextPatternRangeEndpoint targetEndpoint, int *pRetVal)
+                                                        TextPatternRangeEndpoint targetEndpoint, int *pResult)
 {
-    ProxyTextRangeProvider* proxyRange = reinterpret_cast<ProxyTextRangeProvider*>(targetRange);
-    if (proxyRange == NULL ||  proxyRange->m_jTextRangeProvider == NULL) {
-        *pRetVal = FALSE;
-        return S_OK;
-    }
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallIntMethod(m_jTextRangeProvider, mid_CompareEndpoints, endpoint, proxyRange->m_jTextRangeProvider, targetEndpoint);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+  if (pResult == NULL) return E_INVALIDARG;
+
+  JNIEnv* env;
+  HRESULT hr;
+
+  hr = GetEnv(&env);
+  return_on_fail(hr);
+
+  ProxyTextRangeProvider* target;
+  hr = getTargetRange(targetRange, &target);
+  return_on_fail(hr);
+
+  jint result;
+  hr = JniUtil::callIntMethod(env, m_jTextRangeProvider, mid_CompareEndpoints, &result, endpoint, target->m_jTextRangeProvider, targetEndpoint);
+  return_on_fail(hr);
+
+  *pResult = result;
+  return hr;
 }
 
 IFACEMETHODIMP ProxyTextRangeProvider::ExpandToEnclosingUnit(TextUnit unit)
 {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    env->CallVoidMethod(m_jTextRangeProvider, mid_ExpandToEnclosingUnit, unit);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+  JNIEnv* env;
+  HRESULT hr;
+
+  hr = GetEnv(&env);
+  return_on_fail(hr);
+
+  hr = JniUtil::callVoidMethod(env, m_jTextRangeProvider, mid_ExpandToEnclosingUnit, unit);
+  return_on_fail(hr);
+
+  return hr;
 }
 
-IFACEMETHODIMP ProxyTextRangeProvider::FindAttribute(TEXTATTRIBUTEID attributeId, VARIANT val, BOOL backward, ITextRangeProvider **pRetVal)
+IFACEMETHODIMP ProxyTextRangeProvider::FindAttribute(TEXTATTRIBUTEID attributeId, VARIANT val, BOOL backward, ITextRangeProvider **pResult)
 {
-    //TODO VAL TO JVAL
-    jobject jVal = NULL;
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    jlong ptr = env->CallLongMethod(m_jTextRangeProvider, mid_FindAttribute2, attributeId, (jlong) &val, backward);
-    // jlong ptr = env->CallLongMethod(m_jTextRangeProvider, mid_FindAttribute, attributeId, jVal, backward);
-    if (CheckAndClearException(env)) return E_FAIL;
-    ProxyTextRangeProvider* gtrp = reinterpret_cast<ProxyTextRangeProvider*>(ptr);
+  if (pResult == NULL) return E_INVALIDARG;
 
-    /* This code is intentionally commented.
-     * JavaFX returns a new ITextRangeProvider instance each time.
-     * The caller holds the only reference to this object.
-     */
-//    if (gtrp) gtrp->AddRef();
+  HRESULT hr;
+  JNIEnv* env;
 
-    *pRetVal = static_cast<ITextRangeProvider*>(gtrp);
-    return S_OK;
+  hr = GetEnv(&env);
+  return_on_fail(hr)
+
+  jlong pointer;
+  hr = JniUtil::callLongMethod(env, m_jTextRangeProvider, mid_FindAttribute2, &pointer, (jint) attributeId, (jlong) &val, JniUtil::toJBoolean(backward));
+  return_on_fail(hr)
+
+  ITextRangeProvider* result = reinterpret_cast<ITextRangeProvider*>(pointer);
+  *pResult = result;
+  return hr;
 }
 
-IFACEMETHODIMP ProxyTextRangeProvider::FindText(BSTR text, BOOL backward, BOOL ignoreCase, ITextRangeProvider **pRetVal)
+IFACEMETHODIMP ProxyTextRangeProvider::FindText(BSTR text, BOOL backward, BOOL ignoreCase, ITextRangeProvider **pResult)
 {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    jsize length = SysStringLen(text);
-    jstring jText = env->NewString((const jchar *)text, length);
-    jlong ptr = env->CallLongMethod(m_jTextRangeProvider, mid_FindText, jText, backward, ignoreCase);
-    if (CheckAndClearException(env)) return E_FAIL;
-    ProxyTextRangeProvider* gtrp = reinterpret_cast<ProxyTextRangeProvider*>(ptr);
+  if (pResult == NULL) return E_INVALIDARG;
 
-    /* This code is intentionally commented.
-     * JavaFX returns a new ITextRangeProvider instance each time.
-     * The caller holds the only reference to this object.
-     */
-//    if (gtrp) gtrp->AddRef();
+  HRESULT hr;
+  JNIEnv* env;
 
-    *pRetVal = static_cast<ITextRangeProvider*>(gtrp);
-    return S_OK;
+  hr = GetEnv(&env);
+  return_on_fail(hr)
+
+  jstring jText;
+  hr = JniUtil::newStringFromBSTR(env, text, &jText);
+  return_on_fail(hr);
+  
+  jlong pointer;
+  hr = JniUtil::callLongMethod(env, m_jTextRangeProvider, mid_FindText, &pointer, jText, JniUtil::toJBoolean(backward), JniUtil::toJBoolean(ignoreCase));
+  return_on_fail(hr)
+
+  ITextRangeProvider* result = reinterpret_cast<ITextRangeProvider*>(pointer);
+  *pResult = result;
+  return hr;
 }
 
-IFACEMETHODIMP ProxyTextRangeProvider::GetAttributeValue(TEXTATTRIBUTEID attributeId, VARIANT *pRetVal)
+IFACEMETHODIMP ProxyTextRangeProvider::GetAttributeValue(TEXTATTRIBUTEID attributeId, VARIANT *pResult)
 {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    jobject jVariant = env->CallObjectMethod(m_jTextRangeProvider, mid_GetAttributeValue, attributeId);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return ProxyAccessible::copyVariant(env, jVariant, pRetVal);
+  if (pResult == NULL) return E_INVALIDARG;
+
+  JNIEnv* env;
+  HRESULT hr;
+  hr = GetEnv(&env);
+  return_on_fail(hr);
+
+  jobject result;
+  hr = JniUtil::callObjectMethod(env, m_jTextRangeProvider, mid_GetAttributeValue, &result, attributeId);
+  return_on_fail(hr);
+
+  hr = JniUtil::copyVariant(env, result, pResult);
+  return_on_fail(hr);
+
+  return hr;
 }
 
-IFACEMETHODIMP ProxyTextRangeProvider::GetBoundingRectangles(SAFEARRAY **pRetVal)
+IFACEMETHODIMP ProxyTextRangeProvider::GetBoundingRectangles(SAFEARRAY **pResult)
 {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    jarray bounds = (jarray)env->CallObjectMethod(m_jTextRangeProvider, mid_GetBoundingRectangles);
-    if (CheckAndClearException(env)) return E_FAIL;
+  if (pResult == NULL) return E_INVALIDARG;
 
-    return ProxyAccessible::copyList(env, bounds, pRetVal, VT_R8);
+  JNIEnv* env = GetEnv();
+  if (env == NULL) return E_FAIL;
+  jarray bounds = (jarray)env->CallObjectMethod(m_jTextRangeProvider, mid_GetBoundingRectangles);
+  if (CheckAndClearException(env)) return E_FAIL;
+
+  return JniUtil::copyList(env, bounds, pResult, VT_R8);
 }
 
-IFACEMETHODIMP ProxyTextRangeProvider::GetEnclosingElement(IRawElementProviderSimple **pRetVal)
+IFACEMETHODIMP ProxyTextRangeProvider::GetEnclosingElement(IRawElementProviderSimple **pResult)
 {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    jlong ptr = env->CallLongMethod(m_jTextRangeProvider, mid_GetEnclosingElement);
-    if (CheckAndClearException(env)) return E_FAIL;
-    ProxyAccessible* acc = reinterpret_cast<ProxyAccessible*>(ptr);
+  if (pResult == NULL) return E_INVALIDARG;
 
-    /* AddRef the result */
-    if (acc) acc->AddRef();
+  JNIEnv* env;
+  HRESULT hr;
 
-    *pRetVal = static_cast<IRawElementProviderSimple*>(acc);
-    return S_OK;
+  hr = GetEnv(&env);
+  return_on_fail(hr);
+
+  jlong pointer;
+  hr = JniUtil::callLongMethod(env, m_jTextRangeProvider, mid_GetEnclosingElement, &pointer);
+  return_on_fail(hr);
+
+  IRawElementProviderSimple* result = reinterpret_cast<IRawElementProviderSimple*>(pointer);
+  if (result) result->AddRef();
+
+  *pResult = result;
+  return hr;
 }
 
-IFACEMETHODIMP ProxyTextRangeProvider::GetText(int maxLength, BSTR *pRetVal)
+IFACEMETHODIMP ProxyTextRangeProvider::GetText(int maxLength, BSTR *pResult)
 {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    jstring string = (jstring)env->CallObjectMethod(m_jTextRangeProvider, mid_GetText, maxLength);
-    if (CheckAndClearException(env)) return E_FAIL;
+  if (pResult == NULL) return E_INVALIDARG;
 
-    return ProxyAccessible::copyString(env, string, pRetVal);
+  JNIEnv* env;
+  HRESULT hr;
+
+  hr = GetEnv(&env);
+  return_on_fail(hr);
+
+  jstring result;
+  hr = JniUtil::callStringMethod(env, m_jTextRangeProvider, mid_GetText, &result, maxLength);
+  return_on_fail(hr);
+
+  hr = JniUtil::copyString(env, result, pResult);
+  return_on_fail(hr);
+
+  return hr;
 }
 
-IFACEMETHODIMP ProxyTextRangeProvider::Move(TextUnit unit, int count, int *pRetVal)
+IFACEMETHODIMP ProxyTextRangeProvider::Move(TextUnit unit, int count, int *pResult)
 {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallIntMethod(m_jTextRangeProvider, mid_Move, unit, count);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+  if (pResult == NULL) return E_INVALIDARG;
+
+  JNIEnv* env;
+  HRESULT hr;
+
+  hr = GetEnv(&env);
+  return_on_fail(hr);
+
+  jint result;
+  hr = JniUtil::callIntMethod(env, m_jTextRangeProvider, mid_Move, &result, unit, count);
+  return_on_fail(hr);
+
+  *pResult = result;
+  return hr;
 }
 
-IFACEMETHODIMP ProxyTextRangeProvider::MoveEndpointByUnit(TextPatternRangeEndpoint endpoint, TextUnit unit, int count, int *pRetVal)
+IFACEMETHODIMP ProxyTextRangeProvider::MoveEndpointByUnit(TextPatternRangeEndpoint endpoint, TextUnit unit, int count, int *pResult)
 {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallIntMethod(m_jTextRangeProvider, mid_MoveEndpointByUnit, endpoint, unit, count);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+  if (pResult == NULL) return E_INVALIDARG;
+
+  JNIEnv* env;
+  HRESULT hr;
+
+  hr = GetEnv(&env);
+  return_on_fail(hr);
+
+  jint result;
+  hr = JniUtil::callIntMethod(env, m_jTextRangeProvider, mid_MoveEndpointByUnit, &result, endpoint, unit, count);
+  return_on_fail(hr);
+
+  *pResult = result;
+  return hr;
 }
 
 IFACEMETHODIMP ProxyTextRangeProvider::MoveEndpointByRange(TextPatternRangeEndpoint endpoint, ITextRangeProvider *targetRange,
                                                            TextPatternRangeEndpoint targetEndpoint)
 {
+  JNIEnv* env;
+  HRESULT hr;
 
-    ProxyTextRangeProvider* glassRange = reinterpret_cast<ProxyTextRangeProvider*>(targetRange);
-    if (glassRange == NULL ||  glassRange->m_jTextRangeProvider == NULL) {
-        return S_OK;
-    }
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    env->CallVoidMethod(m_jTextRangeProvider, mid_MoveEndpointByRange, endpoint, glassRange->m_jTextRangeProvider, targetEndpoint);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+  hr = GetEnv(&env);
+  return_on_fail(hr);
+
+  ProxyTextRangeProvider* target;
+  hr = getTargetRange(targetRange, &target);
+  return_on_fail(hr);
+
+  hr = JniUtil::callVoidMethod(env, m_jTextRangeProvider, mid_MoveEndpointByRange, endpoint, target->m_jTextRangeProvider, targetEndpoint);
+  return_on_fail(hr);
+
+  return hr;
+}
+
+IFACEMETHODIMP ProxyTextRangeProvider::getTargetRange(ITextRangeProvider* targetRange, ProxyTextRangeProvider** pResult) {
+  ProxyTextRangeProvider* result = reinterpret_cast<ProxyTextRangeProvider*>(targetRange);
+  if (result == NULL || result->m_jTextRangeProvider == NULL) {
+    return E_FAIL;
+  }
+  *pResult = result;
+  return S_OK;
 }
 
 IFACEMETHODIMP ProxyTextRangeProvider::Select()
 {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    env->CallVoidMethod(m_jTextRangeProvider, mid_Select);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+  JNIEnv* env;
+  HRESULT hr;
+
+  hr = GetEnv(&env);
+  return_on_fail(hr);
+
+  hr = JniUtil::callVoidMethod(env, m_jTextRangeProvider, mid_Select);
+  return_on_fail(hr);
+
+  return hr;
 }
 
 IFACEMETHODIMP ProxyTextRangeProvider::AddToSelection()
 {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    env->CallVoidMethod(m_jTextRangeProvider, mid_AddToSelection);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+  JNIEnv* env;
+  HRESULT hr;
+
+  hr = GetEnv(&env);
+  return_on_fail(hr);
+
+  hr = JniUtil::callVoidMethod(env, m_jTextRangeProvider, mid_AddToSelection);
+  return_on_fail(hr);
+
+  return hr;
 }
 
 IFACEMETHODIMP ProxyTextRangeProvider::RemoveFromSelection()
 {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    env->CallVoidMethod(m_jTextRangeProvider, mid_RemoveFromSelection);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+  JNIEnv* env;
+  HRESULT hr;
+
+  hr = GetEnv(&env);
+  return_on_fail(hr);
+
+  hr = JniUtil::callVoidMethod(env, m_jTextRangeProvider, mid_RemoveFromSelection);
+  return_on_fail(hr);
+
+  return hr;
 }
 
 IFACEMETHODIMP ProxyTextRangeProvider::ScrollIntoView(BOOL alignToTop)
 {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    env->CallVoidMethod(m_jTextRangeProvider, mid_ScrollIntoView, alignToTop);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+  JNIEnv* env;
+  HRESULT hr;
+
+  hr = GetEnv(&env);
+  return_on_fail(hr);
+
+  hr = JniUtil::callVoidMethod(env, m_jTextRangeProvider, mid_ScrollIntoView, JniUtil::toJBoolean(alignToTop));
+  return_on_fail(hr);
+
+  return hr;
 }
 
-IFACEMETHODIMP ProxyTextRangeProvider::GetChildren(SAFEARRAY **pRetVal)
+IFACEMETHODIMP ProxyTextRangeProvider::GetChildren(SAFEARRAY **pResult)
 {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    jarray children = (jarray)env->CallObjectMethod(m_jTextRangeProvider, mid_GetChildren);
-    if (CheckAndClearException(env)) return E_FAIL;
+  if (pResult == NULL) return E_INVALIDARG;
 
-    return ProxyAccessible::copyList(env, children, pRetVal, VT_UNKNOWN);
+  JNIEnv* env;
+  HRESULT hr;
+
+  hr = GetEnv(&env);
+  return_on_fail(hr);
+
+  jarray children;
+  hr = JniUtil::callArrayMethod(env, m_jTextRangeProvider, mid_GetChildren, &children);
+  return_on_fail(hr);
+
+  hr = JniUtil::copyList(env, children, pResult, VT_UNKNOWN);
+  return_on_fail(hr);
+
+  return hr;
 }
 
 /***********************************************/
@@ -326,12 +461,16 @@ IFACEMETHODIMP ProxyTextRangeProvider::GetChildren(SAFEARRAY **pRetVal)
 /***********************************************/
 IFACEMETHODIMP ProxyTextRangeProvider::ShowContextMenu()
 {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    env->CallVoidMethod(m_jTextRangeProvider, mid_ShowContextMenu);
-    if (CheckAndClearException(env)) return E_FAIL;
+  JNIEnv* env;
+  HRESULT hr;
 
-     return S_OK;
+  hr = GetEnv(&env);
+  return_on_fail(hr);
+
+  hr = JniUtil::callVoidMethod(env, m_jTextRangeProvider, mid_ShowContextMenu);
+  return_on_fail(hr);
+
+  return hr;
 }
 
 
@@ -382,6 +521,9 @@ extern "C" JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyTextRangeProvid
     if (env->ExceptionCheck()) return;
     
     mid_ShowContextMenu = env->GetMethodID(jClass, "ShowContextMenu", "()V");
+    if (env->ExceptionCheck()) return;
+
+    mid_onNativeDelete = env->GetMethodID(jClass, "onNativeDelete", "()V");
     if (env->ExceptionCheck()) return;
 }
 

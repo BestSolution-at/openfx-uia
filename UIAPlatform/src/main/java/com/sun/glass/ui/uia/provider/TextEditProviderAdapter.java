@@ -25,10 +25,8 @@
 package com.sun.glass.ui.uia.provider;
 
 import com.sun.glass.ui.uia.ProxyAccessible;
-import com.sun.glass.ui.uia.ProxyTextRangeProvider;
 
 import javafx.uia.ITextEditProvider;
-import javafx.uia.ITextRangeProvider;
 
 public class TextEditProviderAdapter extends BaseAdapter<ITextEditProvider> implements NativeITextEditProvider {
 
@@ -36,19 +34,14 @@ public class TextEditProviderAdapter extends BaseAdapter<ITextEditProvider> impl
         super(accessible, provider);
     }
 
-    private long toNative(ITextRangeProvider provider) {
-        ProxyTextRangeProvider proxy = new ProxyTextRangeProvider(accessible, provider);
-        return proxy.getNativeProvider();
-    }
-
     @Override
     public long GetActiveComposition() {
-        return toNative(provider.GetActiveComposition());
+        return wrapNative(provider.GetActiveComposition());
     }
 
     @Override
     public long GetConversionTarget() {
-        return toNative(provider.GetConversionTarget());
+        return wrapNative(provider.GetConversionTarget());
     }
 
 }
