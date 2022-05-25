@@ -100,8 +100,10 @@ public class InstanceTracker {
   private static TableView<Instance> table;
 
   private static void update() {
-    table.setItems(FXCollections.emptyObservableList());
-    table.setItems(FXCollections.observableArrayList(instances.values()));
+    if (table != null) {
+      table.setItems(FXCollections.emptyObservableList());
+      table.setItems(FXCollections.observableArrayList(instances.values()));
+    }
   }
 
   private static Callback<TableColumn<Instance,Instance>, TableCell<Instance,Instance>> text(Callback<Instance, String> cb) {
