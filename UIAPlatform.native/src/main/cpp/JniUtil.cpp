@@ -145,7 +145,7 @@ HRESULT JniUtil::copyString(JNIEnv* env, jstring jString, BSTR* pResult) {
 }
 
 HRESULT JniUtil::copyBounds(JNIEnv* env, jfloatArray bounds, UiaRect* pResult) {
-  if (bounds == NULL) return E_INVALIDARG; 
+  if (bounds == NULL) return S_OK; // to return on java null
   if (pResult == NULL) return E_INVALIDARG;
 
   jfloat* pBounds = (jfloat*) env->GetPrimitiveArrayCritical(bounds, 0);
