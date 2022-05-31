@@ -136,8 +136,7 @@ public class ProxyAccessible extends Accessible {
     
     /*package*/ ProxyAccessible() {
         this.num = next++;
-        Logger.debug(this, () -> "ProxyAccessible" + num + " created.");
-
+       
         this.peer = _createProxyAccessible();
         if (this.peer == 0L) {
             throw new RuntimeException("could not create platform accessible");
@@ -146,6 +145,8 @@ public class ProxyAccessible extends Accessible {
         ProxyAccessibleRegistry.getInstance().registerNative(this, peer);
 
         glass = new WinAccessible(this);
+
+        Logger.debug(this, () -> "created. (glass)");
 
         saveCreationStack();
     }
@@ -164,11 +165,12 @@ public class ProxyAccessible extends Accessible {
         } else {
             glassRoot = context.glassRoot;
         }
-        Logger.debug(this, () -> "ProxyAccessible" + num + " created (virtual) " + uiaElement);
+        
         this.peer = _createProxyAccessible();
         if (this.peer == 0L) {
             throw new RuntimeException("could not create platform accessible");
         }
+
 
         ProxyAccessibleRegistry.getInstance().registerNative(this, peer);
 
@@ -177,6 +179,8 @@ public class ProxyAccessible extends Accessible {
         if (uiaElement != null) {
             initializeVirtualElement(uiaElement);
         }
+
+        Logger.debug(this, () -> "created. (virtual)");
 
         saveCreationStack();
     }
@@ -263,6 +267,12 @@ public class ProxyAccessible extends Accessible {
         glass.setEventHandler(eventHandler);
 
         connect();
+
+        if (this.uiaElement != null) {
+          Logger.debug(this, () -> "connected to " + this.uiaElement);
+        } else {
+          Logger.debug(this, () -> "connected to " + eventHandler);
+        }
     }
 
     private void listen(IUIAElement node) {
@@ -290,10 +300,10 @@ public class ProxyAccessible extends Accessible {
     private void connect() {
         if (uiaElement == null) {
             uiaElement = getProvider(IUIAElement.class);
-            Logger.debug(this, () -> "Got uiaNode: " + uiaElement);
+            //Logger.debug(this, () -> "Got uiaNode: " + uiaElement);
             if (uiaElement != null) {
                 initializeJavaFXElement(uiaElement);
-                Logger.debug(this, () -> "connected to " + uiaElement + ".");
+                //Logger.debug(this, () -> "connected to " + uiaElement + ".");
             }
         }
     }
@@ -385,12 +395,14 @@ public class ProxyAccessible extends Accessible {
 
     @Override
     public String toString() {
-        String glassStr = "" + glass;
-        if (glass != null) {
-            View view = glass.getView();
-            glassStr += " view: " + view;
-        }
-        return "ProxyAccessible" + num + "[" + glassStr  + ", " + glassRoot + ", " + uiaElement + "]";
+        // String glassStr = "" + glass;
+        // if (glass != null) {
+        //     View view = glass.getView();
+        //     glassStr += " view: " + view;
+        // }
+        // return "ProxyAccessible " + num + " [" + getNativeAccessible()+ "]" + " [" + glassStr  + ", " + glassRoot + ", " + uiaElement + "]";
+
+        return "ProxyAccessible " + num + " [" + getNativeAccessible()+ "]";
     }
 
     public WinAccessible getGlassAccessible() {

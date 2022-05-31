@@ -32,32 +32,60 @@ extern "C" JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_InstanceTracker__1in
 
 void InstanceTracker::create(void* pointer) {
   GetEnv()->CallVoidMethod(cls, mid_create, (jlong) pointer);
+  if (GetEnv()->ExceptionOccurred()) {
+    fprintf(stderr, "InstanceTracker::create failed");
+    GetEnv()->ExceptionDescribe();
+  }
 }
 
 void InstanceTracker::destroy(void* pointer) {
   GetEnv()->CallVoidMethod(cls, mid_destroy, (jlong) pointer);
+  if (GetEnv()->ExceptionOccurred()) {
+    fprintf(stderr, "InstanceTracker::destroy failed");
+    GetEnv()->ExceptionDescribe();
+  }
 }
 
 void InstanceTracker::setType(void* pointer, const char* type) {
   jstring jtype = GetEnv()->NewStringUTF(type);
   GetEnv()->CallVoidMethod(cls, mid_setType, (jlong) pointer, jtype);
   // GetEnv()->ReleaseStringUTFChars(jtype, type);
+  if (GetEnv()->ExceptionOccurred()) {
+    fprintf(stderr, "InstanceTracker::setType failed");
+    GetEnv()->ExceptionDescribe();
+  }
 }
 
 void InstanceTracker::setReason(void* pointer, const char* reason) {
   jstring jreason = GetEnv()->NewStringUTF(reason);
   GetEnv()->CallVoidMethod(cls, mid_create, (jlong) pointer, jreason);
   // GetEnv()->ReleaseStringUTFChars(jreason, reason);
+  if (GetEnv()->ExceptionOccurred()) {
+    fprintf(stderr, "InstanceTracker::setReason failed");
+    GetEnv()->ExceptionDescribe();
+  }
 }
 
 void InstanceTracker::setJava(void* pointer, jobject java) {
   GetEnv()->CallVoidMethod(cls, mid_setJava, (jlong) pointer, java);
+  if (GetEnv()->ExceptionOccurred()) {
+    fprintf(stderr, "InstanceTracker::setJava failed");
+    GetEnv()->ExceptionDescribe();
+  }
 }
 
 void InstanceTracker::addRef(void* pointer) {
   GetEnv()->CallVoidMethod(cls, mid_addRef, (jlong) pointer);
+  if (GetEnv()->ExceptionOccurred()) {
+    fprintf(stderr, "InstanceTracker::addRef failed");
+    GetEnv()->ExceptionDescribe();
+  }
 }
 
 void InstanceTracker::release(void* pointer) {
   GetEnv()->CallVoidMethod(cls, mid_release, (jlong) pointer);
+  if (GetEnv()->ExceptionOccurred()) {
+    fprintf(stderr, "InstanceTracker::release failed");
+    GetEnv()->ExceptionDescribe();
+  }
 }

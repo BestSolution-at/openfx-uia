@@ -107,7 +107,7 @@ public class ProxyTextRangeProvider {
       peer = _createTextRangeProvider(accessible.getNativeAccessible());
       id = idCount++;
 
-      Logger.debug(this, () -> "ProxyTextRangeProvider(glass) created. acc=" + accessible);
+      Logger.debug(this, () -> "created. (glass) acc=" + accessible);
     }
 
     private ProxyTextRangeProvider(ProxyAccessible accessible, ITextRangeProvider uiaImpl) {
@@ -121,9 +121,14 @@ public class ProxyTextRangeProvider {
         peer = _createTextRangeProvider(accessible.getNativeAccessible());
         id = idCount++;
 
-        Logger.debug(this, () -> "ProxyTextRangeProvider(uia) created. acc=" + accessible);
+        Logger.debug(this, () -> "created. (uia) acc=" + accessible);
 
         uiaImpl.initialize(support);
+    }
+
+    @Override
+    public String toString() {
+      return "ProxyTextRangeProvider " + id + " [" + getNativeProvider() + "]";
     }
 
     public static ProxyTextRangeProvider wrap(ProxyAccessible accessible, ITextRangeProvider provider) {

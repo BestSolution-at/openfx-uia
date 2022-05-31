@@ -2,6 +2,7 @@ package com.sun.glass.ui.uia;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import javafx.application.Platform;
@@ -44,6 +45,18 @@ public class InstanceTracker {
 
   private static Map<Long, Instance> instances = new HashMap<>();
   
+  private static void withInstance(long pointer, Consumer<Instance> func) {
+    synchronized (instances) {
+      Instance instance = instances.get(pointer);
+      if (instance != null) {
+        func.accept(instance);
+      } else {
+        System.err.println("[WARN] There is no Instance for " + pointer);
+        Thread.dumpStack();
+      }
+    }
+  }
+
   public static void create(long pointer) {
     synchronized (instances) {
       instances.put(pointer, new Instance(pointer));
@@ -62,37 +75,27 @@ public class InstanceTracker {
   }
 
   public static void setType(long pointer, String type) {
-    synchronized (instances) {
-      instances.get(pointer).type = type;
-    }
+    withInstance(pointer, instance -> instance.type = type);
     Platform.runLater(InstanceTracker::update);
   }
 
   public static void setReason(long pointer, String reason) {
-    synchronized (instances) {
-      instances.get(pointer).reason = reason;
-    }
+    withInstance(pointer, instance -> instance.reason = reason);
     Platform.runLater(InstanceTracker::update);
   }
 
   public static void setJava(long pointer, Object java) {
-    synchronized (instances) {
-      instances.get(pointer).java = java;
-    }
+    withInstance(pointer, instance -> instance.java = java);
     Platform.runLater(InstanceTracker::update);
   }
 
   public static void addRef(long pointer) {
-    synchronized (instances) {
-      instances.get(pointer).refCount += 1;
-    }
+    withInstance(pointer, instance -> instance.refCount += 1);
     Platform.runLater(InstanceTracker::update);
   }
 
   public static void release(long pointer) {
-    synchronized (instances) {
-      instances.get(pointer).refCount -= 1;
-    }
+    withInstance(pointer, instance -> instance.refCount -= 1);
     Platform.runLater(InstanceTracker::update);
     
   }

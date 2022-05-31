@@ -249,10 +249,30 @@ ProxyAccessible::ProxyAccessible(JNIEnv* env, jobject jAccessible)
 {
     m_jAccessible = env->NewGlobalRef(jAccessible);
     GlassCounter::IncrementAccessibility();
+
+
+  HRESULT hr;
+
+    // BSTR toStr;
+    hr = JniUtil::toString(env, m_jAccessible, &toStr);
+    if (SUCCEEDED(hr)) {
+      // BSTR clsName;
+      hr = JniUtil::getClassName(env, m_jAccessible, &clsName);
+      if (SUCCEEDED(hr)) {
+        fprintf(stderr, "created native ProxyAccessible %S (%S) [%d]\n", toStr, clsName, m_jAccessible);
+        // SysFreeString(clsName);
+      }
+      // SysFreeString(toStr);
+    }
+  
+
 }
 
 ProxyAccessible::~ProxyAccessible()
 {
+
+    fprintf(stderr, "[NATIVE] DESTROY %S (%S) [%d]\n", toStr, clsName, m_jAccessible);
+
     JNIEnv* env = GetEnv();
     if (env) env->DeleteGlobalRef(m_jAccessible);
     GlassCounter::DecrementAccessibility();
@@ -270,9 +290,24 @@ IFACEMETHODIMP_(ULONG) ProxyAccessible::Release()
 {
     long val = InterlockedDecrement(&m_refCount);
     if (val == 0) {
+        fprintf(stderr, "[NATIVE] REF COUNT ZERO %S (%S) [%d]\n", toStr, clsName, m_jAccessible);
         delete this;
     }
     return val;
+}
+
+IFACEMETHODIMP ProxyAccessible::toString(BSTR* result) {
+  
+  HRESULT hr;
+
+  JNIEnv* env;
+  hr = GetEnv(&env);
+  return_on_fail(hr)
+
+  hr = JniUtil::toString(env, m_jAccessible, result);
+  return_on_fail(hr);
+
+  return hr;
 }
 
 IFACEMETHODIMP ProxyAccessible::QueryInterface(REFIID riid, void** ppInterface)
@@ -464,6 +499,10 @@ IFACEMETHODIMP ProxyAccessible::GetPropertyValue(PROPERTYID propertyId, VARIANT*
 /*       IRawElementProviderFragment           */
 /***********************************************/
 IFACEMETHODIMP ProxyAccessible::get_BoundingRectangle(UiaRect* pResult) {
+
+
+  auto tid = GetCurrentThreadId();
+
   if (pResult == NULL) return E_INVALIDARG;
 
   HRESULT hr;
@@ -472,7 +511,23 @@ IFACEMETHODIMP ProxyAccessible::get_BoundingRectangle(UiaRect* pResult) {
   hr = GetEnv(&env);
   return_on_fail(hr);
 
+  {
+  BSTR ltoStr;
+  HRESULT hr = this->toString(&ltoStr);
+  if (SUCCEEDED(hr)) {
+    BSTR lclsName;
+    hr = JniUtil::getClassName(env, m_jAccessible, &lclsName);
+    if (SUCCEEDED(hr)) {
+      fprintf(stderr, "[NATIVE] [%d] get_BoundingRectangle on %S (%S) [%d]\n", tid, ltoStr, lclsName, m_jAccessible);
+      SysFreeString(lclsName);
+    }
+    SysFreeString(ltoStr);
+  }
+  fprintf(stderr, "[NATIVE] [%d] get_BoundingRectangle on %S (%S) (STORED)\n", tid, toStr, clsName);
+}
+
   jobject result;
+  fprintf(stderr, "calling object method! on %d\n", m_jAccessible);
   hr = JniUtil::callObjectMethod(env, m_jAccessible, mid_IRawElementProviderFragment_get_BoundingRectangle, &result);
   return_on_fail(hr);
 
@@ -558,6 +613,8 @@ IFACEMETHODIMP ProxyAccessible::Navigate(NavigateDirection direction, IRawElemen
   // AddRef ok (example @ https://docs.microsoft.com/en-us/windows/win32/api/uiautomationcore/nf-uiautomationcore-irawelementproviderfragment-navigate)
   if (result != NULL) result->AddRef();
 
+  fprintf(stderr, "Navigate(%d) => %d\n", direction, result);
+
   *pResult = result;
   return hr;
 }
@@ -614,6 +671,8 @@ IFACEMETHODIMP ProxyAccessible::GetFocus(IRawElementProviderFragment** pResult)
 
   IRawElementProviderFragment* result = reinterpret_cast<IRawElementProviderFragment*>(pointer);
   if (result != NULL) result->AddRef();
+
+  fprintf(stderr, "GetFocus => %d\n", result);
 
   *pResult = result;
   return hr;
@@ -690,26 +749,64 @@ IFACEMETHODIMP ProxyAccessible::Invoke()
 /*           ISelectionProvider                */
 /***********************************************/
 IFACEMETHODIMP ProxyAccessible::GetSelection(SAFEARRAY** pRetVal) {
-  if (pRetVal == NULL) return E_INVALIDARG;
+  // TODO GetSelection is both for ITextRangeProvider and ISelectionProvider
+  // how should we switch between the two :?
 
-  HRESULT hr;
+  IUnknown* textPatternProvider;
+  GetPatternProvider(UIA_TextPatternId, &textPatternProvider);
+  if (textPatternProvider != NULL) {
+    textPatternProvider->Release();
 
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr)
+    // got a text pattern
 
-  jarray array;
-  hr = JniUtil::callArrayMethod(env, m_jAccessible, mid_ITextProvider_GetSelection, &array);
-  return_on_fail(hr)
+    if (pRetVal == NULL) return E_INVALIDARG;
 
-  hr = JniUtil::toSafeArray(env, array, VT_UNKNOWN, pRetVal);
-  return_on_fail(hr)
+    HRESULT hr;
 
-  // we want to undo the AddRef the safe array push caused
-  hr = ReleaseAllIUnknown(*pRetVal);
-  return_on_fail(hr)
+    JNIEnv* env;
+    hr = GetEnv(&env);
+    return_on_fail(hr);
 
-  return hr;
+    jarray array;
+    hr = JniUtil::callArrayMethod(env, m_jAccessible, mid_ITextProvider_GetSelection, &array);
+    return_on_fail(hr);
+
+    hr = JniUtil::toSafeArray(env, array, VT_UNKNOWN, pRetVal);
+    return_on_fail(hr);
+
+    // we want to undo the AddRef the safe array push caused
+    hr = ReleaseAllIUnknown(*pRetVal);
+    return_on_fail(hr);
+
+    return hr;
+
+
+  } else {
+
+    // got a selection pattern
+
+    if (pRetVal == NULL) return E_INVALIDARG;
+
+    HRESULT hr;
+
+    JNIEnv* env;
+    hr = GetEnv(&env);
+    return_on_fail(hr);
+
+    jarray array;
+    hr = JniUtil::callArrayMethod(env, m_jAccessible, mid_ISelectionProvider_GetSelection, &array);
+    return_on_fail(hr);
+
+    hr = JniUtil::toSafeArray(env, array, VT_UNKNOWN, pRetVal);
+    return_on_fail(hr);
+
+    // here we need the implicit AddRef() from toSafeArray
+
+    return hr;
+
+  }
+
+  
 
   // int count;
   // IUnknown** result;
@@ -726,8 +823,7 @@ IFACEMETHODIMP ProxyAccessible::GetSelection(SAFEARRAY** pRetVal) {
   // }
   // return hr;
 
-    // TODO GetSelection is both for ITextRangeProvider and ISelectionProvider
-    // how should we switch between the two :?
+
 
 //     HRESULT hr = callArrayMethod(mid_ITextProvider_GetSelection, VT_UNKNOWN, pRetVal);
     // if (SUCCEEDED(hr)) {
@@ -2572,6 +2668,14 @@ JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible_UiaRaiseAutoma
 {
     ProxyAccessible* acc = reinterpret_cast<ProxyAccessible*>(jAccessible);
     IRawElementProviderSimple* pProvider = static_cast<IRawElementProviderSimple*>(acc);
+
+    BSTR toStr;
+    HRESULT hr = acc->toString(&toStr);
+    if (SUCCEEDED(hr)) {
+      fprintf(stderr, "[NATIVE] UiaRaiseAutomationEvent jni on %S\n", toStr);
+      SysFreeString(toStr);
+    }
+
     return (jlong)UiaRaiseAutomationEvent(pProvider, (EVENTID)id);
 }
 

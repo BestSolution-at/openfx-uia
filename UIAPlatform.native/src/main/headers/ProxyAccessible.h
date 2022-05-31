@@ -259,12 +259,19 @@ public:
     IFACEMETHODIMP Zoom(double zoom);
     IFACEMETHODIMP ZoomByUnit(ZoomUnit zoomUnit);
 
+    IFACEMETHODIMP toString(BSTR* result);
+
+    BSTR toStr;
+    BSTR clsName;
+
 private:
     virtual ~ProxyAccessible();
 
 
     ULONG m_refCount;
     jobject m_jAccessible;  // The GlobalRef Java side object
+
+
 
 };
 

@@ -62,16 +62,51 @@ jboolean CheckAndClearException(JNIEnv* env)
     if (!t) {
         return JNI_FALSE;
     }
+    fprintf(stderr, "CheckAndClearException[\n");
+    env->ExceptionDescribe();
+    fprintf(stderr, "]\n");
     env->ExceptionClear();
+
+    
+    // output exception
+    jclass tc = env->FindClass("java/lang/Throwable");
+    if (env->ExceptionOccurred()) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        fprintf(stderr, "FAIL_A\n");
+        return JNI_TRUE;
+    }
+    jmethodID printMID = env->GetMethodID(tc, "printStackTrace", "()V");
+    if (env->ExceptionOccurred()) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        fprintf(stderr, "FAIL_B\n");
+        return JNI_TRUE;
+    }
+    fprintf(stderr, "CheckAndClearException[\n");
+    env->CallVoidMethod(t, printMID);
+    fprintf(stderr, "]\n");
+    if (env->ExceptionOccurred()) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        fprintf(stderr, "FAIL_C\n");
+        return JNI_TRUE;
+    }
+    // ------
+
 
     jclass cls = env->FindClass("com/sun/glass/ui/Application");
     if (env->ExceptionOccurred()) {
+        env->ExceptionDescribe();
         env->ExceptionClear();
+        fprintf(stderr, "FAIL_D\n");
         return JNI_TRUE;
     }
     env->CallStaticVoidMethod(cls, javaIDs.Application.reportExceptionMID, t);
     if (env->ExceptionOccurred()) {
+        env->ExceptionDescribe();
         env->ExceptionClear();
+        fprintf(stderr, "FAIL_E\n");
         return JNI_TRUE;
     }
     env->DeleteLocalRef(cls);
