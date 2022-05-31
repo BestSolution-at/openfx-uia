@@ -613,7 +613,7 @@ IFACEMETHODIMP ProxyAccessible::Navigate(NavigateDirection direction, IRawElemen
   // AddRef ok (example @ https://docs.microsoft.com/en-us/windows/win32/api/uiautomationcore/nf-uiautomationcore-irawelementproviderfragment-navigate)
   if (result != NULL) result->AddRef();
 
-  fprintf(stderr, "Navigate(%d) => %d\n", direction, result);
+  //fprintf(stderr, "Navigate(%d) => %d\n", direction, result);
 
   *pResult = result;
   return hr;
@@ -672,7 +672,7 @@ IFACEMETHODIMP ProxyAccessible::GetFocus(IRawElementProviderFragment** pResult)
   IRawElementProviderFragment* result = reinterpret_cast<IRawElementProviderFragment*>(pointer);
   if (result != NULL) result->AddRef();
 
-  fprintf(stderr, "GetFocus => %d\n", result);
+  //fprintf(stderr, "GetFocus => %d\n", result);
 
   *pResult = result;
   return hr;
