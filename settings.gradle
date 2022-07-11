@@ -10,4 +10,5 @@ include "UIAPlatform"
 include "UIAPlatform.agent"
 include "UIAPlatform.native"
 include "UIAPlatform.sample"
+include "UIAPlatform.logger"
 
