@@ -84,6 +84,8 @@ import javafx.uia.Variant;
 @SuppressWarnings("restriction")
 public class ProxyAccessible extends Accessible {
 
+  private static final Logger LOG = Logger.create(ProxyAccessible.class);
+
     private static int next = 0;
     private final int num;
 
@@ -91,30 +93,14 @@ public class ProxyAccessible extends Accessible {
         return num;
     }
 
-    private static void reportEnvironment() {
-		Logger.debug(ProxyAccessible.class, () -> "Environment: ");
-		Arrays.stream(new String[] {
-			"java.vendor",
-			"java.version", 
-			"java.vm.version",
-			"javafx.version",
-			"javafx.runtime.version"
-		}).forEach(prop -> Logger.debug(ProxyAccessible.class, () -> "\t" + prop + ": " + System.getProperty(prop)));
-	}
-
     public static void requireLibrary() {
 
     }
     
     private static native void _initIDs();
+    
     static {
-        reportEnvironment();
-        try {
-            System.load(LibMan.uiaPlatformDll.toString());
-
-        } catch (Exception e) {
-            Logger.fatal(ProxyAccessible.class, () -> "Exception during initialization", e);
-        }
+      NativeLibrary.require();
         _initIDs();
 
         InstanceTracker.require();
@@ -135,18 +121,18 @@ public class ProxyAccessible extends Accessible {
     }
     
     /*package*/ ProxyAccessible() {
-        this.num = next++;
-       
-        this.peer = _createProxyAccessible();
-        if (this.peer == 0L) {
-            throw new RuntimeException("could not create platform accessible");
-        }
-
-        ProxyAccessibleRegistry.getInstance().registerNative(this, peer);
-
-        glass = new WinAccessible(this);
-
-        Logger.debug(this, () -> "created. (glass)");
+      this.num = next++;
+      
+      this.peer = _createProxyAccessible();
+      if (this.peer == 0L) {
+        throw new RuntimeException("could not create platform accessible");
+      }
+      
+      ProxyAccessibleRegistry.getInstance().registerNative(this, peer);
+      
+      glass = new WinAccessible(this);
+      
+      LOG.debug(this, () -> "created. (glass)");
 
         saveCreationStack();
     }
@@ -155,7 +141,7 @@ public class ProxyAccessible extends Accessible {
     ProxyAccessible(ProxyAccessible context, IUIAElement uiaElement) {
 
         if (uiaElement == null) {
-            Logger.debug(this, () -> "virtual ProxyAccessible cannot be created without an uiaElement");
+            LOG.debug(this, () -> "virtual ProxyAccessible cannot be created without an uiaElement");
             throw new NullPointerException("uiaElement is null!");
         }
 
@@ -180,7 +166,7 @@ public class ProxyAccessible extends Accessible {
             initializeVirtualElement(uiaElement);
         }
 
-        Logger.debug(this, () -> "created. (virtual)");
+        LOG.debug(this, () -> "created. (virtual)");
 
         saveCreationStack();
     }
@@ -204,7 +190,7 @@ public class ProxyAccessible extends Accessible {
 
     @Override
     public void dispose() {
-        Logger.debug(this, () -> "DISPOSE " + this);
+        LOG.debug(this, () -> "DISPOSE " + this);
 
         super.dispose();
 
@@ -269,9 +255,9 @@ public class ProxyAccessible extends Accessible {
         connect();
 
         if (this.uiaElement != null) {
-          Logger.debug(this, () -> "connected to " + this.uiaElement);
+          LOG.debug(this, () -> "connected to " + this.uiaElement);
         } else {
-          Logger.debug(this, () -> "connected to " + eventHandler);
+          LOG.debug(this, () -> "connected to " + eventHandler);
         }
     }
 
@@ -300,10 +286,10 @@ public class ProxyAccessible extends Accessible {
     private void connect() {
         if (uiaElement == null) {
             uiaElement = getProvider(IUIAElement.class);
-            //Logger.debug(this, () -> "Got uiaNode: " + uiaElement);
+            //LOG.debug(this, () -> "Got uiaNode: " + uiaElement);
             if (uiaElement != null) {
                 initializeJavaFXElement(uiaElement);
-                //Logger.debug(this, () -> "connected to " + uiaElement + ".");
+                //LOG.debug(this, () -> "connected to " + uiaElement + ".");
             }
         }
     }
@@ -333,7 +319,7 @@ public class ProxyAccessible extends Accessible {
 				try {
 					providerType.cast(result);
 				} catch (Exception e) {
-                    Logger.error(ProxyAccessible.this, () -> "The expected provider type" + " is " + providerType.getSimpleName() + " but found "
+                    LOG.error(ProxyAccessible.this, () -> "The expected provider type" + " is " + providerType.getSimpleName() + " but found "
                     + result.getClass().getSimpleName(), e);
 					return null; // Fail no exception
 				}
@@ -358,7 +344,7 @@ public class ProxyAccessible extends Accessible {
 				try {
 					providerType.cast(result);
 				} catch (Exception e) {
-                    Logger.error(ProxyAccessible.this, () -> "The expected provider type" + " is " + providerType.getSimpleName() + " but found "
+                    LOG.error(ProxyAccessible.this, () -> "The expected provider type" + " is " + providerType.getSimpleName() + " but found "
                             + result.getClass().getSimpleName(), e);
 					return null; // Fail no exception
 				}
@@ -438,7 +424,7 @@ public class ProxyAccessible extends Accessible {
 
     private void checkGlass() {
         if (glass == null) {
-            Logger.error(this, () -> "Glass is null in " + this);
+            LOG.error(this, () -> "Glass is null in " + this);
             new NullPointerException("glass is null").printStackTrace();
         }
     }
@@ -486,7 +472,7 @@ public class ProxyAccessible extends Accessible {
             ProxyAccessible accessible = (ProxyAccessible) getter.invoke(node);
             return accessible;
         } catch (Exception e) {
-            Logger.error(ProxyAccessible.class, () -> "Failed to get Accessible! " + node, e);
+            LOG.error(ProxyAccessible.class, () -> "Failed to get Accessible! " + node, e);
             throw new RuntimeException("Failed to get Accessible! " + node , e);
         }
     }

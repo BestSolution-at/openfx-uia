@@ -29,6 +29,7 @@
 
 #include <UIAutomation.h>
 #include <jni.h>
+#include "Logger.h"
 
 class ProxyAccessible : public IRawElementProviderSimple,
     public IRawElementProviderFragment,
@@ -271,7 +272,7 @@ private:
     ULONG m_refCount;
     jobject m_jAccessible;  // The GlobalRef Java side object
 
-
+    Logger* LOG;
 
 };
 

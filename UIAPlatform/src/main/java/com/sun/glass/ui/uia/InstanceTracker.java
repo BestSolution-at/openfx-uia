@@ -19,6 +19,8 @@ import javafx.util.Callback;
 
 public class InstanceTracker {
 
+  private static Logger LOG = Logger.create(InstanceTracker.class);
+
   private static native void _initIDs();
 
   public static void require() {
@@ -51,7 +53,7 @@ public class InstanceTracker {
       if (instance != null) {
         func.accept(instance);
       } else {
-        System.err.println("[WARN] There is no Instance for " + pointer);
+        LOG.warning("-", () -> "There is no Instance for " + pointer);
         Thread.dumpStack();
       }
     }
@@ -71,7 +73,7 @@ public class InstanceTracker {
     }
     Platform.runLater(InstanceTracker::update);
 
-    System.err.println("Report: \n" + instances.values().stream().filter(v -> v.destroyed == false).map(el -> " * " + el.type + "(0x" + Long.toHexString(el.pointer) + ")" +  " has " + el.refCount + " refs, reason=" + el.reason + "   " + el.java).collect(Collectors.joining("\n")));
+    LOG.debug("-", () -> "Report: \n" + instances.values().stream().filter(v -> v.destroyed == false).map(el -> " * " + el.type + "(0x" + Long.toHexString(el.pointer) + ")" +  " has " + el.refCount + " refs, reason=" + el.reason + "   " + el.java).collect(Collectors.joining("\n")));
   }
 
   public static void setType(long pointer, String type) {

@@ -23,6 +23,7 @@ repositories {
 configurations {
     agent
     includedJars
+    withLogging
 }
 
 dependencies {
@@ -31,6 +32,10 @@ dependencies {
 
     includedJars project(":UIAPlatform.agent")
     includedJars project(":UIAPlatform")
+
+    withLogging project(":UIAPlatform.logger")
+    withLogging 'org.slf4j:slf4j-api:2.0.0-alpha7'
+    withLogging 'org.slf4j:slf4j-simple:2.0.0-alpha7'
 }
 
 def getAgentJar() {
@@ -61,21 +66,43 @@ task phatJar(type: Jar) {
     }
 }
 
-task runWithAgent(type: JavaExec) {
+task runWithAgentWithLogging(type: JavaExec) {
     dependsOn configurations.agent
 
+    dependsOn configurations.withLogging
+    classpath configurations.withLogging
+
   	group = 'application'
-	description = 'Runs the sample with the glass platfrom configured'
+	  description = 'Runs the sample with the glass platfrom configured'
 
     javaLauncher = javaToolchains.launcherFor {
         languageVersion = JavaLanguageVersion.of(8)
     }
 
-	classpath = sourceSets.main.runtimeClasspath
-	main = 'uia.sample.Simple'
+    classpath sourceSets.main.runtimeClasspath
+    main = 'uia.sample.Simple'
 
-    systemProperties "uia.log": false
+    systemProperties "uia.log": true
     jvmArgs "-javaagent:${getAgentJar()}"
+    // jvmArgs "-verbose:jni"
+}
+
+task runWithAgent(type: JavaExec) {
+    dependsOn configurations.agent
+
+  	group = 'application'
+	  description = 'Runs the sample with the glass platfrom configured'
+
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+
+    classpath sourceSets.main.runtimeClasspath
+    main = 'uia.sample.Simple'
+
+    systemProperties "uia.log": true
+    jvmArgs "-javaagent:${getAgentJar()}"
+    // jvmArgs "-verbose:jni"
 }
 
 task debugWithAgent(type: JavaExec) {

@@ -35,6 +35,8 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 public class LibMan {
     
+  private static final Logger LOG = Logger.create(LibMan.class);
+
     static final Path tempDir;
     static final Path libDir;
 
@@ -57,7 +59,7 @@ public class LibMan {
         URL source = LibMan.class.getResource("/" + file);
         Path target = dir.resolve(file);
         Files.copy(source.openStream(), target);
-        Logger.debug(LibMan.class, () -> "Using " + target.toString());
+        LOG.debug(LibMan.class, () -> "Using " + target.toString());
         return target;
     }
 

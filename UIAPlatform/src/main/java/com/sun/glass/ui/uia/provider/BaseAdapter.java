@@ -44,6 +44,8 @@ import javafx.uia.TextEditChangeType;
 import javafx.uia.Variant;
 
 public abstract class BaseAdapter<T> {
+
+  private static Logger LOG = Logger.create(BaseAdapter.class);
     
     protected final T provider;
     protected final ProxyAccessible accessible;
@@ -63,7 +65,7 @@ public abstract class BaseAdapter<T> {
     }
 
     protected void UiaRaiseTextEditTextChangedEvent(TextEditChangeType changeType, String[] payload) {
-        Logger.debug(this, () -> "UiaRaiseTextEditTextChangedEvent("+changeType+", "+Arrays.toString(payload)+")");
+        LOG.debug(this, () -> "UiaRaiseTextEditTextChangedEvent("+changeType+", "+Arrays.toString(payload)+")");
         long pProvider = accessible.getNativeAccessible();
         int textEditChangeType = changeType.getNativeValue();
         long pChangedData = Windows.SafeArrayCreateVector((short) Windows.VT_BSTR, 0, payload.length);
@@ -73,31 +75,31 @@ public abstract class BaseAdapter<T> {
             Windows.SysFreeString(pValue);
         }
         long result = Windows.UiaRaiseTextEditTextChangedEvent(pProvider, textEditChangeType, pChangedData);
-        Logger.debug(this, () -> "UiaRaiseTextEditTextChangedEvent => 0x" + Long.toHexString(result));
+        LOG.debug(this, () -> "UiaRaiseTextEditTextChangedEvent => 0x" + Long.toHexString(result));
     }
 
     protected void UiaRaiseNotificationEvent(NotificationKind notificationKind, NotificationProcessing notificationProcessing, String displayString, String activityId) {
-        Logger.debug(this, () -> "UiaRaiseNotificationEvent("+notificationKind+", " + notificationProcessing +", " + displayString + ", " + activityId +")");
+        LOG.debug(this, () -> "UiaRaiseNotificationEvent("+notificationKind+", " + notificationProcessing +", " + displayString + ", " + activityId +")");
         long result = Windows.UiaRaiseNotificationEvent(accessible.getNativeAccessible(), notificationKind.getNativeValue(), notificationProcessing.getNativeValue(), displayString, activityId);
-        Logger.debug(this, () -> "UiaRaiseNotificationEvent => 0x" + Long.toHexString(result));
+        LOG.debug(this, () -> "UiaRaiseNotificationEvent => 0x" + Long.toHexString(result));
     }
 
     protected void UiaRaiseActiveTextPositionChangedEvent(ITextRangeProvider textRange) {
-        Logger.debug(this, () -> "UiaRaiseActiveTextPositionChangedEvent(" + textRange + ")");
+        LOG.debug(this, () -> "UiaRaiseActiveTextPositionChangedEvent(" + textRange + ")");
         long result = Windows.UiaRaiseActiveTextPositionChangedEvent(accessible.getNativeAccessible(), wrapNative(textRange));
-        Logger.debug(this, () -> "UiaRaiseActiveTextPositionChangedEvent => 0x" + Long.toHexString(result));
+        LOG.debug(this, () -> "UiaRaiseActiveTextPositionChangedEvent => 0x" + Long.toHexString(result));
     }
 
     protected void UiaRaiseAsyncContentLoadedEvent(AsyncContentLoadedState asyncContentLoadedState, double percentComplete) {
-        Logger.debug(this, () -> "UiaRaiseAsyncContentLoadedEvent(" + asyncContentLoadedState + ", " + percentComplete + ")");
+        LOG.debug(this, () -> "UiaRaiseAsyncContentLoadedEvent(" + asyncContentLoadedState + ", " + percentComplete + ")");
         long result = Windows.UiaRaiseAsyncContentLoadedEvent(accessible.getNativeAccessible(), asyncContentLoadedState.getNativeValue(), percentComplete);
-        Logger.debug(this, () -> "UiaRaiseAsyncContentLoadedEvent => 0x" + Long.toHexString(result));       
+        LOG.debug(this, () -> "UiaRaiseAsyncContentLoadedEvent => 0x" + Long.toHexString(result));       
     }
 
     protected void UiaRaiseStructureChangedEvent(StructureChangeType structureChangeType, int[] runtimeId) {
-        Logger.debug(this, () -> "UiaRaiseStructureChangedEvent(" + structureChangeType + ", " + Arrays.toString(runtimeId) + ")");
+        LOG.debug(this, () -> "UiaRaiseStructureChangedEvent(" + structureChangeType + ", " + Arrays.toString(runtimeId) + ")");
         long result = Windows.UiaRaiseStructureChangedEvent(accessible.getNativeAccessible(), structureChangeType.getNativeValue(), runtimeId);
-        Logger.debug(this, () -> "UiaRaiseStructureChangedEvent => 0x" + Long.toHexString(result));   
+        LOG.debug(this, () -> "UiaRaiseStructureChangedEvent => 0x" + Long.toHexString(result));   
     }
 
     protected long wrapNative(ITextRangeProvider textRange) {

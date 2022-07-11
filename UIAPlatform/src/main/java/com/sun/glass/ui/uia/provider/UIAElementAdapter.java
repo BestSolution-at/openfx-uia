@@ -60,6 +60,8 @@ import javafx.uia.Variant;
 
 public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements NativeIRawElementProviderSimple, NativeIRawElementProviderFragment {
 
+  private static Logger LOG = Logger.create(UIAElementAdapter.class);
+
     private class Prop<T> implements IProperty<T> {
         private IPropertyId id;
         private Supplier<T> getter;
@@ -150,9 +152,9 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
             }
         }
 
-        Logger.debug(this, () -> "Element init " + element);
+        LOG.debug(this, () -> "Element init " + element);
         for (ProviderInstance<?, ?> p : adapters) {
-            Logger.debug(this, () -> " * " + p.descriptor.javaType);
+            LOG.debug(this, () -> " * " + p.descriptor.javaType);
         }
     }
 
@@ -163,7 +165,7 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
 
     private void log(IUIAElement element, String msg) {
         String glass = " (" + ProxyAccessibleRegistry.getInstance().findAccessible(element).getGlassAccessible() + ")";
-        Logger.debug(this, () -> "V: " + element + glass + " - " + msg);
+        LOG.debug(this, () -> "V: " + element + glass + " - " + msg);
     }
 
 
@@ -280,9 +282,9 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
     @Override
     public long Navigate(int direction) {
         IUIAElement element = accessible.getUIAElement();
-        if (element != null && (isVirtual(element) || isVirtualRoot(element))) {
-            log(element, "Navigate("+direction+")");
-        }
+        // if (element != null && (isVirtual(element) || isVirtualRoot(element))) {
+        //     log(element, "Navigate("+direction+")");
+        // }
         if (element != null) {
             if (isVirtual(element) || isVirtualRoot(element)) {
                 final int NavigateDirection_Parent            = 0;
@@ -295,19 +297,19 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
                     switch (direction) {
                         case NavigateDirection_FirstChild: {
                             Optional<IUIAElement> firstChild = findFirstChild(element);
-                            log(element, "First Child: " + firstChild);
+                            // log(element, "First Child: " + firstChild);
                             return firstChild.flatMap(this::getNative).orElse(0L);
                         } 
                         case NavigateDirection_LastChild: {
                             Optional<IUIAElement> lastChild = findLastChild(element);
-                            log(element, "Last Child: " + lastChild);
+                            // log(element, "Last Child: " + lastChild);
                             return lastChild.flatMap(this::getNative).orElse(0L);
                         }
                     
                         case NavigateDirection_Parent: 
                             if (isVirtualRoot(element)) {
                                 // a virtual root needs to delegate to the glass version
-                                log(element, "PARENT: " + accessible + " / glass: " + (accessible!=null?""+accessible.getGlassAccessible():"-"));
+                                // log(element, "PARENT: " + accessible + " / glass: " + (accessible!=null?""+accessible.getGlassAccessible():"-"));
                                 return accessible.getGlassAccessible().Navigate(direction);
                             } else {
                                 Optional<IUIAElement> parent = findParent(element);
@@ -323,14 +325,14 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
                                 return accessible.getGlassAccessible().Navigate(direction);
                             }
                             Optional<IUIAElement> nextSibling = findNextSibling(element);
-                            log(element, "Next Sibling: " + nextSibling);
+                            // log(element, "Next Sibling: " + nextSibling);
                             return nextSibling.flatMap(this::getNative).orElse(0L);
                         case NavigateDirection_PreviousSibling:
                             if (isVirtualRoot(element)) {
                                 return accessible.getGlassAccessible().Navigate(direction);
                             }
                             Optional<IUIAElement> prevSibling = findPreviousSibling(element);
-                            log(element, "Prev Sibling: " + prevSibling);
+                            // log(element, "Prev Sibling: " + prevSibling);
                             return prevSibling.flatMap(this::getNative).orElse(0L);
 
                         default:

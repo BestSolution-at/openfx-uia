@@ -80,6 +80,8 @@ import com.sun.javafx.scene.SceneHelper;
  @SuppressWarnings({"restriction", "javadoc"})
 public final class WinAccessible extends Accessible {
 
+  private static Logger LOG = Logger.create(WinAccessible.class);
+
 //    private native static void _initIDs();
 //    static {
 //        _initIDs();
@@ -312,10 +314,10 @@ public final class WinAccessible extends Accessible {
                     // This is a Scene
                     long focus = GetFocus();
                     if (focus != 0) {
-                        Logger.debug(this, () -> "->FocusChanged with View, " + focus);
+                        LOG.debug(this, () -> "->FocusChanged with View, " + focus);
                         if (this.firstFocusEvent) {
                           delay(() -> {
-                            Logger.debug(this, () -> "RESEND ->FocusChanged with View, " + focus);
+                            LOG.debug(this, () -> "RESEND ->FocusChanged with View, " + focus);
                             UiaRaiseAutomationEvent(focus, UIA_AutomationFocusChangedEventId);
                           }, 15);
                           this.firstFocusEvent = false;
@@ -327,14 +329,14 @@ public final class WinAccessible extends Accessible {
                     // This is a Scene.transientFocusContainer
                     Node node = (Node)getAttribute(FOCUS_NODE);
                     if (node != null) {
-                      Logger.debug(this, () -> "->FocusChanged transientFocusContainer");
+                      LOG.debug(this, () -> "->FocusChanged transientFocusContainer");
                         UiaRaiseAutomationEvent(getNativeAccessible(node), UIA_AutomationFocusChangedEventId);
 
 
 
                     } else {
                         // Delegate back to the Scene if the transient focus owner is null
-                        Logger.debug(this, () -> "->FocusChanged delegate");
+                        LOG.debug(this, () -> "->FocusChanged delegate");
                         Scene scene = (Scene)getAttribute(SCENE);
                         Accessible acc = getAccessible(scene);
                         if (acc != null) {
@@ -1235,7 +1237,7 @@ public final class WinAccessible extends Accessible {
                     // selectionRange = new ProxyTextRangeProvider(proxy, new WinTextRangeProvider(this));
                     selectionRange.setOnNativeDelete(() -> {
                       this.selectionRange = null;
-                      System.err.println("selectionRange auto clear");
+                      LOG.debug(this, () -> "selectionRange auto clear");
                     });
                 }
                 Integer result = (Integer)getAttribute(SELECTION_START);
@@ -1457,7 +1459,7 @@ public final class WinAccessible extends Accessible {
             // documentRange = new ProxyTextRangeProvider(proxy, new WinTextRangeProvider(this));
             documentRange.setOnNativeDelete(() -> {
               this.documentRange = null;
-              System.err.println("documentRange auto clear");
+              LOG.debug(this, () -> "documentRange auto clear");
             });
         }
         String text = (String)getAttribute(TEXT);

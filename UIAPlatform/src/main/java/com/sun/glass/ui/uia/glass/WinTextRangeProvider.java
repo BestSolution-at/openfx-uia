@@ -33,12 +33,16 @@ import javafx.scene.AccessibleAttribute;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
+import com.sun.glass.ui.uia.Logger;
+
 /*
  * This class is the Java peer for GlassTextRangeProvider.
  * GlassTextRangeProvider implements ITextRangeProvider.
  */
 @SuppressWarnings("restriction")
 public class WinTextRangeProvider {
+
+  private static Logger LOG = Logger.create(WinTextRangeProvider.class);
 
     // private native static void _initIDs();
     // static {
@@ -239,7 +243,7 @@ public class WinTextRangeProvider {
     }
 
     public long FindAttribute(int attributeId, WinVariant val, boolean backward) {
-        System.err.println("FindAttribute NOT IMPLEMENTED");
+        LOG.warning(this, () -> "FindAttribute NOT IMPLEMENTED");
         return 0;
     }
 

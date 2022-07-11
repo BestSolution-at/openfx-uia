@@ -51,6 +51,8 @@ import javafx.uia.Variant;
 
 public class ProxyTextRangeProvider {
 
+  private static Logger LOG = Logger.create(ProxyTextRangeProvider.class);
+
     public static class TextRangeProviderException extends RuntimeException {
       public TextRangeProviderException(String msg) {
         super(msg);
@@ -107,12 +109,12 @@ public class ProxyTextRangeProvider {
       peer = _createTextRangeProvider(accessible.getNativeAccessible());
       id = idCount++;
 
-      Logger.debug(this, () -> "created. (glass) acc=" + accessible);
+      LOG.debug(this, () -> "created. (glass) acc=" + accessible);
     }
 
     private ProxyTextRangeProvider(ProxyAccessible accessible, ITextRangeProvider uiaImpl) {
         if (uiaImpl == null) {
-            Logger.debug(this, () -> "ProxyTextRangeProvider cannot be created without an ITextRangeProvider");
+            LOG.debug(this, () -> "ProxyTextRangeProvider cannot be created without an ITextRangeProvider");
             throw new NullPointerException("uiaImpl is null!");
         }
 
@@ -121,7 +123,7 @@ public class ProxyTextRangeProvider {
         peer = _createTextRangeProvider(accessible.getNativeAccessible());
         id = idCount++;
 
-        Logger.debug(this, () -> "created. (uia) acc=" + accessible);
+        LOG.debug(this, () -> "created. (uia) acc=" + accessible);
 
         uiaImpl.initialize(support);
     }
@@ -165,7 +167,7 @@ public class ProxyTextRangeProvider {
     }
 
     private void onNativeDelete() {
-      System.err.println("TextRange was deleted by refcount.");
+     LOG.debug(this, () -> "TextRange was deleted by refcount.");
       if (this.nativeDeleteCallback != null) {
         this.nativeDeleteCallback.run();;
         this.nativeDeleteCallback = null;
@@ -261,7 +263,7 @@ public class ProxyTextRangeProvider {
             case Windows.VT_UNKNOWN:
                 return Variant.vt_unknown(Windows.VariantGetPunkVal(variant));
         }
-        Logger.warning(this, () -> "Variant unknown; using VT_EMPTY");
+        LOG.warning(this, () -> "Variant unknown; using VT_EMPTY");
         Thread.dumpStack();
         return Variant.vt_empty();
     }
@@ -431,7 +433,7 @@ public class ProxyTextRangeProvider {
     }
 
     private void MoveEndpointByRange(int endpoint, ProxyTextRangeProvider targetRange, int targetEndpoint) {
-      System.err.println("MoveEndpointByRange: " + endpoint + ", " + targetRange + ", " + targetEndpoint);
+      LOG.debug(() -> "MoveEndpointByRange: " + endpoint + ", " + targetRange + ", " + targetEndpoint);
         Util.guard(() -> {
           if (this.isUIA() && targetRange.isUIA()) {
             uiaImpl.MoveEndpointByRange(TextPatternRangeEndpoint.fromNativeValue(endpoint).get(), targetRange.uiaImpl, TextPatternRangeEndpoint.fromNativeValue(targetEndpoint).get());

@@ -1,0 +1,40 @@
+plugins {
+  id "java-library"
+}
+
+java {
+  withSourcesJar()
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(8)
+  }
+}
+
+repositories {
+  mavenCentral()
+}
+
+dependencies {
+  api 'org.slf4j:slf4j-api:2.0.0-alpha7'
+  implementation project(':UIAPlatform')
+}
+
+task writeServiceFiles() {
+    var services = [
+        "at.bestsolution.uia.ILoggerService": "at.bestsolution.uia.logger.SLF4JLoggerService",
+    ]
+
+    services.each {
+        outputs.file(layout.buildDirectory.file("services/${it.key}"))
+    }
+    doLast {
+        outputs.files.each {
+            it.text = services.get(it.name)
+        }
+    }
+}
+
+jar {
+  into("META-INF/services") {
+    from tasks.writeServiceFiles
+  }
+}

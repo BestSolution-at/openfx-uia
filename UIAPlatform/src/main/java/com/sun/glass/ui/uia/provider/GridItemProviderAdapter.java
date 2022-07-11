@@ -35,6 +35,8 @@ import javafx.uia.IUIAElement;
 
 public class GridItemProviderAdapter extends BaseAdapter<IGridItemProvider> implements NativeIGridItemProvider {
 
+  private static Logger LOG = Logger.create(GridItemProviderAdapter.class);
+
     public GridItemProviderAdapter(ProxyAccessible accessible, IGridItemProvider provider) {
         super(accessible, provider);
     }
@@ -66,7 +68,7 @@ public class GridItemProviderAdapter extends BaseAdapter<IGridItemProvider> impl
         .map(el -> {
             ProxyAccessible acc = ProxyAccessibleRegistry.getInstance().findAccessible(el);
             if (acc == null) {
-                Logger.debug(this, () -> "Creating virtual for GridItem#ContainingGrid!!!");
+                LOG.debug(this, () -> "Creating virtual for GridItem#ContainingGrid!!!");
                 acc = ProxyAccessibleRegistry.getInstance().getVirtualAccessible(accessible, el);
             }
             return acc;

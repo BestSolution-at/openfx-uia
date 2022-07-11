@@ -250,6 +250,7 @@ ProxyAccessible::ProxyAccessible(JNIEnv* env, jobject jAccessible)
     m_jAccessible = env->NewGlobalRef(jAccessible);
     GlassCounter::IncrementAccessibility();
 
+    this->LOG = Logger::create(env, "native.ProxyAccessible");
 
   HRESULT hr;
 
@@ -259,23 +260,24 @@ ProxyAccessible::ProxyAccessible(JNIEnv* env, jobject jAccessible)
       // BSTR clsName;
       hr = JniUtil::getClassName(env, m_jAccessible, &clsName);
       if (SUCCEEDED(hr)) {
-        fprintf(stderr, "created native ProxyAccessible %S (%S) [%d]\n", toStr, clsName, m_jAccessible);
+        LOG->debugf("created native ProxyAccessible %S (%S) [%d]", toStr, clsName, m_jAccessible);
         // SysFreeString(clsName);
       }
       // SysFreeString(toStr);
     }
   
-
+    
 }
 
 ProxyAccessible::~ProxyAccessible()
 {
 
-    fprintf(stderr, "[NATIVE] DESTROY %S (%S) [%d]\n", toStr, clsName, m_jAccessible);
-
+    LOG->debugf("DESTROY %S (%S) [%d]", toStr, clsName, m_jAccessible);
     JNIEnv* env = GetEnv();
     if (env) env->DeleteGlobalRef(m_jAccessible);
     GlassCounter::DecrementAccessibility();
+
+    delete this->LOG;
 }
 
 /***********************************************/
@@ -290,7 +292,7 @@ IFACEMETHODIMP_(ULONG) ProxyAccessible::Release()
 {
     long val = InterlockedDecrement(&m_refCount);
     if (val == 0) {
-        fprintf(stderr, "[NATIVE] REF COUNT ZERO %S (%S) [%d]\n", toStr, clsName, m_jAccessible);
+        LOG->debugf("REF COUNT ZERO %S (%S) [%d]", toStr, clsName, m_jAccessible);
         delete this;
     }
     return val;
@@ -518,16 +520,16 @@ IFACEMETHODIMP ProxyAccessible::get_BoundingRectangle(UiaRect* pResult) {
     BSTR lclsName;
     hr = JniUtil::getClassName(env, m_jAccessible, &lclsName);
     if (SUCCEEDED(hr)) {
-      fprintf(stderr, "[NATIVE] [%d] get_BoundingRectangle on %S (%S) [%d]\n", tid, ltoStr, lclsName, m_jAccessible);
+      LOG->debugf("[%d] get_BoundingRectangle on %S (%S) [%d]", tid, ltoStr, lclsName, m_jAccessible);
       SysFreeString(lclsName);
     }
     SysFreeString(ltoStr);
   }
-  fprintf(stderr, "[NATIVE] [%d] get_BoundingRectangle on %S (%S) (STORED)\n", tid, toStr, clsName);
+  LOG->debugf("[%d] get_BoundingRectangle on %S (%S) (STORED)", tid, toStr, clsName);
 }
 
   jobject result;
-  fprintf(stderr, "calling object method! on %d\n", m_jAccessible);
+  LOG->debugf("calling object method! on %d\n", m_jAccessible);
   hr = JniUtil::callObjectMethod(env, m_jAccessible, mid_IRawElementProviderFragment_get_BoundingRectangle, &result);
   return_on_fail(hr);
 
@@ -1070,7 +1072,7 @@ IFACEMETHODIMP ProxyAccessible::GetVisibleRanges(SAFEARRAY** pResult) {
 
 IFACEMETHODIMP ProxyAccessible::RangeFromChild(IRawElementProviderSimple* childElement, ITextRangeProvider** pRetVal)
 {
-   fprintf(stderr, "+ RangeFromChild\n");
+   LOG->debugf("+ RangeFromChild");
     if (pRetVal == NULL) return E_INVALIDARG;
     JNIEnv* env = GetEnv();
     if (env == NULL) return E_FAIL;
@@ -1092,7 +1094,7 @@ IFACEMETHODIMP ProxyAccessible::RangeFromChild(IRawElementProviderSimple* childE
 
 IFACEMETHODIMP ProxyAccessible::RangeFromPoint(UiaPoint point, ITextRangeProvider** pRetVal)
 {
-   fprintf(stderr, "+ RangeFromPoint\n");
+   LOG->debugf("+ RangeFromPoint");
     if (pRetVal == NULL) return E_INVALIDARG;
     JNIEnv* env = GetEnv();
     if (env == NULL) return E_FAIL;
@@ -1113,7 +1115,7 @@ IFACEMETHODIMP ProxyAccessible::RangeFromPoint(UiaPoint point, ITextRangeProvide
 
 IFACEMETHODIMP ProxyAccessible::get_DocumentRange(ITextRangeProvider** pRetVal)
 {
-  fprintf(stderr, "+ get_DocumentRange\n");
+  LOG->debugf("+ get_DocumentRange");
     if (pRetVal == NULL) return E_INVALIDARG;
     JNIEnv* env = GetEnv();
     if (env == NULL) return E_FAIL;
@@ -1567,7 +1569,7 @@ IFACEMETHODIMP ProxyAccessible::ScrollIntoView()
 /*         IWindowProvider                 */
 /***********************************************/
 IFACEMETHODIMP ProxyAccessible::Close() {
-    fprintf(stderr, "ProxyAccessible::Close()\n");
+    LOG->debugf("ProxyAccessible::Close()");
     JNIEnv* env = GetEnv();
     if (env == NULL) return E_FAIL;
     env->CallVoidMethod(m_jAccessible, mid_WindowProvider_Close);
@@ -2668,14 +2670,6 @@ JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible_UiaRaiseAutoma
 {
     ProxyAccessible* acc = reinterpret_cast<ProxyAccessible*>(jAccessible);
     IRawElementProviderSimple* pProvider = static_cast<IRawElementProviderSimple*>(acc);
-
-    BSTR toStr;
-    HRESULT hr = acc->toString(&toStr);
-    if (SUCCEEDED(hr)) {
-      fprintf(stderr, "[NATIVE] UiaRaiseAutomationEvent jni on %S\n", toStr);
-      SysFreeString(toStr);
-    }
-
     return (jlong)UiaRaiseAutomationEvent(pProvider, (EVENTID)id);
 }
 
