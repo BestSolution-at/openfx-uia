@@ -25,7 +25,7 @@ build:
     - Import-Module "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
     - Enter-VsDevShell -VsInstallPath "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools"
   script:
-    - ./gradlew -i assemble phatJar
+    - ./gradlew --no-daemon assemble phatJar
   tags:
     - win64ps
   artifacts:
