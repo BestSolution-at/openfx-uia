@@ -1926,7 +1926,7 @@ IFACEMETHODIMP ProxyAccessible::get_TextContainer(IRawElementProviderSimple **pR
   return_on_fail(hr);
 
   jlong pointer;
-  hr = JniUtil::callLongMethod(env, m_jAccessible, mid_IItemContainerProvider_FindItemByProperty, &pointer);
+  hr = JniUtil::callLongMethod(env, m_jAccessible, mid_ITextChildProvider_get_TextContainer, &pointer);
   return_on_fail(hr);
 
   IRawElementProviderSimple* result = reinterpret_cast<IRawElementProviderSimple*>(pointer);
