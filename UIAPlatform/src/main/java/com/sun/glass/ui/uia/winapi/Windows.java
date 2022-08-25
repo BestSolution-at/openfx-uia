@@ -64,6 +64,8 @@ public class Windows {
     public static native String VariantGetBstrVal(long variant);
     public static native void VariantSetPunkVal(long variant, long punkVal);
     public static native long VariantGetPunkVal(long variant);
+    public static native void VariantSetLSafeArray(long pVariant, int[] lArray);
+    public static native int[] VariantGetLSafeArray(long pVariant);
     public static native void VariantSetFltSafeArray(long variant, float[] fltArray);
     public static native float[] VariantGetFltSafeArray(long variant);
     public static native void VariantSetDblSafeArray(long variant, double[] dblArray);
@@ -221,4 +223,5 @@ public class Windows {
 
         System.err.println("destroy = 0x" + Long.toHexString(hr));
     }
+
 }

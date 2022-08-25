@@ -180,6 +180,8 @@ public class Variant {
         case Windows.VT_R8:
         return Variant.vt_r8(Windows.VariantGetDblVal(pVariant));
 
+        case Windows.VT_I4 | Windows.VT_ARRAY:
+        return Variant.vt_i4_array(Windows.VariantGetLSafeArray(pVariant));
         case Windows.VT_R4 | Windows.VT_ARRAY:
         return Variant.vt_r4_array(Windows.VariantGetFltSafeArray(pVariant));
         case Windows.VT_R8 | Windows.VT_ARRAY:

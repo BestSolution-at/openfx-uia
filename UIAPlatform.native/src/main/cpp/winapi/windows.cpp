@@ -154,6 +154,46 @@ JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_winapi_Windows_VariantGetPunkV
     return (jlong) variant->punkVal;
 }
 
+JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_winapi_Windows_VariantSetLSafeArray
+(JNIEnv* env, jclass jClass, jlong _variant, jarray _lArray) {
+    VARIANT* variant = (VARIANT*) _variant;
+    
+    jsize size = env->GetArrayLength(_lArray);
+    variant->parray = SafeArrayCreateVector(VT_I4, 0, size);
+    void* listPtr = env->GetPrimitiveArrayCritical(_lArray, 0);
+    jint* intPtr = (jint*)listPtr;
+    for (LONG i = 0; i < size; i++) {
+        SafeArrayPutElement(variant->parray, &i, (void*)&(intPtr[i]));
+    }
+    env->ReleasePrimitiveArrayCritical(_lArray, listPtr, 0);
+}
+JNIEXPORT jintArray JNICALL Java_com_sun_glass_ui_uia_winapi_Windows_VariantGetLSafeArray
+(JNIEnv* env, jclass jClass, jlong _variant) {
+    VARIANT* variant = (VARIANT*) _variant;
+
+    INT* values;
+    HRESULT hr = SafeArrayAccessData(variant->parray, (void**)&values); // direct access to SA memory
+
+    long lowerBound, upperBound;  // get array bounds
+    SafeArrayGetLBound(variant->parray, 1 , &lowerBound);
+    SafeArrayGetUBound(variant->parray, 1, &upperBound);
+    
+    long cnt_elements = upperBound - lowerBound + 1; 
+
+    jint* tmp = new jint[cnt_elements];
+    
+    for (int i = 0; i < cnt_elements; ++i)  // iterate through returned values
+    {                              
+        INT val = values[i];
+        tmp[i] = (jint) val;
+    }       
+    SafeArrayUnaccessData(variant->parray);
+
+    jintArray result = env->NewIntArray(cnt_elements);
+    env->SetIntArrayRegion(result, 0, cnt_elements, tmp);
+    return result;
+}
+
 JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_winapi_Windows_VariantSetFltSafeArray
 (JNIEnv* env, jclass jClass, jlong _variant, jarray _fltArray) {
     VARIANT* variant = (VARIANT*) _variant;
