@@ -64,14 +64,14 @@ public:
     // ITextRangeProvider2
     IFACEMETHODIMP ShowContextMenu();
 
+    jobject get_jobject();
+
 private:
     virtual ~ProxyTextRangeProvider();
 
     ULONG m_refCount;
     jobject m_jTextRangeProvider;  // The GlobalRef Java side object
     ProxyAccessible* m_glassAccessible;
-
-    IFACEMETHODIMP getTargetRange(ITextRangeProvider* targetRange, ProxyTextRangeProvider** pResult);
 };
 
 

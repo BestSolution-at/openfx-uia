@@ -17,8 +17,9 @@ library {
 tasks.withType(CppCompile).configureEach {
     macros.put("BUILDING_DLL", null)
 
-    compilerArgs.add '/std:c11'
+    compilerArgs.add '/std:c++14'
     compilerArgs.add '/O2'
+    compilerArgs.add '/EHsc'
 }
 
 tasks.withType(LinkSharedLibrary).configureEach {
@@ -26,9 +27,6 @@ tasks.withType(LinkSharedLibrary).configureEach {
 
     linkerArgs.add '/OPT:REF,ICF,LBR'
 }
-
-
-
 
 
 import org.apache.tools.ant.taskdefs.condition.Os
@@ -44,8 +42,8 @@ def getJNIPlatformDir() {
   }
 }
 def getJNIIncludeDir() {
-        Jvm.current().javaHome.toPath().resolve('include')
+  Jvm.current().javaHome.toPath().resolve('include')
 }
 def getJNIPlatformIncludeDir() {
-        getJNIIncludeDir().resolve(getJNIPlatformDir())
+  getJNIIncludeDir().resolve(getJNIPlatformDir())
 }

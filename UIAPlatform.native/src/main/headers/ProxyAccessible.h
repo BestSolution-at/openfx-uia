@@ -31,7 +31,12 @@
 #include <jni.h>
 #include "Logger.h"
 
-class ProxyAccessible : public IRawElementProviderSimple,
+
+#pragma warning( push )
+#pragma warning( disable : 4584 ) // disables base-class 'ITextProvider' is already a base-class of 'ITextProvider2' and similar warnings
+
+class ProxyAccessible : 
+    public IRawElementProviderSimple,
     public IRawElementProviderFragment,
     public IRawElementProviderFragmentRoot,
     public IRawElementProviderAdviseEvents,
@@ -69,6 +74,8 @@ class ProxyAccessible : public IRawElementProviderSimple,
 
 public:
     ProxyAccessible(JNIEnv* env, jobject jAccessible);
+
+    jobject get_jobject();
 
     // IUnknown methods
     IFACEMETHODIMP_(ULONG) AddRef();
@@ -262,18 +269,13 @@ public:
 
     IFACEMETHODIMP toString(BSTR* result);
 
-    BSTR toStr;
-    BSTR clsName;
-
 private:
     virtual ~ProxyAccessible();
-
-
     ULONG m_refCount;
     jobject m_jAccessible;  // The GlobalRef Java side object
-
     Logger* LOG;
-
 };
+
+#pragma warning( pop )
 
 #endif //_UIA_PROXY_ACCESSIBLE_

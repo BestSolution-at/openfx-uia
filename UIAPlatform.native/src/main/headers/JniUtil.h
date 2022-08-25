@@ -1,8 +1,33 @@
-
+/*
+ * -----------------------------------------------------------------
+ * Copyright (c) 2021 BestSolution.at EDV Systemhaus GmbH
+ * All Rights Reserved.
+ *
+ * BestSolution.at MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE
+ * SUITABILITY OF THE SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE  OR NON - INFRINGEMENT.
+ * BestSolution.at SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY
+ * LICENSEE AS A RESULT OF USING, MODIFYING OR DISTRIBUTING THIS
+ * SOFTWARE OR ITS DERIVATIVES.
+ *
+ * This software is released under the terms of the
+ *
+ *                  "GNU General Public License, Version 2 
+ *                         with classpath exception"
+ *
+ * and may only be distributed and used under the terms of the
+ * mentioned license. You should have received a copy of the license
+ * along with this software product, if not you can download it from
+ * http://www.gnu.org/licenses/gpl.html
+ * ----------------------------------------------------------------
+ */
 #ifndef _JNI_UTIL_
 #define _JNI_UTIL_
 
 #include "common.h"
+#include "ProxyAccessible.h"
+#include "ProxyTextRangeProvider.h"
 
 #include <UIAutomationCore.h>
 
@@ -11,40 +36,68 @@
     fprintf(stderr, "[HR FAIL] %s:%d, hr=%#010x (%s)\n", __FUNCTION__, __LINE__, hr, (char*) buf); \
     ::LocalFree(buf);
 
-#define return_on_fail(hr) if (!SUCCEEDED(hr)) { \
+#define print_on_fail(hr) if (!SUCCEEDED(hr)) { \
   print_hr(hr); \
-  return hr; \
   }
 
-namespace JniUtil {
+#define throw_on_fail(hr) if (!SUCCEEDED(hr)) { \
+  print_hr(hr); \
+  throw hr; \
+  }
 
-  HRESULT callVoidMethod(JNIEnv* env, jobject obj, jmethodID mid, ...);
-  HRESULT callBooleanMethod(JNIEnv* env, jobject obj, jmethodID mid, jboolean* pResult, ...);
-  HRESULT callIntMethod(JNIEnv* env, jobject obj, jmethodID mid, jint* pResult, ...);
-  HRESULT callLongMethod(JNIEnv* env, jobject obj, jmethodID mid, jlong* pResult, ...);
-  HRESULT callArrayMethod(JNIEnv* env, jobject obj, jmethodID mid, jarray* pResult, ...);
-  HRESULT callStringMethod(JNIEnv* env, jobject obj, jmethodID mid, jstring* pResult, ...);
-  HRESULT callObjectMethod(JNIEnv* env, jobject obj, jmethodID mid, jobject* pResult, ...);
-  HRESULT toSafeArray(JNIEnv* env, jarray array, VARTYPE vt, SAFEARRAY** ppResult);
+namespace jni {
 
-  HRESULT newStringFromBSTR(JNIEnv* env, BSTR value, jstring* result);
-  HRESULT newStringFromLPCWSTR(JNIEnv* env, LPCWSTR value, jstring* result);
-  jboolean toJBoolean(BOOL value);
-  BOOL toBOOL(jboolean value);
+  jstring call_toString(JNIEnv* env, jobject obj);
 
-  HRESULT copyString(JNIEnv* env, jstring jString, BSTR* pResult);
-  HRESULT copyList(JNIEnv* env, jarray list, SAFEARRAY** pResult, VARTYPE vt);
-  HRESULT copyVariant(JNIEnv* env, jobject jVariant, VARIANT* pResult);
+  namespace ids {
+    HRESULT initIDs(JNIEnv* env);
+  }
 
-  HRESULT copyBounds(JNIEnv* env, jfloatArray bounds, UiaRect* pResult);
+  class LocalFrame {
+  public:
+    LocalFrame(JNIEnv* env, jint size);
+    ~LocalFrame();
+  private:
+    JNIEnv* env;
+  };
 
-  HRESULT getClassName(JNIEnv* env, jobject obj, BSTR* pResult);
-  HRESULT toString(JNIEnv* env, jobject obj, BSTR* pResult);
+jboolean _boolean(BOOL value);
+jlong _long(long value);
+jint _int(int value);
+jlong _ptr(void* value);
+jfloat _float(float value);
+jdouble _double(double value);
 
-  HRESULT getBooleanField(JNIEnv* env, jobject obj, jfieldID fid, jboolean* pResult);
-  HRESULT getLongField(JNIEnv* env, jobject obj, jfieldID fid, jlong* pResult);
+jobject _object(ITextRangeProvider* textRange);
 
-  HRESULT initIDs(JNIEnv* env);
+jstring _string0(JNIEnv* env, BSTR value);
+jstring _string0(JNIEnv* env, LPCWSTR value);
+
+
+jstring call_string(JNIEnv* env, jobject obj, jmethodID mid, ...);
+void call_void(JNIEnv* env, jobject obj, jmethodID mid, ...);
+jboolean call_bool(JNIEnv* env, jobject obj, jmethodID mid, ...);
+jint call_int(JNIEnv* env, jobject obj, jmethodID mid, ...);
+jlong call_long(JNIEnv* env, jobject obj, jmethodID mid, ...);
+jfloat call_float(JNIEnv* env, jobject obj, jmethodID mid, ...);
+jdouble call_double(JNIEnv* env, jobject obj, jmethodID mid, ...);
+jobject call_object(JNIEnv* env, jobject obj, jmethodID mid, ...);
+jarray call_array(JNIEnv* env, jobject obj, jmethodID mid, ...);
+ProxyAccessible* call_accessible(JNIEnv* env, jobject obj, jmethodID mid, ...);
+ProxyTextRangeProvider* call_textrange(JNIEnv* env, jobject obj, jmethodID mid, ...);
+
+void assert_arg(void* arg);
+void check_and_throw(JNIEnv* env);
+
+void fill_bstr(JNIEnv* env, jstring value, BSTR* pResult);
+void fill_safearray(JNIEnv* env, jarray data, VARTYPE vt, SAFEARRAY** ppResult);
+void fill_safearray_no_addref(JNIEnv* env, jarray data, VARTYPE vt, SAFEARRAY** ppResult);
+void fill_variant(JNIEnv* env, jobject variant, VARIANT* pResult);
+void fill_bounds(JNIEnv* env, jfloatArray bounds, UiaRect* pResult);
+
+void release_all_iunknown(SAFEARRAY* array);
+JNIEnv* get_env();
 
 }
+
 #endif _JNI_UTIL_

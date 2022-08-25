@@ -30,7 +30,11 @@
 #include "GlassCounter.h"
 #include "ProxyTextRangeProvider.h"
 
+#include <iostream>
+
 #include "JniUtil.h"
+#include <JniImpl.h>
+using namespace jni;
 
  /* WinAccessible Method IDs */
 static jmethodID mid_IRawElementProviderSimple_GetPatternProvider;
@@ -206,24 +210,6 @@ static jfieldID fid_isActive;
 static jfieldID fid_range;
 
 
-static HRESULT ReleaseAllIUnknown(SAFEARRAY* array) {
-  HRESULT hr;
-  IUnknown** pData = nullptr;
-  hr = SafeArrayAccessData(array, reinterpret_cast<void**>(&pData));
-  if (SUCCEEDED(hr)) {
-    long lowerBound, upperBound;
-    SafeArrayGetLBound(array, 1, &lowerBound);
-    SafeArrayGetUBound(array, 1, &upperBound);
-    long count = upperBound - lowerBound + 1;
-    for (int i = 0; i < count; i++) {
-      IUnknown* cur = pData[i];
-      cur->Release();
-    }
-    hr = SafeArrayUnaccessData(array);
-  }
-  return hr;
-}
-
 static HRESULT PrintAllIUnknowRefCount(SAFEARRAY* array) {
   HRESULT hr;
   IUnknown** pData = nullptr;
@@ -245,75 +231,49 @@ static HRESULT PrintAllIUnknowRefCount(SAFEARRAY* array) {
 }
 
 ProxyAccessible::ProxyAccessible(JNIEnv* env, jobject jAccessible)
-    : m_refCount(1)
-{
+    : m_refCount(1) {
     m_jAccessible = env->NewGlobalRef(jAccessible);
     GlassCounter::IncrementAccessibility();
-
     this->LOG = Logger::create(env, "native.ProxyAccessible");
-
-  HRESULT hr;
-
-    // BSTR toStr;
-    hr = JniUtil::toString(env, m_jAccessible, &toStr);
-    if (SUCCEEDED(hr)) {
-      // BSTR clsName;
-      hr = JniUtil::getClassName(env, m_jAccessible, &clsName);
-      if (SUCCEEDED(hr)) {
-        LOG->debugf("created native ProxyAccessible %S (%S) [%d]", toStr, clsName, m_jAccessible);
-        // SysFreeString(clsName);
-      }
-      // SysFreeString(toStr);
-    }
-  
-    
 }
 
-ProxyAccessible::~ProxyAccessible()
-{
-
-    LOG->debugf("DESTROY %S (%S) [%d]", toStr, clsName, m_jAccessible);
+ProxyAccessible::~ProxyAccessible() {
     JNIEnv* env = GetEnv();
     if (env) env->DeleteGlobalRef(m_jAccessible);
     GlassCounter::DecrementAccessibility();
-
     delete this->LOG;
+}
+
+jobject ProxyAccessible::get_jobject() {
+  return m_jAccessible;
 }
 
 /***********************************************/
 /*                  IUnknown                   */
 /***********************************************/
-IFACEMETHODIMP_(ULONG) ProxyAccessible::AddRef()
-{
+IFACEMETHODIMP_(ULONG) ProxyAccessible::AddRef() {
     return InterlockedIncrement(&m_refCount);
 }
 
-IFACEMETHODIMP_(ULONG) ProxyAccessible::Release()
-{
+IFACEMETHODIMP_(ULONG) ProxyAccessible::Release() {
     long val = InterlockedDecrement(&m_refCount);
     if (val == 0) {
-        LOG->debugf("REF COUNT ZERO %S (%S) [%d]", toStr, clsName, m_jAccessible);
         delete this;
     }
     return val;
 }
 
-IFACEMETHODIMP ProxyAccessible::toString(BSTR* result) {
-  
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr)
-
-  hr = JniUtil::toString(env, m_jAccessible, result);
-  return_on_fail(hr);
-
-  return hr;
+IFACEMETHODIMP ProxyAccessible::toString(BSTR* pResult) {
+  IMPL_BEGIN
+    assert_arg(pResult);
+    auto env = get_env();
+    LocalFrame frame(env, 10);
+    auto result = jni::call_toString(env, get_jobject());
+    jni::fill_bstr(env, result, pResult);
+  IMPL_END
 }
 
-IFACEMETHODIMP ProxyAccessible::QueryInterface(REFIID riid, void** ppInterface)
-{
+IFACEMETHODIMP ProxyAccessible::QueryInterface(REFIID riid, void** ppInterface) {
     if (riid == __uuidof(IUnknown)) {
         *ppInterface = static_cast<IRawElementProviderSimple*>(this);
     }
@@ -431,1860 +391,584 @@ IFACEMETHODIMP ProxyAccessible::QueryInterface(REFIID riid, void** ppInterface)
 /***********************************************/
 /*        IRawElementProviderSimple            */
 /***********************************************/
-IFACEMETHODIMP ProxyAccessible::get_HostRawElementProvider(IRawElementProviderSimple** pRetVal)
-{
-    if (pRetVal == NULL) return E_INVALIDARG;
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    jlong hwnd = env->CallLongMethod(m_jAccessible, mid_IRawElementProviderSimple_get_HostRawElementProvider);
-    if (CheckAndClearException(env)) return E_FAIL;
-
-    // We ignore the return value of UiaHostProviderFromHwnd because it returns E_INVALIDARG
-    // when invoked with NULL hwnd. We use NULL hwnds to represent "lightweight" accessibles.
-    // If we don't ignore it and return it from ProxyAccessible::get_HostRawElementProvider,
-    // then a11y is broken on Windows 7.
-    UiaHostProviderFromHwnd(reinterpret_cast<HWND>(hwnd), pRetVal);
-
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_HostRawElementProvider(IRawElementProviderSimple** ppResult) {
+  IMPL_BEGIN
+    assert_arg(ppResult);
+    auto env = get_env();
+    auto pointer = call_long(env, get_jobject(), mid_IRawElementProviderSimple_get_HostRawElementProvider);
+    auto hWnd = reinterpret_cast<HWND>(pointer);
+    if (IsWindow(hWnd)) {
+      auto hr = UiaHostProviderFromHwnd(hWnd, ppResult);
+      if (!SUCCEEDED(hr)) throw hr;
+    } else {
+      *ppResult = nullptr;
+    }
+  IMPL_END
 }
 
-IFACEMETHODIMP ProxyAccessible::get_ProviderOptions(ProviderOptions* pRetVal)
-{
-  if (pRetVal == NULL) return E_INVALIDARG;
-  /*
-    * Very important to use ProviderOptions_UseComThreading, otherwise the call
-    * to the providers are sent in a different thread (GetEnv() returns NULL).
-    */
-  *pRetVal = ProviderOptions_ServerSideProvider | ProviderOptions_UseComThreading;
-  return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_ProviderOptions(ProviderOptions* pResult) {
+  IMPL_BEGIN
+    assert_arg(pResult);
+    /*
+      * Very important to use ProviderOptions_UseComThreading, otherwise the call
+      * to the providers are sent in a different thread (GetEnv() returns NULL).
+      */
+    *pResult = ProviderOptions_ServerSideProvider | ProviderOptions_UseComThreading;
+  IMPL_END
 }
 
-IFACEMETHODIMP ProxyAccessible::GetPatternProvider(PATTERNID patternId, IUnknown** pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jlong pointer;
-  hr = JniUtil::callLongMethod(env, m_jAccessible, mid_IRawElementProviderSimple_GetPatternProvider, &pointer, patternId);
-  return_on_fail(hr);
-
-  IUnknown* result = reinterpret_cast<IUnknown*>(pointer);
-  if (result != NULL) result->AddRef();
-
-  *pResult = result;
-  return hr;
+IFACEMETHODIMP ProxyAccessible::GetPatternProvider(PATTERNID patternId, IUnknown** ppResult) {
+  IMPL_BEGIN
+    assert_arg(ppResult);
+    auto env = get_env();
+    auto result = call_accessible(env, get_jobject(), mid_IRawElementProviderSimple_GetPatternProvider, _int(patternId));
+    if (result != nullptr) result->AddRef();
+    *ppResult = static_cast<IRawElementProviderSimple*>(result);
+  IMPL_END
 }
 
 IFACEMETHODIMP ProxyAccessible::GetPropertyValue(PROPERTYID propertyId, VARIANT* pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jobject jVariant;
-  hr = JniUtil::callObjectMethod(env, m_jAccessible, mid_IRawElementProviderSimple_GetPropertyValue, &jVariant, propertyId);
-  return_on_fail(hr);
-
-  hr = JniUtil::copyVariant(env, jVariant, pResult);
-  return_on_fail(hr);
-
-  return hr;
+  IMPL_CALL_VARIANT(pResult, mid_IRawElementProviderSimple_GetPropertyValue, _int(propertyId));
 }
 
 /***********************************************/
 /*       IRawElementProviderFragment           */
 /***********************************************/
 IFACEMETHODIMP ProxyAccessible::get_BoundingRectangle(UiaRect* pResult) {
-
-
-  auto tid = GetCurrentThreadId();
-
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  {
-  BSTR ltoStr;
-  HRESULT hr = this->toString(&ltoStr);
-  if (SUCCEEDED(hr)) {
-    BSTR lclsName;
-    hr = JniUtil::getClassName(env, m_jAccessible, &lclsName);
-    if (SUCCEEDED(hr)) {
-      LOG->debugf("[%d] get_BoundingRectangle on %S (%S) [%d]", tid, ltoStr, lclsName, m_jAccessible);
-      SysFreeString(lclsName);
-    }
-    SysFreeString(ltoStr);
-  }
-  LOG->debugf("[%d] get_BoundingRectangle on %S (%S) (STORED)", tid, toStr, clsName);
+  IMPL_BEGIN
+    assert_arg(pResult);
+    auto env = get_env();
+    LocalFrame frame(env, 10);
+    auto result = call_object(env, get_jobject(), mid_IRawElementProviderFragment_get_BoundingRectangle);
+    fill_bounds(env, (jfloatArray) result, pResult);
+  IMPL_END
 }
 
-  jobject result;
-  LOG->debugf("calling object method! on %d\n", m_jAccessible);
-  hr = JniUtil::callObjectMethod(env, m_jAccessible, mid_IRawElementProviderFragment_get_BoundingRectangle, &result);
-  return_on_fail(hr);
-
-  jfloatArray bounds = (jfloatArray) result;
-  hr = JniUtil::copyBounds(env, bounds, pResult);
-  return_on_fail(hr);
-
-  return hr;
+IFACEMETHODIMP ProxyAccessible::get_FragmentRoot(IRawElementProviderFragmentRoot** ppResult) {
+  IMPL_CALL_ACCESSIBLE(ppResult, mid_IRawElementProviderFragment_get_FragmentRoot);
 }
 
-IFACEMETHODIMP ProxyAccessible::get_FragmentRoot(IRawElementProviderFragmentRoot** pResult)
-{
-  if (pResult == NULL) return E_INVALIDARG;
-  
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jlong pointer;
-  hr = JniUtil::callLongMethod(env, m_jAccessible, mid_IRawElementProviderFragment_get_FragmentRoot, &pointer);
-  return_on_fail(hr);
-
-  IRawElementProviderFragmentRoot* result = reinterpret_cast<IRawElementProviderFragmentRoot*>(pointer);
-  if (result != NULL) result->AddRef();
-
-  *pResult = result;
-  return hr;
+IFACEMETHODIMP ProxyAccessible::GetEmbeddedFragmentRoots(SAFEARRAY** ppResult) {
+  IMPL_CALL_SAFEARRAY(ppResult, VT_UNKNOWN, mid_IRawElementProviderFragment_GetEmbeddedFragmentRoots);
 }
 
-IFACEMETHODIMP ProxyAccessible::GetEmbeddedFragmentRoots(SAFEARRAY** pResult)
-{
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jarray array;
-  hr = JniUtil::callArrayMethod(env, m_jAccessible, mid_IRawElementProviderFragment_GetEmbeddedFragmentRoots, &array);
-  return_on_fail(hr);
-
-  hr = JniUtil::toSafeArray(env, array, VT_UNKNOWN, pResult);
-  return_on_fail(hr);
-
-  return hr;
+IFACEMETHODIMP ProxyAccessible::GetRuntimeId(SAFEARRAY** ppResult) {
+  IMPL_CALL_SAFEARRAY(ppResult, VT_I4, mid_IRawElementProviderFragment_GetRuntimeId);
 }
 
-IFACEMETHODIMP ProxyAccessible::GetRuntimeId(SAFEARRAY** pResult)
-{
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jarray array;
-  hr = JniUtil::callArrayMethod(env, m_jAccessible, mid_IRawElementProviderFragment_GetRuntimeId, &array);
-  return_on_fail(hr);
-
-  hr = JniUtil::toSafeArray(env, array, VT_I4, pResult);
-  return_on_fail(hr);
-
-  return hr;
+IFACEMETHODIMP ProxyAccessible::Navigate(NavigateDirection direction, IRawElementProviderFragment** ppResult) {
+  IMPL_CALL_ACCESSIBLE(ppResult, mid_IRawElementProviderFragment_Navigate, _int(direction));
 }
 
-IFACEMETHODIMP ProxyAccessible::Navigate(NavigateDirection direction, IRawElementProviderFragment** pResult)
-{
-  if (pResult == NULL) return E_INVALIDARG;
-  
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jlong pointer;
-  hr = JniUtil::callLongMethod(env, m_jAccessible, mid_IRawElementProviderFragment_Navigate, &pointer, direction);
-  return_on_fail(hr);
-
-  IRawElementProviderFragment* result = reinterpret_cast<IRawElementProviderFragment*>(pointer);
-  // AddRef ok (example @ https://docs.microsoft.com/en-us/windows/win32/api/uiautomationcore/nf-uiautomationcore-irawelementproviderfragment-navigate)
-  if (result != NULL) result->AddRef();
-
-  //fprintf(stderr, "Navigate(%d) => %d\n", direction, result);
-
-  *pResult = result;
-  return hr;
-}
-
-IFACEMETHODIMP ProxyAccessible::SetFocus()
-{
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  hr = JniUtil::callVoidMethod(env, m_jAccessible, mid_IRawElementProviderFragment_SetFocus);
-  return_on_fail(hr);
-
-  return hr;
+IFACEMETHODIMP ProxyAccessible::SetFocus() {
+  IMPL_CALL_VOID(mid_IRawElementProviderFragment_SetFocus);
 }
 
 /***********************************************/
 /*     IRawElementProviderFragmentRoot         */
 /***********************************************/
-IFACEMETHODIMP ProxyAccessible::ElementProviderFromPoint(double x, double y, IRawElementProviderFragment** pResult)
-{
-  if (pResult == NULL) return E_INVALIDARG;
-  
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jlong pointer;
-  hr = JniUtil::callLongMethod(env, m_jAccessible, mid_IRawElementProviderFragmentRoot_ElementProviderFromPoint, &pointer, x, y);
-  return_on_fail(hr);
-
-  IRawElementProviderFragment* result = reinterpret_cast<IRawElementProviderFragment*>(pointer);
-  // Addref ok (example @ https://docs.microsoft.com/en-us/windows/win32/api/uiautomationcore/nf-uiautomationcore-irawelementproviderfragmentroot-elementproviderfrompoint)
-  if (result != NULL) result->AddRef();
-
-  *pResult = result;
-  return hr;
+IFACEMETHODIMP ProxyAccessible::ElementProviderFromPoint(double x, double y, IRawElementProviderFragment** ppResult) {
+  IMPL_CALL_ACCESSIBLE(ppResult, mid_IRawElementProviderFragmentRoot_ElementProviderFromPoint, _double(x), _double(y));
 }
 
-IFACEMETHODIMP ProxyAccessible::GetFocus(IRawElementProviderFragment** pResult)
-{
-  if (pResult == NULL) return E_INVALIDARG;
-  
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jlong pointer;
-  hr = JniUtil::callLongMethod(env, m_jAccessible, mid_IRawElementProviderFragmentRoot_GetFocus, &pointer);
-  return_on_fail(hr);
-
-  IRawElementProviderFragment* result = reinterpret_cast<IRawElementProviderFragment*>(pointer);
-  if (result != NULL) result->AddRef();
-
-  //fprintf(stderr, "GetFocus => %d\n", result);
-
-  *pResult = result;
-  return hr;
+IFACEMETHODIMP ProxyAccessible::GetFocus(IRawElementProviderFragment** ppResult) {
+  IMPL_CALL_ACCESSIBLE(ppResult, mid_IRawElementProviderFragmentRoot_GetFocus);
 }
 
 /***********************************************/
 /*     IRawElementProviderAdviseEvents         */
 /***********************************************/
-IFACEMETHODIMP ProxyAccessible::AdviseEventAdded(EVENTID eventId, SAFEARRAY* propertyIDs)
-{
-    // JNIEnv* env = GetEnv();
-    /* For some reason, probably a bug, Windows call AdviseEventRemoved() on a different thread when
-     * Narrator is shutting down. The fix is to ignored any method on IRawElementProviderAdviseEvents
-     * if env is NULL.
-     */
-    // if (env == NULL) return E_FAIL;
-    // env->CallVoidMethod(m_jAccessible, mid_IRawElementProviderAdviseEvents_AdviseEventAdded, eventId, (jlong)propertyIDs);
-    // if (CheckAndClearException(env)) return E_FAIL;
-    // return S_OK;
-
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  hr = JniUtil::callVoidMethod(env, m_jAccessible, mid_IRawElementProviderAdviseEvents_AdviseEventAdded, eventId, (jlong) propertyIDs);
-  return_on_fail(hr);
-
-  return hr;
+IFACEMETHODIMP ProxyAccessible::AdviseEventAdded(EVENTID eventId, SAFEARRAY* propertyIDs) {
+  IMPL_CALL_VOID(mid_IRawElementProviderAdviseEvents_AdviseEventAdded, eventId, _ptr(propertyIDs));
 }
 
 
-IFACEMETHODIMP ProxyAccessible::AdviseEventRemoved(EVENTID eventId, SAFEARRAY* propertyIDs)
-{
-    // JNIEnv* env = GetEnv();
-    /* For some reason, probably a bug, Windows call AdviseEventRemoved() on a different thread when
-     * Narrator is shutting down. The fix is to ignored any method on IRawElementProviderAdviseEvents
-     * if env is NULL.
-     */
-    // if (env == NULL) return E_FAIL;
-    // env->CallVoidMethod(m_jAccessible, mid_IRawElementProviderAdviseEvents_AdviseEventRemoved, eventId, (jlong)propertyIDs);
-    // if (CheckAndClearException(env)) return E_FAIL;
-    // return S_OK;
-
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  hr = JniUtil::callVoidMethod(env, m_jAccessible, mid_IRawElementProviderAdviseEvents_AdviseEventRemoved, eventId, (jlong) propertyIDs);
-  return_on_fail(hr);
-
-  return hr;
+IFACEMETHODIMP ProxyAccessible::AdviseEventRemoved(EVENTID eventId, SAFEARRAY* propertyIDs) {
+  IMPL_CALL_VOID(mid_IRawElementProviderAdviseEvents_AdviseEventRemoved, eventId, _ptr(propertyIDs));
 }
 
 /***********************************************/
 /*             IInvokeProvider                 */
 /***********************************************/
-IFACEMETHODIMP ProxyAccessible::Invoke()
-{
-  JNIEnv* env;
-  HRESULT hr;
-
-  hr = GetEnv(&env);
-  return_on_fail(hr)
-
-  hr = JniUtil::callVoidMethod(env, m_jAccessible, mid_IInvokeProvider_Invoke);
-  return_on_fail(hr);
-
-  return hr;
+IFACEMETHODIMP ProxyAccessible::Invoke() {
+  IMPL_CALL_VOID(mid_IInvokeProvider_Invoke);
 }
 
 /***********************************************/
 /*           ISelectionProvider                */
 /***********************************************/
-IFACEMETHODIMP ProxyAccessible::GetSelection(SAFEARRAY** pRetVal) {
-  // TODO GetSelection is both for ITextRangeProvider and ISelectionProvider
-  // how should we switch between the two :?
-
+IFACEMETHODIMP ProxyAccessible::GetSelection(SAFEARRAY** ppResult) {
+  // GetSelection is both for ITextRangeProvider and ISelectionProvider
+  // for now we test by calling GetPatternProvider...
   IUnknown* textPatternProvider;
   GetPatternProvider(UIA_TextPatternId, &textPatternProvider);
   if (textPatternProvider != NULL) {
     textPatternProvider->Release();
-
     // got a text pattern
-
-    if (pRetVal == NULL) return E_INVALIDARG;
-
-    HRESULT hr;
-
-    JNIEnv* env;
-    hr = GetEnv(&env);
-    return_on_fail(hr);
-
-    jarray array;
-    hr = JniUtil::callArrayMethod(env, m_jAccessible, mid_ITextProvider_GetSelection, &array);
-    return_on_fail(hr);
-
-    hr = JniUtil::toSafeArray(env, array, VT_UNKNOWN, pRetVal);
-    return_on_fail(hr);
-
-    // we want to undo the AddRef the safe array push caused
-    hr = ReleaseAllIUnknown(*pRetVal);
-    return_on_fail(hr);
-
-    return hr;
-
-
+    // it seems the ITextRangeProvider get one ref too much by adding them to the safearray -.-
+    IMPL_CALL_SAFEARRAY_NO_ADDREF(ppResult, VT_UNKNOWN, mid_ITextProvider_GetSelection);
   } else {
-
     // got a selection pattern
-
-    if (pRetVal == NULL) return E_INVALIDARG;
-
-    HRESULT hr;
-
-    JNIEnv* env;
-    hr = GetEnv(&env);
-    return_on_fail(hr);
-
-    jarray array;
-    hr = JniUtil::callArrayMethod(env, m_jAccessible, mid_ISelectionProvider_GetSelection, &array);
-    return_on_fail(hr);
-
-    hr = JniUtil::toSafeArray(env, array, VT_UNKNOWN, pRetVal);
-    return_on_fail(hr);
-
-    // here we need the implicit AddRef() from toSafeArray
-
-    return hr;
-
+    // the selection items need the addref
+    IMPL_CALL_SAFEARRAY(ppResult, VT_UNKNOWN, mid_ISelectionProvider_GetSelection);
   }
-
-  
-
-  // int count;
-  // IUnknown** result;
-  // HRESULT hr = callIUnknownArrayMethod(m_jAccessible, mid_ITextProvider_GetSelection, &count, &result);
-  // if (SUCCEEDED(hr)) {
-  //   SAFEARRAY* psa = SafeArrayCreateVector(VT_UNKNOWN, 0, count);
-  //   for (LONG i = 0; i < count; i++) {
-  //     SafeArrayPutElement(psa, &i, result[i]);
-  //     result[i]->Release(); // PutElement adds a ref we don't want
-  //   }
-  //   delete result;
-  //   *pRetVal = psa;
-  //   return S_OK;
-  // }
-  // return hr;
-
-
-
-//     HRESULT hr = callArrayMethod(mid_ITextProvider_GetSelection, VT_UNKNOWN, pRetVal);
-    // if (SUCCEEDED(hr)) {
-    //   ReleaseAllIUnknown(*pRetVal);
-    //   PrintAllIUnknowRefCount(*pRetVal);
-    // }
-
-    //return hr;
-
-    //return callArrayMethod(mid_ISelectionProvider_GetSelection, VT_UNKNOWN, pRetVal);
 }
 
-IFACEMETHODIMP ProxyAccessible::get_CanSelectMultiple(BOOL* pResult)
-{
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr)
-  jboolean result;
-  hr = JniUtil::callBooleanMethod(env, m_jAccessible, mid_ISelectionProvider_get_CanSelectMultiple, &result);
-  return_on_fail(hr)
-  *pResult = result;
-  return hr;
+IFACEMETHODIMP ProxyAccessible::get_CanSelectMultiple(BOOL* pResult) {
+  IMPL_CALL_BOOL(pResult, mid_ISelectionProvider_get_CanSelectMultiple);
 }
 
-IFACEMETHODIMP ProxyAccessible::get_IsSelectionRequired(BOOL* pResult)
-{
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr)
-  jboolean result;
-  hr = JniUtil::callBooleanMethod(env, m_jAccessible, mid_ISelectionProvider_get_IsSelectionRequired, &result);
-  return_on_fail(hr)
-  *pResult = result;
-  return hr;
+IFACEMETHODIMP ProxyAccessible::get_IsSelectionRequired(BOOL* pResult) {
+  IMPL_CALL_BOOL(pResult, mid_ISelectionProvider_get_IsSelectionRequired);
 }
 
 /***********************************************/
 /*         ISelectionItemProvider              */
 /***********************************************/
-IFACEMETHODIMP ProxyAccessible::Select()
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    env->CallVoidMethod(m_jAccessible, mid_ISelectionItemProvider_Select);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::Select() {
+  IMPL_CALL_VOID(mid_ISelectionItemProvider_Select);
 }
 
-IFACEMETHODIMP ProxyAccessible::AddToSelection()
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    env->CallVoidMethod(m_jAccessible, mid_ISelectionItemProvider_AddToSelection);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::AddToSelection() {
+  IMPL_CALL_VOID(mid_ISelectionItemProvider_AddToSelection);
 }
 
-IFACEMETHODIMP ProxyAccessible::RemoveFromSelection()
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    env->CallVoidMethod(m_jAccessible, mid_ISelectionItemProvider_RemoveFromSelection);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::RemoveFromSelection() {
+  IMPL_CALL_VOID(mid_ISelectionItemProvider_RemoveFromSelection);
 }
 
-IFACEMETHODIMP ProxyAccessible::get_IsSelected(BOOL* pRetVal)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallBooleanMethod(m_jAccessible, mid_ISelectionItemProvider_get_IsSelected);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_IsSelected(BOOL* pResult) {
+  IMPL_CALL_BOOL(pResult, mid_ISelectionItemProvider_get_IsSelected);
 }
 
-IFACEMETHODIMP ProxyAccessible::get_SelectionContainer(IRawElementProviderSimple** pResult)
-{
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jlong pointer;
-  hr = JniUtil::callLongMethod(env, m_jAccessible, mid_ISelectionItemProvider_get_SelectionContainer, &pointer);
-  return_on_fail(hr);
-
-  IRawElementProviderSimple* result = reinterpret_cast<IRawElementProviderSimple*>(pointer);
-  if (result != NULL) result->AddRef();
-
-  *pResult = result;
-  return hr;
+IFACEMETHODIMP ProxyAccessible::get_SelectionContainer(IRawElementProviderSimple** ppResult) {
+  IMPL_CALL_ACCESSIBLE(ppResult, mid_ISelectionItemProvider_get_SelectionContainer);
 }
 
 /***********************************************/
 /*           IRangeValueProvider               */
 /***********************************************/
-IFACEMETHODIMP ProxyAccessible::SetValue(double val)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    env->CallVoidMethod(m_jAccessible, mid_IRangeValueProvider_SetValue, val);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::SetValue(double val) {
+  IMPL_CALL_VOID(mid_IRangeValueProvider_SetValue, _double(val));
 }
 
-IFACEMETHODIMP ProxyAccessible::get_Value(double* pRetVal)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallDoubleMethod(m_jAccessible, mid_IRangeValueProvider_get_Value);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_Value(double* pResult) {
+  IMPL_CALL_DOUBLE(pResult, mid_IRangeValueProvider_get_Value);
 }
 
-IFACEMETHODIMP ProxyAccessible::get_IsReadOnly(BOOL* pRetVal)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallBooleanMethod(m_jAccessible, mid_IRangeValueProvider_get_IsReadOnly);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_IsReadOnly(BOOL* pResult) {
+  IMPL_CALL_BOOL(pResult, mid_IRangeValueProvider_get_IsReadOnly);
 }
 
-IFACEMETHODIMP ProxyAccessible::get_Maximum(double* pRetVal)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallDoubleMethod(m_jAccessible, mid_IRangeValueProvider_get_Maximum);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_Maximum(double* pResult) {
+  IMPL_CALL_DOUBLE(pResult, mid_IRangeValueProvider_get_Maximum);
 }
 
-IFACEMETHODIMP ProxyAccessible::get_Minimum(double* pRetVal)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallDoubleMethod(m_jAccessible, mid_IRangeValueProvider_get_Minimum);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_Minimum(double* pResult) {
+  IMPL_CALL_DOUBLE(pResult, mid_IRangeValueProvider_get_Minimum);
 }
 
-IFACEMETHODIMP ProxyAccessible::get_LargeChange(double* pRetVal)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallDoubleMethod(m_jAccessible, mid_IRangeValueProvider_get_LargeChange);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_LargeChange(double* pResult) {
+  IMPL_CALL_DOUBLE(pResult, mid_IRangeValueProvider_get_LargeChange);
 }
 
-IFACEMETHODIMP ProxyAccessible::get_SmallChange(double* pRetVal)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallDoubleMethod(m_jAccessible, mid_IRangeValueProvider_get_SmallChange);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_SmallChange(double* pResult) {
+  IMPL_CALL_DOUBLE(pResult, mid_IRangeValueProvider_get_SmallChange);
 }
 
 /***********************************************/
 /*           IValueProvider                    */
 /***********************************************/
 IFACEMETHODIMP ProxyAccessible::SetValue(LPCWSTR val) {
-  if (!val) return S_OK;
-  
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jstring value;
-  hr = JniUtil::newStringFromLPCWSTR(env, val, &value);
-  return_on_fail(hr);
-
-  hr = JniUtil::callVoidMethod(env, m_jAccessible, mid_IValueProvider_SetValueString, value);
-  return_on_fail(hr);
-
-  env->DeleteLocalRef(value);
-
-  return hr;
-
-    // size_t size = wcslen(val);
-    // JNIEnv* env = GetEnv();
-    // if (env == NULL) return E_FAIL;
-    // jstring str = env->NewString((const jchar*)val, (jsize)size);
-    // if (!CheckAndClearException(env)) {
-    //     env->CallVoidMethod(m_jAccessible, mid_IValueProvider_SetValueString, str);
-    //     if (CheckAndClearException(env)) {
-    //         return E_FAIL;
-    //     }
-    // }
-    // return S_OK;
+  IMPL_CALL_VOID(mid_IValueProvider_SetValueString, _string(val));
 }
 
 IFACEMETHODIMP ProxyAccessible::get_Value(BSTR* pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jstring result;
-  hr = JniUtil::callStringMethod(env, m_jAccessible, mid_IValueProvider_get_ValueString, &result);
-  return_on_fail(hr);
-
-  hr = JniUtil::copyString(env, result, pResult);
-  return_on_fail(hr);
-
-  return hr;
+  IMPL_CALL_BSTR(pResult, mid_IValueProvider_get_ValueString);
 }
 
 /***********************************************/
 /*              ITextProvider                  */
 /***********************************************/
-IFACEMETHODIMP ProxyAccessible::GetVisibleRanges(SAFEARRAY** pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr)
-
-  jarray array;
-  hr = JniUtil::callArrayMethod(env, m_jAccessible, mid_ITextProvider_GetVisibleRanges, &array);
-  return_on_fail(hr)
-
-  hr = JniUtil::toSafeArray(env, array, VT_UNKNOWN, pResult);
-  return_on_fail(hr)
-
-  // we want to undo the AddRef the safe array push caused
-  hr = ReleaseAllIUnknown(*pResult);
-  return_on_fail(hr)
-
-  return hr;
+IFACEMETHODIMP ProxyAccessible::GetVisibleRanges(SAFEARRAY** ppResult) {
+  IMPL_CALL_SAFEARRAY_NO_ADDREF(ppResult, VT_UNKNOWN, mid_ITextProvider_GetVisibleRanges);
 }
 
-IFACEMETHODIMP ProxyAccessible::RangeFromChild(IRawElementProviderSimple* childElement, ITextRangeProvider** pRetVal)
-{
-   LOG->debugf("+ RangeFromChild");
-    if (pRetVal == NULL) return E_INVALIDARG;
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    jlong ptr = env->CallLongMethod(m_jAccessible, mid_ITextProvider_RangeFromChild, (jlong)childElement);
-    if (CheckAndClearException(env)) return E_FAIL;
-
-    GlassTextRangeProvider* gtrp = reinterpret_cast<GlassTextRangeProvider*>(ptr);
-    //if (gtrp) gtrp->AddRef();
-
-    /* This code is intentionally commented.
-     * JavaFX returns a new ITextRangeProvider instance each time.
-     * The caller holds the only reference to this object.
-     */
-     //    if (gtrp) gtrp->AddRef();
-
-    *pRetVal = static_cast<ITextRangeProvider*>(gtrp);
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::RangeFromChild(IRawElementProviderSimple* childElement, ITextRangeProvider** ppResult) {
+  IMPL_CALL_TEXTRANGE(ppResult, mid_ITextProvider_RangeFromChild, (jlong)childElement);
 }
 
-IFACEMETHODIMP ProxyAccessible::RangeFromPoint(UiaPoint point, ITextRangeProvider** pRetVal)
-{
-   LOG->debugf("+ RangeFromPoint");
-    if (pRetVal == NULL) return E_INVALIDARG;
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    jlong ptr = env->CallLongMethod(m_jAccessible, mid_ITextProvider_RangeFromPoint, point.x, point.y);
-    if (CheckAndClearException(env)) return E_FAIL;
-
-    GlassTextRangeProvider* gtrp = reinterpret_cast<GlassTextRangeProvider*>(ptr);
-    //if (gtrp) gtrp->AddRef();
-    /* This code is intentionally commented.
-     * JavaFX returns a new ITextRangeProvider instance each time.
-     * The caller holds the only reference to this object.
-     */
-     //    if (gtrp) gtrp->AddRef();
-
-    *pRetVal = static_cast<ITextRangeProvider*>(gtrp);
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::RangeFromPoint(UiaPoint point, ITextRangeProvider** ppResult) {
+  IMPL_CALL_TEXTRANGE(ppResult, mid_ITextProvider_RangeFromPoint, _double(point.x), _double(point.y));
 }
 
-IFACEMETHODIMP ProxyAccessible::get_DocumentRange(ITextRangeProvider** pRetVal)
-{
-  LOG->debugf("+ get_DocumentRange");
-    if (pRetVal == NULL) return E_INVALIDARG;
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    jlong ptr = env->CallLongMethod(m_jAccessible, mid_ITextProvider_get_DocumentRange);
-    if (CheckAndClearException(env)) return E_FAIL;
-
-    GlassTextRangeProvider* gtrp = reinterpret_cast<GlassTextRangeProvider*>(ptr);
-    //if (gtrp) gtrp->AddRef();
-    //if (gtrp) gtrp->AddRef();
-    *pRetVal = static_cast<ITextRangeProvider*>(gtrp);
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_DocumentRange(ITextRangeProvider** ppResult) {
+  IMPL_CALL_TEXTRANGE(ppResult, mid_ITextProvider_get_DocumentRange);
 }
 
-IFACEMETHODIMP ProxyAccessible::get_SupportedTextSelection(SupportedTextSelection* pRetVal)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = (SupportedTextSelection)env->CallIntMethod(m_jAccessible, mid_ITextProvider_get_SupportedTextSelection);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_SupportedTextSelection(SupportedTextSelection* pResult) {
+  IMPL_CALL_ENUM(pResult, SupportedTextSelection, mid_ITextProvider_get_SupportedTextSelection);
 }
 
 /***********************************************/
 /*              IGridProvider                  */
 /***********************************************/
-IFACEMETHODIMP ProxyAccessible::get_ColumnCount(int* pRetVal)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallIntMethod(m_jAccessible, mid_IGridProvider_get_ColumnCount);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_ColumnCount(int* pResult) {
+  IMPL_CALL_INT(pResult, mid_IGridProvider_get_ColumnCount);
 }
 
-IFACEMETHODIMP ProxyAccessible::get_RowCount(int* pRetVal)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallIntMethod(m_jAccessible, mid_IGridProvider_get_RowCount);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_RowCount(int* pResult) {
+  IMPL_CALL_INT(pResult, mid_IGridProvider_get_RowCount);
 }
 
-IFACEMETHODIMP ProxyAccessible::GetItem(int row, int column, IRawElementProviderSimple** pResult)
-{
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jlong pointer;
-  hr = JniUtil::callLongMethod(env, m_jAccessible, mid_IGridProvider_GetItem, &pointer, row, column);
-  return_on_fail(hr);
-
-  IRawElementProviderSimple* result = reinterpret_cast<IRawElementProviderSimple*>(pointer);
-  if (result != NULL) result->AddRef();
-
-  *pResult = result;
-  return hr;
+IFACEMETHODIMP ProxyAccessible::GetItem(int row, int column, IRawElementProviderSimple** ppResult) {
+  IMPL_CALL_ACCESSIBLE(ppResult, mid_IGridProvider_GetItem, row, column);
 }
 
 /***********************************************/
 /*              IGridItemProvider              */
 /***********************************************/
-IFACEMETHODIMP ProxyAccessible::get_Column(int* pRetVal)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallIntMethod(m_jAccessible, mid_IGridItemProvider_get_Column);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_Column(int* pResult) {
+  IMPL_CALL_INT(pResult, mid_IGridItemProvider_get_Column);
 }
 
-IFACEMETHODIMP ProxyAccessible::get_ColumnSpan(int* pRetVal)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallIntMethod(m_jAccessible, mid_IGridItemProvider_get_ColumnSpan);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_ColumnSpan(int* pResult) {
+  IMPL_CALL_INT(pResult, mid_IGridItemProvider_get_ColumnSpan);
 }
 
-IFACEMETHODIMP ProxyAccessible::get_ContainingGrid(IRawElementProviderSimple** pResult)
-{
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jlong pointer;
-  hr = JniUtil::callLongMethod(env, m_jAccessible, mid_IGridItemProvider_get_ContainingGrid, &pointer);
-  return_on_fail(hr);
-
-  IRawElementProviderSimple* result = reinterpret_cast<IRawElementProviderSimple*>(pointer);
-  if (result != NULL) result->AddRef();
-
-  *pResult = result;
-  return hr;
+IFACEMETHODIMP ProxyAccessible::get_ContainingGrid(IRawElementProviderSimple** ppResult) {
+  IMPL_CALL_ACCESSIBLE(ppResult, mid_IGridItemProvider_get_ContainingGrid);
 }
 
-IFACEMETHODIMP ProxyAccessible::get_Row(int* pRetVal)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallIntMethod(m_jAccessible, mid_IGridItemProvider_get_Row);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_Row(int* pResult) {
+  IMPL_CALL_INT(pResult, mid_IGridItemProvider_get_Row);
 }
 
-IFACEMETHODIMP ProxyAccessible::get_RowSpan(int* pRetVal)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallIntMethod(m_jAccessible, mid_IGridItemProvider_get_RowSpan);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_RowSpan(int* pResult) {
+  IMPL_CALL_INT(pResult, mid_IGridItemProvider_get_RowSpan);
 }
 
 /***********************************************/
 /*              ITableProvider              */
 /***********************************************/
-IFACEMETHODIMP ProxyAccessible::GetColumnHeaders(SAFEARRAY** pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr)
-
-  jarray array;
-  hr = JniUtil::callArrayMethod(env, m_jAccessible, mid_ITableProvider_GetColumnHeaders, &array);
-  return_on_fail(hr)
-
-  hr = JniUtil::toSafeArray(env, array, VT_UNKNOWN, pResult);
-  return_on_fail(hr)
-
-  return hr;
+IFACEMETHODIMP ProxyAccessible::GetColumnHeaders(SAFEARRAY** ppResult) {
+  IMPL_CALL_SAFEARRAY(ppResult, VT_UNKNOWN, mid_ITableProvider_GetColumnHeaders);
 }
 
-IFACEMETHODIMP ProxyAccessible::GetRowHeaders(SAFEARRAY** pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr)
-
-  jarray array;
-  hr = JniUtil::callArrayMethod(env, m_jAccessible, mid_ITableProvider_GetRowHeaders, &array);
-  return_on_fail(hr)
-
-  hr = JniUtil::toSafeArray(env, array, VT_UNKNOWN, pResult);
-  return_on_fail(hr)
-
-  return hr;
+IFACEMETHODIMP ProxyAccessible::GetRowHeaders(SAFEARRAY** ppResult) {
+  IMPL_CALL_SAFEARRAY(ppResult, VT_UNKNOWN, mid_ITableProvider_GetRowHeaders);
 }
 
 IFACEMETHODIMP ProxyAccessible::get_RowOrColumnMajor(RowOrColumnMajor* pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr)
-
-  jint result;
-  hr = JniUtil::callIntMethod(env, m_jAccessible, mid_ITableProvider_get_RowOrColumnMajor, &result);
-  return_on_fail(hr);
-
-  *pResult = (RowOrColumnMajor) result;
-
-  return hr;
+  IMPL_CALL_ENUM(pResult, RowOrColumnMajor, mid_ITableProvider_get_RowOrColumnMajor);
 }
 
 
 /***********************************************/
 /*              ITableItemProvider              */
 /***********************************************/
-IFACEMETHODIMP ProxyAccessible::GetColumnHeaderItems(SAFEARRAY** pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr)
-
-  jarray array;
-  hr = JniUtil::callArrayMethod(env, m_jAccessible, mid_ITableItemProvider_GetColumnHeaderItems, &array);
-  return_on_fail(hr)
-
-  hr = JniUtil::toSafeArray(env, array, VT_UNKNOWN, pResult);
-  return_on_fail(hr)
-
-  return hr;
+IFACEMETHODIMP ProxyAccessible::GetColumnHeaderItems(SAFEARRAY** ppResult) {
+  IMPL_CALL_SAFEARRAY(ppResult, VT_UNKNOWN, mid_ITableItemProvider_GetColumnHeaderItems);
 }
 
-IFACEMETHODIMP ProxyAccessible::GetRowHeaderItems(SAFEARRAY** pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr)
-
-  jarray array;
-  hr = JniUtil::callArrayMethod(env, m_jAccessible, mid_ITableItemProvider_GetRowHeaderItems, &array);
-  return_on_fail(hr)
-
-  hr = JniUtil::toSafeArray(env, array, VT_UNKNOWN, pResult);
-  return_on_fail(hr)
-
-  return hr;
+IFACEMETHODIMP ProxyAccessible::GetRowHeaderItems(SAFEARRAY** ppResult) {
+  IMPL_CALL_SAFEARRAY(ppResult, VT_UNKNOWN, mid_ITableItemProvider_GetRowHeaderItems);
 }
 
 
 /***********************************************/
 /*              IToggleProvider                */
 /***********************************************/
-IFACEMETHODIMP ProxyAccessible::Toggle()
-{
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  hr = JniUtil::callVoidMethod(env, m_jAccessible, mid_IToggleProvider_Toggle);
-  return_on_fail(hr);
-
-  return hr;
+IFACEMETHODIMP ProxyAccessible::Toggle() {
+  IMPL_CALL_VOID(mid_IToggleProvider_Toggle);
 }
 
-IFACEMETHODIMP ProxyAccessible::get_ToggleState(ToggleState* pResult)
-{
-  if (pResult == NULL) return E_INVALIDARG;
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jint result;
-  hr = JniUtil::callIntMethod(env, m_jAccessible, mid_IToggleProvider_get_ToggleState, &result);
-  return_on_fail(hr);
-
-  *pResult = (ToggleState) result;
-
-  return hr;
+IFACEMETHODIMP ProxyAccessible::get_ToggleState(ToggleState* pResult) {
+  IMPL_CALL_ENUM(pResult, ToggleState, mid_IToggleProvider_get_ToggleState);
 }
 
 /***********************************************/
 /*         IExpandCollapseProvider             */
 /***********************************************/
 IFACEMETHODIMP ProxyAccessible::Collapse() {
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  hr = JniUtil::callVoidMethod(env, m_jAccessible, mid_IExpandCollapseProvider_Collapse);
-  return_on_fail(hr);
-
-  return hr;
+  IMPL_CALL_VOID(mid_IExpandCollapseProvider_Collapse);
 }
 
 IFACEMETHODIMP ProxyAccessible::Expand() {
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  hr = JniUtil::callVoidMethod(env, m_jAccessible, mid_IExpandCollapseProvider_Expand);
-  return_on_fail(hr);
-
-  return hr;
+  IMPL_CALL_VOID(mid_IExpandCollapseProvider_Expand);
 }
 
 IFACEMETHODIMP ProxyAccessible::get_ExpandCollapseState(ExpandCollapseState* pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jint result;
-  hr = JniUtil::callIntMethod(env, m_jAccessible, mid_IExpandCollapseProvider_get_ExpandCollapseState, &result);
-  return_on_fail(hr);
-
-  *pResult = (ExpandCollapseState) result;
-
-  return hr;
+  IMPL_CALL_ENUM(pResult, ExpandCollapseState, mid_IExpandCollapseProvider_get_ExpandCollapseState);
 }
 
 /***********************************************/
 /*         ITransformProvider                  */
 /***********************************************/
-IFACEMETHODIMP ProxyAccessible::get_CanMove(BOOL* pRetVal)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallBooleanMethod(m_jAccessible, mid_ITransformProvider_get_CanMove);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_CanMove(BOOL* pResult) {
+  IMPL_CALL_BOOL(pResult, mid_ITransformProvider_get_CanMove);
 }
 
-IFACEMETHODIMP ProxyAccessible::get_CanResize(BOOL* pRetVal)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallBooleanMethod(m_jAccessible, mid_ITransformProvider_get_CanResize);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_CanResize(BOOL* pResult) {
+  IMPL_CALL_BOOL(pResult, mid_ITransformProvider_get_CanResize);
 }
 
-IFACEMETHODIMP ProxyAccessible::get_CanRotate(BOOL* pRetVal)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallBooleanMethod(m_jAccessible, mid_ITransformProvider_get_CanRotate);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_CanRotate(BOOL* pResult) {
+  IMPL_CALL_BOOL(pResult, mid_ITransformProvider_get_CanRotate);
 }
 
-IFACEMETHODIMP ProxyAccessible::Move(double x, double y)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    env->CallVoidMethod(m_jAccessible, mid_ITransformProvider_Move, x, y);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::Move(double x, double y) {
+  IMPL_CALL_VOID(mid_ITransformProvider_Move, _double(x), _double(y));
 }
 
-IFACEMETHODIMP ProxyAccessible::Resize(double width, double height)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    env->CallVoidMethod(m_jAccessible, mid_ITransformProvider_Resize, width, height);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::Resize(double width, double height) {
+  IMPL_CALL_VOID(mid_ITransformProvider_Resize, _double(width), _double(height));
 }
 
-IFACEMETHODIMP ProxyAccessible::Rotate(double degrees)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    env->CallVoidMethod(m_jAccessible, mid_ITransformProvider_Rotate, degrees);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::Rotate(double degrees) {
+  IMPL_CALL_VOID(mid_ITransformProvider_Rotate, degrees);
 }
 
 /***********************************************/
 /*         IScrollProvider                     */
 /***********************************************/
-IFACEMETHODIMP ProxyAccessible::Scroll(ScrollAmount horizontalAmount, ScrollAmount verticalAmount)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    env->CallVoidMethod(m_jAccessible, mid_IScrollProvider_Scroll, horizontalAmount, verticalAmount);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::Scroll(ScrollAmount horizontalAmount, ScrollAmount verticalAmount) {
+  IMPL_CALL_VOID(mid_IScrollProvider_Scroll, horizontalAmount, verticalAmount);
 }
 
-IFACEMETHODIMP ProxyAccessible::SetScrollPercent(double horizontalPercent, double verticalPercent)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    env->CallVoidMethod(m_jAccessible, mid_IScrollProvider_SetScrollPercent, horizontalPercent, verticalPercent);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::SetScrollPercent(double horizontalPercent, double verticalPercent) {
+  IMPL_CALL_VOID(mid_IScrollProvider_SetScrollPercent, horizontalPercent, verticalPercent);
 }
 
-IFACEMETHODIMP ProxyAccessible::get_HorizontallyScrollable(BOOL* pRetVal)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallBooleanMethod(m_jAccessible, mid_IScrollProvider_get_HorizontallyScrollable);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_HorizontallyScrollable(BOOL* pResult) {
+  IMPL_CALL_BOOL(pResult, mid_IScrollProvider_get_HorizontallyScrollable);
 }
 
-IFACEMETHODIMP ProxyAccessible::get_HorizontalScrollPercent(double* pRetVal)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallDoubleMethod(m_jAccessible, mid_IScrollProvider_get_HorizontalScrollPercent);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_HorizontalScrollPercent(double* pResult) {
+  IMPL_CALL_DOUBLE(pResult, mid_IScrollProvider_get_HorizontalScrollPercent);
 }
 
-IFACEMETHODIMP ProxyAccessible::get_HorizontalViewSize(double* pRetVal)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallDoubleMethod(m_jAccessible, mid_IScrollProvider_get_HorizontalViewSize);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_HorizontalViewSize(double* pResult) {
+  IMPL_CALL_DOUBLE(pResult, mid_IScrollProvider_get_HorizontalViewSize);
 }
 
-IFACEMETHODIMP ProxyAccessible::get_VerticallyScrollable(BOOL* pRetVal)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallBooleanMethod(m_jAccessible, mid_IScrollProvider_get_VerticallyScrollable);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_VerticallyScrollable(BOOL* pResult) {
+  IMPL_CALL_BOOL(pResult, mid_IScrollProvider_get_VerticallyScrollable);
 }
 
-IFACEMETHODIMP ProxyAccessible::get_VerticalScrollPercent(double* pRetVal)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallDoubleMethod(m_jAccessible, mid_IScrollProvider_get_VerticalScrollPercent);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_VerticalScrollPercent(double* pResult) {
+  IMPL_CALL_DOUBLE(pResult, mid_IScrollProvider_get_VerticalScrollPercent);
 }
 
-IFACEMETHODIMP ProxyAccessible::get_VerticalViewSize(double* pRetVal)
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallDoubleMethod(m_jAccessible, mid_IScrollProvider_get_VerticalViewSize);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_VerticalViewSize(double* pResult) {
+  IMPL_CALL_DOUBLE(pResult, mid_IScrollProvider_get_VerticalViewSize);
 }
 
 /***********************************************/
 /*         IScrollItemProvider                 */
 /***********************************************/
-IFACEMETHODIMP ProxyAccessible::ScrollIntoView()
-{
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    env->CallVoidMethod(m_jAccessible, mid_IScrollItemProvider_ScrollIntoView);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::ScrollIntoView() {
+  IMPL_CALL_VOID(mid_IScrollItemProvider_ScrollIntoView);
 }
 
 /***********************************************/
 /*         IWindowProvider                 */
 /***********************************************/
 IFACEMETHODIMP ProxyAccessible::Close() {
-    LOG->debugf("ProxyAccessible::Close()");
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    env->CallVoidMethod(m_jAccessible, mid_WindowProvider_Close);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+  IMPL_CALL_VOID(mid_WindowProvider_Close);
 }
-IFACEMETHODIMP ProxyAccessible::get_CanMaximize(BOOL* pRetVal) {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallBooleanMethod(m_jAccessible, mid_WindowProvider_get_CanMaximize);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_CanMaximize(BOOL* pResult) {
+  IMPL_CALL_BOOL(pResult, mid_WindowProvider_get_CanMaximize);
 }
-IFACEMETHODIMP ProxyAccessible::get_CanMinimize(BOOL* pRetVal) {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallBooleanMethod(m_jAccessible, mid_WindowProvider_get_CanMinimize);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_CanMinimize(BOOL* pResult) {
+  IMPL_CALL_BOOL(pResult, mid_WindowProvider_get_CanMinimize);
 }
-IFACEMETHODIMP ProxyAccessible::get_IsModal(BOOL* pRetVal) {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallBooleanMethod(m_jAccessible, mid_WindowProvider_get_IsModal);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_IsModal(BOOL* pResult) {
+  IMPL_CALL_BOOL(pResult, mid_WindowProvider_get_IsModal);
 }
-IFACEMETHODIMP ProxyAccessible::get_IsTopmost(BOOL* pRetVal) {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallBooleanMethod(m_jAccessible, mid_WindowProvider_get_IsTopmost);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_IsTopmost(BOOL* pResult) {
+  IMPL_CALL_BOOL(pResult, mid_WindowProvider_get_IsTopmost);
 }
-IFACEMETHODIMP ProxyAccessible::get_WindowInteractionState(WindowInteractionState* pRetVal) {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = (WindowInteractionState)env->CallIntMethod(m_jAccessible, mid_WindowProvider_get_WindowInteractionState);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_WindowInteractionState(WindowInteractionState* pResult) {
+  IMPL_CALL_ENUM(pResult, WindowInteractionState, mid_WindowProvider_get_WindowInteractionState);
 }
-IFACEMETHODIMP ProxyAccessible::get_WindowVisualState(WindowVisualState* pRetVal) {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = (WindowVisualState)env->CallIntMethod(m_jAccessible, mid_WindowProvider_get_WindowVisualState);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_WindowVisualState(WindowVisualState* pResult) {
+  IMPL_CALL_ENUM(pResult, WindowVisualState, mid_WindowProvider_get_WindowVisualState);
 }
 IFACEMETHODIMP ProxyAccessible::SetVisualState(WindowVisualState state) {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    env->CallVoidMethod(m_jAccessible, mid_WindowProvider_SetVisualState, state);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+  IMPL_CALL_VOID(mid_WindowProvider_SetVisualState, state);
 }
-IFACEMETHODIMP ProxyAccessible::WaitForInputIdle(int milliseconds, BOOL* pRetVal) {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallBooleanMethod(m_jAccessible, mid_WindowProvider_WaitForInputIdle, (jint) milliseconds);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::WaitForInputIdle(int milliseconds, BOOL* pResult) {
+  IMPL_CALL_BOOL(pResult, mid_WindowProvider_WaitForInputIdle, (jint) milliseconds);
 }
-
 
 // IDockProvider
-IFACEMETHODIMP ProxyAccessible::get_DockPosition(DockPosition *pRetVal) {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = (DockPosition) env->CallIntMethod(m_jAccessible, mid_DockProvider_get_DockPosition);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_DockPosition(DockPosition* pResult) {
+  IMPL_CALL_ENUM(pResult, DockPosition, mid_DockProvider_get_DockPosition);
 }
 IFACEMETHODIMP ProxyAccessible::SetDockPosition(DockPosition dockPosition) {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    env->CallVoidMethod(m_jAccessible, mid_DockProvider_SetDockPosition, (jint) dockPosition);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+  IMPL_CALL_VOID(mid_DockProvider_SetDockPosition, (jint) dockPosition);
 }
 // IAnnotationProvider
-IFACEMETHODIMP ProxyAccessible::get_AnnotationTypeId(int *pRetVal) {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallIntMethod(m_jAccessible, mid_IAnnotationProvider_get_AnnotationTypeId);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_AnnotationTypeId(int *pResult) {
+  IMPL_CALL_INT(pResult, mid_IAnnotationProvider_get_AnnotationTypeId);
 }
 IFACEMETHODIMP ProxyAccessible::get_AnnotationTypeName(BSTR *pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jstring result;
-  hr = JniUtil::callStringMethod(env, m_jAccessible, mid_IAnnotationProvider_get_AnnotationTypeName, &result);
-  return_on_fail(hr);
-
-  hr = JniUtil::copyString(env, result, pResult);
-  return_on_fail(hr);
-
-  return hr;
+  IMPL_CALL_BSTR(pResult, mid_IAnnotationProvider_get_AnnotationTypeName);
 }
-
 IFACEMETHODIMP ProxyAccessible::get_Author(BSTR *pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jstring result;
-  hr = JniUtil::callStringMethod(env, m_jAccessible, mid_IAnnotationProvider_get_Author, &result);
-  return_on_fail(hr);
-
-  hr = JniUtil::copyString(env, result, pResult);
-  return_on_fail(hr);
-
-  return hr;
+  IMPL_CALL_BSTR(pResult, mid_IAnnotationProvider_get_Author);
 }
 IFACEMETHODIMP ProxyAccessible::get_DateTime(BSTR *pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jstring result;
-  hr = JniUtil::callStringMethod(env, m_jAccessible, mid_IAnnotationProvider_get_DateTime, &result);
-  return_on_fail(hr);
-
-  hr = JniUtil::copyString(env, result, pResult);
-  return_on_fail(hr);
-
-  return hr;
+  IMPL_CALL_BSTR(pResult, mid_IAnnotationProvider_get_DateTime);
 }
-IFACEMETHODIMP ProxyAccessible::get_Target(IRawElementProviderSimple** pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jlong pointer;
-  hr = JniUtil::callLongMethod(env, m_jAccessible, mid_IAnnotationProvider_get_Target, &pointer);
-  return_on_fail(hr);
-
-  IRawElementProviderSimple* result = reinterpret_cast<IRawElementProviderSimple*>(pointer);
-  if (result != NULL) result->AddRef();
-
-  *pResult = result;
-  return hr;
+IFACEMETHODIMP ProxyAccessible::get_Target(IRawElementProviderSimple** ppResult) {
+  IMPL_CALL_ACCESSIBLE(ppResult, mid_IAnnotationProvider_get_Target);
 }
 // IDragProvider
 IFACEMETHODIMP ProxyAccessible::get_DropEffect(BSTR *pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jstring result;
-  hr = JniUtil::callStringMethod(env, m_jAccessible, mid_IDragProvider_get_DropEffect, &result);
-  return_on_fail(hr);
-
-  hr = JniUtil::copyString(env, result, pResult);
-  return_on_fail(hr);
-
-  return hr;
+  IMPL_CALL_BSTR(pResult, mid_IDragProvider_get_DropEffect);
 }
-IFACEMETHODIMP ProxyAccessible::get_DropEffects(SAFEARRAY** pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr)
-
-  jarray array;
-  hr = JniUtil::callArrayMethod(env, m_jAccessible, mid_IDragProvider_get_DropEffects, &array);
-  return_on_fail(hr)
-
+IFACEMETHODIMP ProxyAccessible::get_DropEffects(SAFEARRAY** ppResult) {
   // TODO need to support BSTR in array copy!!
-  hr = JniUtil::toSafeArray(env, array, VT_BSTR, pResult);
-  return_on_fail(hr)
-
-  return hr;
+  IMPL_CALL_SAFEARRAY(ppResult, VT_BSTR, mid_IDragProvider_get_DropEffects);
 }
-IFACEMETHODIMP ProxyAccessible::get_IsGrabbed(BOOL* pRetVal) {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallBooleanMethod(m_jAccessible, mid_IDragProvider_get_IsGrabbed);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_IsGrabbed(BOOL* pResult) {
+  IMPL_CALL_BOOL(pResult, mid_IDragProvider_get_IsGrabbed);
 }
-IFACEMETHODIMP ProxyAccessible::GetGrabbedItems(SAFEARRAY **pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr)
-
-  jarray array;
-  hr = JniUtil::callArrayMethod(env, m_jAccessible, mid_IDragProvider_GetGrabbedItems, &array);
-  return_on_fail(hr)
-
-  hr = JniUtil::toSafeArray(env, array, VT_UNKNOWN, pResult);
-  return_on_fail(hr)
-
-  return hr;
+IFACEMETHODIMP ProxyAccessible::GetGrabbedItems(SAFEARRAY **ppResult) {
+  IMPL_CALL_SAFEARRAY(ppResult, VT_UNKNOWN, mid_IDragProvider_GetGrabbedItems);
 }
 // IDropTargetProvider
 IFACEMETHODIMP ProxyAccessible::get_DropTargetEffect(BSTR *pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jstring result;
-  hr = JniUtil::callStringMethod(env, m_jAccessible, mid_IDropTargetProvider_get_DropTargetEffect, &result);
-  return_on_fail(hr);
-
-  hr = JniUtil::copyString(env, result, pResult);
-  return_on_fail(hr);
-
-  return hr;
+  IMPL_CALL_BSTR(pResult, mid_IDropTargetProvider_get_DropTargetEffect);
 }
-IFACEMETHODIMP ProxyAccessible::get_DropTargetEffects(SAFEARRAY** pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr)
-
-  jarray array;
-  hr = JniUtil::callArrayMethod(env, m_jAccessible, mid_IDropTargetProvider_get_DropTargetEffects, &array);
-  return_on_fail(hr)
-
+IFACEMETHODIMP ProxyAccessible::get_DropTargetEffects(SAFEARRAY** ppResult) {
   // TODO need to support BSTR in array copy!!
-  hr = JniUtil::toSafeArray(env, array, VT_BSTR, pResult);
-  return_on_fail(hr)
-
-  return hr;
+  IMPL_CALL_SAFEARRAY(ppResult, VT_BSTR, mid_IDropTargetProvider_get_DropTargetEffects);
 }
  // IItemContainerProvider
-IFACEMETHODIMP ProxyAccessible::FindItemByProperty(IRawElementProviderSimple *pStartAfter, PROPERTYID propertyID, VARIANT value, IRawElementProviderSimple **pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jlong pointer;
-  hr = JniUtil::callLongMethod(env, m_jAccessible, mid_IItemContainerProvider_FindItemByProperty, &pointer, (jlong) pStartAfter, (jint) propertyID, (jlong) (&value));
-  return_on_fail(hr);
-
-  IRawElementProviderSimple* result = reinterpret_cast<IRawElementProviderSimple*>(pointer);
-  if (result != NULL) result->AddRef();
-
-  *pResult = result;
-  return hr;
+IFACEMETHODIMP ProxyAccessible::FindItemByProperty(IRawElementProviderSimple *pStartAfter, PROPERTYID propertyID, VARIANT value, IRawElementProviderSimple **ppResult) {
+  IMPL_CALL_ACCESSIBLE(ppResult, mid_IItemContainerProvider_FindItemByProperty, (jlong) pStartAfter, (jint) propertyID, (jlong) (&value));
 }
 // IMultipleViewProvider
 IFACEMETHODIMP ProxyAccessible::get_CurrentView(int *pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
- 
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jint result;
-  hr = JniUtil::callIntMethod(env, m_jAccessible, mid_IMultipleViewProvider_get_CurrentView, &result);
-  return_on_fail(hr);
-
-  *pResult = (int) result;
-
-  return hr;
+  IMPL_CALL_INT(pResult, mid_IMultipleViewProvider_get_CurrentView);
 }
-IFACEMETHODIMP ProxyAccessible::GetSupportedViews(SAFEARRAY** pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jarray array;
-  hr = JniUtil::callArrayMethod(env, m_jAccessible, mid_IMultipleViewProvider_GetSupportedViews, &array);
-  return_on_fail(hr)
-
-  hr = JniUtil::toSafeArray(env, array, VT_I4, pResult);
-  return_on_fail(hr)
-
-  return hr;
+IFACEMETHODIMP ProxyAccessible::GetSupportedViews(SAFEARRAY** ppResult) {
+  IMPL_CALL_SAFEARRAY(ppResult, VT_I4, mid_IMultipleViewProvider_GetSupportedViews);
 }
 IFACEMETHODIMP ProxyAccessible::GetViewName(int viewId, BSTR *pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jstring result;
-  hr = JniUtil::callStringMethod(env, m_jAccessible, mid_IMultipleViewProvider_GetViewName, &result, (jint)viewId);
-  return_on_fail(hr);
-
-  hr = JniUtil::copyString(env, result, pResult);
-  return_on_fail(hr);
-
-  return hr;
+  IMPL_CALL_BSTR(pResult, mid_IMultipleViewProvider_GetViewName, (jint)viewId);
 }
 IFACEMETHODIMP ProxyAccessible::SetCurrentView(int viewId) {
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  hr = JniUtil::callVoidMethod(env, m_jAccessible, mid_IMultipleViewProvider_SetCurrentView, (jint) viewId);
-  return_on_fail(hr);
-
-  return hr;
+  IMPL_CALL_VOID(mid_IMultipleViewProvider_SetCurrentView, (jint) viewId);
 }
 // ITextChildProvider
-IFACEMETHODIMP ProxyAccessible::get_TextContainer(IRawElementProviderSimple **pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jlong pointer;
-  hr = JniUtil::callLongMethod(env, m_jAccessible, mid_ITextChildProvider_get_TextContainer, &pointer);
-  return_on_fail(hr);
-
-  IRawElementProviderSimple* result = reinterpret_cast<IRawElementProviderSimple*>(pointer);
-  if (result != NULL) result->AddRef();
-
-  *pResult = result;
-  return hr;
+IFACEMETHODIMP ProxyAccessible::get_TextContainer(IRawElementProviderSimple **ppResult) {
+  IMPL_CALL_ACCESSIBLE(ppResult, mid_ITextChildProvider_get_TextContainer);
 }
-IFACEMETHODIMP ProxyAccessible::get_TextRange(ITextRangeProvider **pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jlong pointer;
-  hr = JniUtil::callLongMethod(env, m_jAccessible, mid_ITextChildProvider_get_TextRange, &pointer);
-  return_on_fail(hr);
-
-  ITextRangeProvider* result = reinterpret_cast<ITextRangeProvider*>(pointer);
-  // we do not call AddRef() on ITextRangeProviders!
-  *pResult = result;
-  return hr;
-
-    // IUnknown* ptr = NULL;
-    // JNIEnv* env = GetEnv();
-    // // NO AddRef!
-    // HRESULT hr = env->CallLongMethod(m_jAccessible, mid_ITextChildProvider_get_TextRange, &ptr);
-    //  if (CheckAndClearException(env)) {
-    //     return E_FAIL;
-    // }
-    // //HRESULT hr = callLongMethod(mid_ITextChildProvider_get_TextRange, &ptr);
-    // *pRetVal = static_cast<ITextRangeProvider*>(ptr);
-    // return hr;
+IFACEMETHODIMP ProxyAccessible::get_TextRange(ITextRangeProvider **ppResult) {
+  IMPL_CALL_TEXTRANGE(ppResult, mid_ITextChildProvider_get_TextRange);
 }
 
 // ITextProvider2
-IFACEMETHODIMP ProxyAccessible::GetCaretRange(BOOL *pIsActive, ITextRangeProvider **pResult) {
-  if (pIsActive == NULL) return E_INVALIDARG;
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jobject jResult;
-  hr = JniUtil::callObjectMethod(env, m_jAccessible, mid_ITextProvider2_GetCaretRange, &jResult);
-  return_on_fail(hr);
-
-  jboolean isActive;
-  hr = JniUtil::getBooleanField(env, jResult, fid_isActive, &isActive);
-  return_on_fail(hr);
-
-  jlong pointer;
-  hr = JniUtil::getLongField(env, jResult, fid_range, &pointer);
-  return_on_fail(hr);
-
-  ITextRangeProvider* result = reinterpret_cast<ITextRangeProvider*>(pointer);
-  // no AddRef() on text ranges
-
-  *pIsActive = JniUtil::toBOOL(isActive);
-  *pResult = result;
-
-  return hr;
+IFACEMETHODIMP ProxyAccessible::GetCaretRange(BOOL *pIsActive, ITextRangeProvider **ppResult) {
+  IMPL_BEGIN
+    assert_arg(pIsActive);
+    assert_arg(ppResult);
+    auto env = get_env();
+    LocalFrame frame(env, 10);
+    auto result = call_object(env, get_jobject(), mid_ITextProvider2_GetCaretRange);
+    auto isActive = env->GetBooleanField(result, fid_isActive);
+    check_and_throw(env);
+    auto pointer = env->GetLongField(result, fid_range);
+    check_and_throw(env);
+    *pIsActive = isActive == JNI_TRUE ? TRUE : FALSE;
+    *ppResult = reinterpret_cast<ProxyTextRangeProvider*>(pointer);
+  IMPL_END
 }
 
-IFACEMETHODIMP ProxyAccessible::RangeFromAnnotation(IRawElementProviderSimple *annotationElement, ITextRangeProvider **pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jlong pointer;
-  hr = JniUtil::callLongMethod(env, m_jAccessible, mid_ITextProvider2_RangeFromAnnotation, &pointer, (jlong) annotationElement);
-  return_on_fail(hr);
-
-  ITextRangeProvider* result = reinterpret_cast<ITextRangeProvider*>(pointer);
-  // no add ref on text providers
-  *pResult = result;
-
-  return hr;
+IFACEMETHODIMP ProxyAccessible::RangeFromAnnotation(IRawElementProviderSimple *annotationElement, ITextRangeProvider **ppResult) {
+  IMPL_CALL_TEXTRANGE(ppResult, mid_ITextProvider2_RangeFromAnnotation, (jlong) annotationElement);
 }
 
 // ITextEditProvider
-IFACEMETHODIMP ProxyAccessible::GetActiveComposition(ITextRangeProvider **pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jlong pointer;
-  hr = JniUtil::callLongMethod(env, m_jAccessible, mid_ITextEditProvider_GetActiveComposition, &pointer);
-  return_on_fail(hr);
-
-  ITextRangeProvider* result = reinterpret_cast<ITextRangeProvider*>(pointer);
-  // no add ref on text providers
-  *pResult = result;
-
-  return hr;
+IFACEMETHODIMP ProxyAccessible::GetActiveComposition(ITextRangeProvider **ppResult) {
+  IMPL_CALL_TEXTRANGE(ppResult, mid_ITextEditProvider_GetActiveComposition);
 }
-IFACEMETHODIMP ProxyAccessible::GetConversionTarget(ITextRangeProvider **pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jlong pointer;
-  hr = JniUtil::callLongMethod(env, m_jAccessible, mid_ITextEditProvider_GetConversionTarget, &pointer);
-  return_on_fail(hr);
-
-  ITextRangeProvider* result = reinterpret_cast<ITextRangeProvider*>(pointer);
-  // no add ref on text providers
-  *pResult = result;
-
-  return hr;
+IFACEMETHODIMP ProxyAccessible::GetConversionTarget(ITextRangeProvider **ppResult) {
+  IMPL_CALL_TEXTRANGE(ppResult, mid_ITextEditProvider_GetConversionTarget);
 }
 
 // ITransformProvider2
-IFACEMETHODIMP ProxyAccessible::get_CanZoom(BOOL* pRetVal) {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallBooleanMethod(m_jAccessible, mid_ITransformProvider2_get_CanZoom);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_CanZoom(BOOL* pResult) {
+  IMPL_CALL_BOOL(pResult, mid_ITransformProvider2_get_CanZoom);
 }
-IFACEMETHODIMP ProxyAccessible::get_ZoomLevel(double* pRetVal) {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallDoubleMethod(m_jAccessible, mid_ITransformProvider2_get_ZoomLevel);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_ZoomLevel(double* pResult) {
+  IMPL_CALL_DOUBLE(pResult, mid_ITransformProvider2_get_ZoomLevel);
 }
-IFACEMETHODIMP ProxyAccessible::get_ZoomMinimum(double* pRetVal) {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallDoubleMethod(m_jAccessible, mid_ITransformProvider2_get_ZoomMinimum);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_ZoomMinimum(double* pResult) {
+  IMPL_CALL_DOUBLE(pResult, mid_ITransformProvider2_get_ZoomMinimum);
 }
-IFACEMETHODIMP ProxyAccessible::get_ZoomMaximum(double* pRetVal) {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = env->CallDoubleMethod(m_jAccessible, mid_ITransformProvider2_get_ZoomMaximum);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_ZoomMaximum(double* pResult) {
+  IMPL_CALL_DOUBLE(pResult, mid_ITransformProvider2_get_ZoomMaximum);
 }
 IFACEMETHODIMP ProxyAccessible::Zoom(double zoom) {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    env->CallVoidMethod(m_jAccessible, mid_ITransformProvider2_Zoom, zoom);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+  IMPL_CALL_VOID(mid_ITransformProvider2_Zoom, _double(zoom));
 }
 IFACEMETHODIMP ProxyAccessible::ZoomByUnit(ZoomUnit zoomUnit) {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    env->CallVoidMethod(m_jAccessible, mid_ITransformProvider2_ZoomByUnit, (jint) zoomUnit);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+  IMPL_CALL_VOID(mid_ITransformProvider2_ZoomByUnit, _int(zoomUnit));
 }
 
 // IVirtualizedItemProvider
 IFACEMETHODIMP ProxyAccessible::Realize() {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    env->CallVoidMethod(m_jAccessible, mid_IVirtualizedItemProvider_Realize);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+  IMPL_CALL_VOID(mid_IVirtualizedItemProvider_Realize);
 }
 
 // IStylesProvider
 IFACEMETHODIMP ProxyAccessible::get_ExtendedProperties(BSTR* pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jstring result;
-  hr = JniUtil::callStringMethod(env, m_jAccessible, mid_IStylesProvider_get_ExtendedProperties, &result);
-  return_on_fail(hr);
-
-  hr = JniUtil::copyString(env, result, pResult);
-  return_on_fail(hr);
-
-  return hr;
+  IMPL_CALL_BSTR(pResult, mid_IStylesProvider_get_ExtendedProperties);
 }
-IFACEMETHODIMP ProxyAccessible::get_FillColor(int* pRetVal) {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = (int) env->CallIntMethod(m_jAccessible, mid_IStylesProvider_get_FillColor);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_FillColor(int* pResult) {
+  IMPL_CALL_INT(pResult, mid_IStylesProvider_get_FillColor);
 }
-IFACEMETHODIMP ProxyAccessible::get_FillPatternColor(int* pRetVal) {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = (int) env->CallIntMethod(m_jAccessible, mid_IStylesProvider_get_FillPatternColor);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_FillPatternColor(int* pResult) {
+  IMPL_CALL_INT(pResult, mid_IStylesProvider_get_FillPatternColor);
 }
 IFACEMETHODIMP ProxyAccessible::get_FillPatternStyle(BSTR* pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jstring result;
-  hr = JniUtil::callStringMethod(env, m_jAccessible, mid_IStylesProvider_get_FillPatternStyle, &result);
-  return_on_fail(hr);
-
-  hr = JniUtil::copyString(env, result, pResult);
-  return_on_fail(hr);
-
-  return hr;
+  IMPL_CALL_BSTR(pResult, mid_IStylesProvider_get_FillPatternStyle);
 }
 IFACEMETHODIMP ProxyAccessible::get_Shape(BSTR* pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jstring result;
-  hr = JniUtil::callStringMethod(env, m_jAccessible, mid_IStylesProvider_get_Shape, &result);
-  return_on_fail(hr);
-
-  hr = JniUtil::copyString(env, result, pResult);
-  return_on_fail(hr);
-
-  return hr;
+  IMPL_CALL_BSTR(pResult, mid_IStylesProvider_get_Shape);
 }
-IFACEMETHODIMP ProxyAccessible::get_StyleId(int* pRetVal) {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    *pRetVal = (int) env->CallIntMethod(m_jAccessible, mid_IStylesProvider_get_StyleId);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+IFACEMETHODIMP ProxyAccessible::get_StyleId(int* pResult) {
+  IMPL_CALL_INT(pResult, mid_IStylesProvider_get_StyleId);
 }
 IFACEMETHODIMP ProxyAccessible::get_StyleName(BSTR* pResult) {
-if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jstring result;
-  hr = JniUtil::callStringMethod(env, m_jAccessible, mid_IStylesProvider_get_StyleName, &result);
-  return_on_fail(hr);
-
-  hr = JniUtil::copyString(env, result, pResult);
-  return_on_fail(hr);
-
-  return hr;
+  IMPL_CALL_BSTR(pResult, mid_IStylesProvider_get_StyleName);
 }
 
 // ISynchronizedInputProvider
 IFACEMETHODIMP ProxyAccessible::Cancel() {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    env->CallVoidMethod(m_jAccessible, mid_ISynchronizedInputProvider_Cancel);
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+  IMPL_CALL_VOID(mid_ISynchronizedInputProvider_Cancel);
 }
 IFACEMETHODIMP ProxyAccessible::StartListening(SynchronizedInputType inputType) {
-    JNIEnv* env = GetEnv();
-    if (env == NULL) return E_FAIL;
-    env->CallVoidMethod(m_jAccessible, mid_ISynchronizedInputProvider_StartListening, (jint) inputType);
-    // TODO this method should return E_INVALIDOPERATION if it is already listening
-    // since the java api has no HRESULT it is not implemented
-    if (CheckAndClearException(env)) return E_FAIL;
-    return S_OK;
+  IMPL_CALL_VOID( mid_ISynchronizedInputProvider_StartListening, _int(inputType));
 }
 
 // ISelectionProvider2
-IFACEMETHODIMP ProxyAccessible::get_CurrentSelectedItem(IRawElementProviderSimple **pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jlong pointer;
-  hr = JniUtil::callLongMethod(env, m_jAccessible, mid_ISelectionProvider2_get_CurrentSelectedItem, &pointer);
-  return_on_fail(hr);
-
-  IRawElementProviderSimple* result = reinterpret_cast<IRawElementProviderSimple*>(pointer);
-  if (result != NULL) result->AddRef();
-  *pResult = result;
-  return hr;
+IFACEMETHODIMP ProxyAccessible::get_CurrentSelectedItem(IRawElementProviderSimple **ppResult) {
+  IMPL_CALL_ACCESSIBLE(ppResult, mid_ISelectionProvider2_get_CurrentSelectedItem);
 }
-IFACEMETHODIMP ProxyAccessible::get_FirstSelectedItem(IRawElementProviderSimple **pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jlong pointer;
-  hr = JniUtil::callLongMethod(env, m_jAccessible, mid_ISelectionProvider2_get_FirstSelectedItem, &pointer);
-  return_on_fail(hr);
-
-  IRawElementProviderSimple* result = reinterpret_cast<IRawElementProviderSimple*>(pointer);
-  if (result != NULL) result->AddRef();
-  *pResult = result;
-  return hr;
+IFACEMETHODIMP ProxyAccessible::get_FirstSelectedItem(IRawElementProviderSimple **ppResult) {
+  IMPL_CALL_ACCESSIBLE(ppResult, mid_ISelectionProvider2_get_FirstSelectedItem);
 }
-IFACEMETHODIMP ProxyAccessible::get_LastSelectedItem(IRawElementProviderSimple **pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jlong pointer;
-  hr = JniUtil::callLongMethod(env, m_jAccessible, mid_ISelectionProvider2_get_LastSelectedItem, &pointer);
-  return_on_fail(hr);
-
-  IRawElementProviderSimple* result = reinterpret_cast<IRawElementProviderSimple*>(pointer);
-  if (result != NULL) result->AddRef();
-  *pResult = result;
-  return hr;
+IFACEMETHODIMP ProxyAccessible::get_LastSelectedItem(IRawElementProviderSimple **ppResult) {
+  IMPL_CALL_ACCESSIBLE(ppResult, mid_ISelectionProvider2_get_LastSelectedItem);
 }
 IFACEMETHODIMP ProxyAccessible::get_ItemCount(int *pResult) {
-  if (pResult == NULL) return E_INVALIDARG;
-
-  HRESULT hr;
-  JNIEnv* env;
-  hr = GetEnv(&env);
-  return_on_fail(hr);
-
-  jint result;
-  hr = JniUtil::callIntMethod(env, m_jAccessible, mid_ISelectionProvider2_get_ItemCount, &result);
-  return_on_fail(hr);
-
-  *pResult = (int) result;
-
-  return hr;
+  IMPL_CALL_INT(pResult, mid_ISelectionProvider2_get_ItemCount);
 }
 
 /***********************************************/
@@ -2603,7 +1287,8 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1initIDs
     if (env->ExceptionCheck()) return;
     
     /* Variant */
-    JniUtil::initIDs(env);
+    // JniUtil::initIDs(env);
+    jni::ids::initIDs(env);
 
     /* NCaretRangeResult */
     jclass jNCaretRangeResultClass = env->FindClass("com/sun/glass/ui/uia/ProxyAccessible$NCaretRangeResult");
@@ -2621,10 +1306,10 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible_Uia
     IRawElementProviderSimple* pProvider = static_cast<IRawElementProviderSimple*>(acc);
 
     BSTR bstrDisplayString;
-    JniUtil::copyString(env, displayString, &bstrDisplayString);
+    jni::fill_bstr(env, displayString, &bstrDisplayString);
 
     BSTR bstrActivityId;
-    JniUtil::copyString(env, activityId, &bstrActivityId);
+    jni::fill_bstr(env, activityId, &bstrActivityId);
 
     jlong result = (jlong)UiaRaiseNotificationEvent(pProvider, (NotificationKind)notificationKind, (NotificationProcessing)notificationProcessing, bstrDisplayString, bstrActivityId);
 
@@ -2686,10 +1371,12 @@ JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible_UiaRaiseAutoma
     VARIANT ov = { 0 }, nv = { 0 };
     HRESULT hr = E_FAIL;
 
-    hr = JniUtil::copyVariant(env, oldV, &ov);
-    if (FAILED(hr)) return (jlong)hr;
-    hr = JniUtil::copyVariant(env, newV, &nv);
-    if (FAILED(hr)) return (jlong)hr; 
+    try {
+      jni::fill_variant(env, oldV, &ov);
+      jni::fill_variant(env, newV, &nv);
+    } catch (HRESULT hr) {
+      return (jlong)hr;
+    }
 
     return (jlong)UiaRaiseAutomationPropertyChangedEvent(pProvider, (PROPERTYID)id, ov, nv);
 }
