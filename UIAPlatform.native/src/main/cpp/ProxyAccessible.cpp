@@ -849,7 +849,7 @@ IFACEMETHODIMP ProxyAccessible::get_DropTargetEffects(SAFEARRAY** ppResult) {
 }
  // IItemContainerProvider
 IFACEMETHODIMP ProxyAccessible::FindItemByProperty(IRawElementProviderSimple *pStartAfter, PROPERTYID propertyID, VARIANT value, IRawElementProviderSimple **ppResult) {
-  IMPL_CALL_ACCESSIBLE(ppResult, mid_IItemContainerProvider_FindItemByProperty, (jlong) pStartAfter, (jint) propertyID, (jlong) (&value));
+  IMPL_CALL_ACCESSIBLE(ppResult, mid_IItemContainerProvider_FindItemByProperty, _ptr(pStartAfter), _int(propertyID), _ptr(&value));
 }
 // IMultipleViewProvider
 IFACEMETHODIMP ProxyAccessible::get_CurrentView(int *pResult) {
@@ -859,10 +859,10 @@ IFACEMETHODIMP ProxyAccessible::GetSupportedViews(SAFEARRAY** ppResult) {
   IMPL_CALL_SAFEARRAY(ppResult, VT_I4, mid_IMultipleViewProvider_GetSupportedViews);
 }
 IFACEMETHODIMP ProxyAccessible::GetViewName(int viewId, BSTR *pResult) {
-  IMPL_CALL_BSTR(pResult, mid_IMultipleViewProvider_GetViewName, (jint)viewId);
+  IMPL_CALL_BSTR(pResult, mid_IMultipleViewProvider_GetViewName, _int(viewId));
 }
 IFACEMETHODIMP ProxyAccessible::SetCurrentView(int viewId) {
-  IMPL_CALL_VOID(mid_IMultipleViewProvider_SetCurrentView, (jint) viewId);
+  IMPL_CALL_VOID(mid_IMultipleViewProvider_SetCurrentView, _int(viewId));
 }
 // ITextChildProvider
 IFACEMETHODIMP ProxyAccessible::get_TextContainer(IRawElementProviderSimple **ppResult) {
@@ -890,7 +890,7 @@ IFACEMETHODIMP ProxyAccessible::GetCaretRange(BOOL *pIsActive, ITextRangeProvide
 }
 
 IFACEMETHODIMP ProxyAccessible::RangeFromAnnotation(IRawElementProviderSimple *annotationElement, ITextRangeProvider **ppResult) {
-  IMPL_CALL_TEXTRANGE(ppResult, mid_ITextProvider2_RangeFromAnnotation, (jlong) annotationElement);
+  IMPL_CALL_TEXTRANGE(ppResult, mid_ITextProvider2_RangeFromAnnotation, _ptr(annotationElement));
 }
 
 // ITextEditProvider

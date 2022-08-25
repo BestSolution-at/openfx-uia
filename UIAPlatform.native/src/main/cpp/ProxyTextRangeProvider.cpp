@@ -133,11 +133,11 @@ IFACEMETHODIMP ProxyTextRangeProvider::Clone(ITextRangeProvider **ppResult) {
 }
 
 IFACEMETHODIMP ProxyTextRangeProvider::Compare(ITextRangeProvider *targetRange, BOOL *pResult) {
-  IMPL_CALL_BOOL(pResult, mid_Compare, static_cast<ProxyTextRangeProvider*>(targetRange)->m_jTextRangeProvider);
+  IMPL_CALL_BOOL(pResult, mid_Compare, _object(targetRange));
 }
 
 IFACEMETHODIMP ProxyTextRangeProvider::CompareEndpoints(TextPatternRangeEndpoint endpoint, ITextRangeProvider *targetRange, TextPatternRangeEndpoint targetEndpoint, int *pResult) {
-  IMPL_CALL_INT(pResult, mid_CompareEndpoints, _int(endpoint), static_cast<ProxyTextRangeProvider*>(targetRange)->m_jTextRangeProvider, _int(targetEndpoint));
+  IMPL_CALL_INT(pResult, mid_CompareEndpoints, _int(endpoint), _object(targetRange), _int(targetEndpoint));
 }
 
 IFACEMETHODIMP ProxyTextRangeProvider::ExpandToEnclosingUnit(TextUnit unit) {
