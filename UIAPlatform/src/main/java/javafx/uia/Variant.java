@@ -25,6 +25,7 @@
 package javafx.uia;
 
 import com.sun.glass.ui.uia.glass.WinVariant;
+import com.sun.glass.ui.uia.winapi.Windows;
 
 public class Variant {
 
@@ -159,6 +160,42 @@ public class Variant {
         v.vt = WinVariant.VT_I4 | WinVariant.VT_ARRAY;
         v.pLVal = value;
         return new Variant(v);
+    }
+
+    public static Variant fromNativePointer(long pVariant) {
+      short vt = Windows.VariantGetVt(pVariant);
+      switch (vt) {
+        case Windows.VT_BOOL:
+        return Variant.vt_bool(Windows.VariantGetBoolVal(pVariant));
+        case Windows.VT_BSTR:
+        return Variant.vt_bstr(Windows.VariantGetBstrVal(pVariant));
+        case Windows.VT_UNKNOWN:
+        return Variant.vt_unknown(Windows.VariantGetPunkVal(pVariant));
+        case Windows.VT_I2:
+        return Variant.vt_i2(Windows.VariantGetIVal(pVariant));
+        case Windows.VT_I4:
+        return Variant.vt_i4(Windows.VariantGetLVal(pVariant));
+        case Windows.VT_R4:
+        return Variant.vt_r4(Windows.VariantGetFltVal(pVariant));
+        case Windows.VT_R8:
+        return Variant.vt_r8(Windows.VariantGetDblVal(pVariant));
+
+        case Windows.VT_R4 | Windows.VT_ARRAY:
+        return Variant.vt_r4_array(Windows.VariantGetFltSafeArray(pVariant));
+        case Windows.VT_R8 | Windows.VT_ARRAY:
+        return Variant.vt_r8_array(Windows.VariantGetDblSafeArray(pVariant));
+        case Windows.VT_UNKNOWN | Windows.VT_ARRAY:
+        return Variant.vt_unknown_array(Windows.VariantGetPunkSafeArray(pVariant));
+
+        case Windows.VT_NULL:
+        return Variant.vt_null();
+        
+        default:
+        System.err.println("Could not handle variant conversion vt = " + vt);
+        case Windows.VT_EMPTY:
+        return Variant.vt_empty();
+      }
+      
     }
 
 

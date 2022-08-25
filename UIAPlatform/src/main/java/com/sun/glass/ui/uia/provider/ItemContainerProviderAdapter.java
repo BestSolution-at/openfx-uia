@@ -25,8 +25,13 @@
 package com.sun.glass.ui.uia.provider;
 
 import com.sun.glass.ui.uia.ProxyAccessible;
+import com.sun.glass.ui.uia.ProxyAccessibleRegistry;
 
 import javafx.uia.IItemContainerProvider;
+import javafx.uia.IPropertyId;
+import javafx.uia.IUIAElement;
+import javafx.uia.Variant;
+
 
 public class ItemContainerProviderAdapter extends BaseAdapter<IItemContainerProvider> implements NativeIItemContainerProvider {
 
@@ -36,14 +41,20 @@ public class ItemContainerProviderAdapter extends BaseAdapter<IItemContainerProv
 
     @Override
     public long FindItemByProperty(long pStartAfter, int propertyId, long pVariant) {
-       
-        // TODO map pointer to IUIAElement
+      // map pointer to IUIAElement
+      ProxyAccessible acc = ProxyAccessibleRegistry.getInstance().getByNative(pStartAfter);
+      IUIAElement startAfter = acc.getUIAElement();
+      // map propertyId
+      IPropertyId propId = IPropertyId.fromNativeValue(propertyId);
 
-        // TODO map variant
+      // map variant
+      Variant variant = Variant.fromNativePointer(pVariant);
 
-        //provider.FindItemByProperty(startAfter, propertyId, value)
+      IUIAElement result = provider.FindItemByProperty(startAfter, propId, variant);
 
-        return 0;
+      ProxyAccessible res = ProxyAccessibleRegistry.getInstance().findAccessible(result);
+      return res.getNativeAccessible();
     }
 
+    
 }

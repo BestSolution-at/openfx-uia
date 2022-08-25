@@ -24,6 +24,8 @@
  */
 package javafx.uia;
 
+import java.util.Optional;
+
 /**
  * represents a uia property id
  */
@@ -35,4 +37,17 @@ public interface IPropertyId {
      */
     int getNativeValue();
     
+    static IPropertyId fromNativeValue(int nativeValue) {
+      Optional<StandardPropertyIds> opt = StandardPropertyIds.fromNativeValue(nativeValue);
+      if (opt.isPresent()) {
+        return opt.get();
+      } else {
+        return new IPropertyId() {
+          @Override
+          public int getNativeValue() {
+            return nativeValue;
+          }
+        };
+      }
+    }
 }
