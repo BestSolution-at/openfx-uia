@@ -134,18 +134,22 @@ public class ProxyTextRangeProvider {
     }
 
     public static ProxyTextRangeProvider wrap(ProxyAccessible accessible, ITextRangeProvider provider) {
+      if (provider == null) return null;
       return new ProxyTextRangeProvider(accessible, provider);
     }
 
     public static ProxyTextRangeProvider wrap(ProxyAccessible accessible, WinTextRangeProvider provider) {
+      if (provider == null) return null;
       return new ProxyTextRangeProvider(accessible, provider);
     }
 
     public static long wrapNative(ProxyAccessible accessible, ITextRangeProvider provider) {
+      if (provider == null) return 0L;
       return wrap(accessible, provider).getNativeProvider();
     }
 
     public static long wrapNative(ProxyAccessible accessible, WinTextRangeProvider provider) {
+      if (provider == null) return 0L;
       return wrap(accessible, provider).getNativeProvider();
     }
 
@@ -186,27 +190,32 @@ public class ProxyTextRangeProvider {
     /***********************************************/
     private long Clone() {
         return Util.guard(() -> {
+          return InstanceTracker.withReason("ITextRangeProvider_Clone", () -> {
 
             if (this.isUIA()) {
-              long r = wrapNative(accessible, uiaImpl.Clone());
-              InstanceTracker.setReason(r, "Clone");
-              return r;
+              return wrapNative(accessible, uiaImpl.Clone());
             } else if (this.isGlass()) {
               return wrapNative(accessible, glassImpl.Clone());
             } else {
               throw new TextRangeProviderException("provider missing");
             }
-
-
+  
+  
             /* Note: Currently Clone() natively does not call AddRef() on the returned object.
             * This mean JFX does not keep a reference to this object, consequently it does not
             * need to free it.
             */
+            
+          });
+
         }, 0L);
     }
 
     private boolean Compare(ProxyTextRangeProvider range) {
         return Util.guard(() -> {
+          if (range == null) {
+            return false;
+          }
           if (this.isUIA() && range.isUIA()) {
             return this.uiaImpl.Compare(range.uiaImpl);
           } else if (this.isGlass() && range.isGlass()) {
@@ -270,37 +279,36 @@ public class ProxyTextRangeProvider {
 
     private long FindAttribute(int attributeId, long variantValue, boolean backward) {
         return Util.guard(() -> {
-          if (this.isUIA()) {
-            try {
-                ITextAttributeId id = ITextAttributeId.fromNativeValue(attributeId);
-                javafx.uia.FindAttribute<Object> findAttribute = findAttributes.get(id);
-                if (findAttribute != null) {
-                    Variant variant = convert(variantValue);
-                    IVariantConverter<Object> converter = converters.get(id);
-                    Object value = converter.toObject(variant);
-                    ITextRangeProvider range = findAttribute.findAttribute(backward, value);
-                    if (range != null) {
-                        return wrapNative(accessible, range);
-                    } else {
-                        return 0L;
-                    }
-                } else {
-                    return 0L;
-                }
+          return InstanceTracker.withReason("ITextRangeProvider_FindAttribute", ()->{
 
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                return 0L;
+            if (this.isUIA()) {
+              try {
+                  ITextAttributeId id = ITextAttributeId.fromNativeValue(attributeId);
+                  javafx.uia.FindAttribute<Object> findAttribute = findAttributes.get(id);
+                  if (findAttribute != null) {
+                      Variant variant = convert(variantValue);
+                      IVariantConverter<Object> converter = converters.get(id);
+                      Object value = converter.toObject(variant);
+                      ITextRangeProvider range = findAttribute.findAttribute(backward, value);
+                      return wrapNative(accessible, range);
+                  } else {
+                      return 0L;
+                  }
+  
+  
+              } catch (Exception e) {
+                  e.printStackTrace();
+                  return 0L;
+              }
+            } else if (this.isGlass()) {
+              // TODO convert variant
+              // but since glass FindAttribute always returns 0 we do it here
+              return 0L;
+              // return glassImpl.FindAttribute(attributeId, val, backward);
+            } else {
+              throw new TextRangeProviderException("provider missing");
             }
-          } else if (this.isGlass()) {
-            // TODO convert variant
-            // but since glass FindAttribute always returns 0 we do it here
-            return 0L;
-            // return glassImpl.FindAttribute(attributeId, val, backward);
-          } else {
-            throw new TextRangeProviderException("provider missing");
-          }
+          });
         }, 0L);
     }
 
@@ -310,19 +318,17 @@ public class ProxyTextRangeProvider {
 
     private long FindText(String text, boolean backward, boolean ignoreCase) {
         return Util.guard(() -> {
-          if (this.isUIA()) {
-            ITextRangeProvider range = uiaImpl.FindText(text, backward, ignoreCase);
-            if (range != null) {
-                return wrapNative(accessible, range);
+          return InstanceTracker.withReason("ITextRangeProvider_FindText", () -> {
+            if (this.isUIA()) {
+              ITextRangeProvider range = uiaImpl.FindText(text, backward, ignoreCase);
+              return wrapNative(accessible, range);
+            } else if (this.isGlass()) {
+              WinTextRangeProvider glass = glassImpl.FindText(text, backward, ignoreCase);
+              return wrapNative(accessible, glass);
             } else {
-                return 0L;
+              throw new TextRangeProviderException("provider missing");
             }
-          } else if (this.isGlass()) {
-            WinTextRangeProvider glass = glassImpl.FindText(text, backward, ignoreCase);
-            return wrapNative(accessible, glass);
-          } else {
-            throw new TextRangeProviderException("provider missing");
-          }
+          });
         }, 0L);
     }
 

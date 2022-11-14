@@ -18,6 +18,8 @@ public:
   static void addRef(void* pointer);
   static void release(void* pointer);
 
+  static void debug(void* pointer);
+
 private:
   static Logger* LOG;
 
@@ -29,6 +31,7 @@ private:
   static jmethodID mid_setJava;
   static jmethodID mid_addRef;
   static jmethodID mid_release;
+  static jmethodID mid_debug;
 };
 
 #endif //_INSTANCE_TRACKER_

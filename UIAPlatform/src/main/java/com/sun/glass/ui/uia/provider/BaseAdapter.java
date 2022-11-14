@@ -26,6 +26,7 @@ package com.sun.glass.ui.uia.provider;
 
 import com.sun.glass.ui.uia.ProxyAccessible;
 import com.sun.glass.ui.uia.ProxyTextRangeProvider;
+import com.sun.glass.ui.uia.InstanceTracker;
 
 import java.util.Arrays;
 
@@ -85,9 +86,12 @@ public abstract class BaseAdapter<T> {
     }
 
     protected void UiaRaiseActiveTextPositionChangedEvent(ITextRangeProvider textRange) {
+      InstanceTracker.withReason("UiaRaiseActiveTextPositionChangedEvent", () -> {
         LOG.debug(this, () -> "UiaRaiseActiveTextPositionChangedEvent(" + textRange + ")");
         long result = Windows.UiaRaiseActiveTextPositionChangedEvent(accessible.getNativeAccessible(), wrapNative(textRange));
         LOG.debug(this, () -> "UiaRaiseActiveTextPositionChangedEvent => 0x" + Long.toHexString(result));
+        return null;
+      });
     }
 
     protected void UiaRaiseAsyncContentLoadedEvent(AsyncContentLoadedState asyncContentLoadedState, double percentComplete) {

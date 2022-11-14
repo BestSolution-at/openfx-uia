@@ -3,6 +3,7 @@ package com.sun.glass.ui.uia;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import javafx.application.Platform;
@@ -59,17 +60,36 @@ public class InstanceTracker {
     }
   }
 
+  private static ThreadLocal<String> thread_reason = new ThreadLocal<>();
+
+  public static <T> T withReason(String reason, Supplier<T> exec) {
+    InstanceTracker.thread_reason.set(reason);
+    T result = exec.get();
+    InstanceTracker.thread_reason.remove();
+    return result;
+  }
+
   public static void create(long pointer) {
     synchronized (instances) {
       instances.put(pointer, new Instance(pointer));
+      String reason = thread_reason.get();
+      setReason(pointer, reason);
     }
 
     Platform.runLater(InstanceTracker::update);
   }
 
+  public static void debug(long pointer) {
+    withInstance(pointer, el -> {
+      LOG.debug("-", () -> "Debug Instance: " + "(0x" + Long.toHexString(el.pointer) + ")" + (el.destroyed ? "DESTROYED" : "ALIVE") + " has " + el.refCount + " refs, reason=" + el.reason + "   " + el.java);
+    });
+  }
+
   public static void destroy(long pointer) {
     synchronized (instances) {
       instances.get(pointer).destroyed = true;
+      Instance el = instances.get(pointer);
+      LOG.debug("-", () -> "DESTROY " + el.java + " (" + el.reason + ")");
     }
     Platform.runLater(InstanceTracker::update);
 
@@ -92,14 +112,19 @@ public class InstanceTracker {
   }
 
   public static void addRef(long pointer) {
-    withInstance(pointer, instance -> instance.refCount += 1);
+    withInstance(pointer, instance -> {
+      instance.refCount += 1;
+      LOG.debug("-", () -> "ADD_REF " + instance.refCount + ", " + instance.java + " (" + instance.reason + ")");
+    });
     Platform.runLater(InstanceTracker::update);
   }
 
   public static void release(long pointer) {
-    withInstance(pointer, instance -> instance.refCount -= 1);
+    withInstance(pointer, instance -> {
+      instance.refCount -= 1;
+      LOG.debug("-", () -> "RELEASE " + instance.refCount + ", " + instance.java + " (" + instance.reason + ")");
+    });
     Platform.runLater(InstanceTracker::update);
-    
   }
 
   private static TableView<Instance> table;

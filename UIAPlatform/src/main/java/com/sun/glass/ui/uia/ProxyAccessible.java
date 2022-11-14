@@ -615,29 +615,29 @@ public class ProxyAccessible extends Accessible {
     /*              ITextProvider                  */
     /***********************************************/
     private long[] ITextProvider_GetVisibleRanges() {
-        long[] r = callProviderLongArrayW(NativeITextProvider.class, NativeITextProvider::GetVisibleRanges, WinAccessible::GetVisibleRanges, new long[0]);
-        Arrays.stream(r).forEach(v -> InstanceTracker.setReason(v, "ITextProvider_GetVisibleRanges"));
-        return r;
+        return InstanceTracker.withReason("ITextProvider_GetVisibleRanges", () ->
+            callProviderLongArrayW(NativeITextProvider.class, NativeITextProvider::GetVisibleRanges, WinAccessible::GetVisibleRanges, new long[0])
+        );
     }
     private long[] ITextProvider_GetSelection() {
-        long[] r =  callProviderLongArrayW(NativeITextProvider.class, NativeITextProvider::GetSelection, WinAccessible::GetSelection, new long[0]);
-        Arrays.stream(r).forEach(v -> InstanceTracker.setReason(v, "ITextProvider_GetSelection"));
-        return r;
+        return InstanceTracker.withReason("ITextProvider_GetSelection", () ->
+            callProviderLongArrayW(NativeITextProvider.class, NativeITextProvider::GetSelection, WinAccessible::GetSelection, new long[0])
+        );
     }
     private long ITextProvider_RangeFromChild(long childElement) {
-        long r = callProviderLongW(NativeITextProvider.class, p -> p.RangeFromChild(childElement), g -> g.RangeFromChild(childElement), 0);
-        InstanceTracker.setReason(r, "ITextProvider_RangeFromChild");
-        return r;
+        return InstanceTracker.withReason("ITextProvider_RangeFromChild", () -> 
+            callProviderLongW(NativeITextProvider.class, p -> p.RangeFromChild(childElement), g -> g.RangeFromChild(childElement), 0)
+        );
     }
     private long ITextProvider_RangeFromPoint(double x, double y) {
-        long r = callProviderLongW(NativeITextProvider.class, p -> p.RangeFromPoint(x, y), g -> g.RangeFromPoint(x, y), 0);
-        InstanceTracker.setReason(r, "ITextProvider_RangeFromPoint");
-        return r;
+        return InstanceTracker.withReason("ITextProvider_RangeFromPoint", () ->
+            callProviderLongW(NativeITextProvider.class, p -> p.RangeFromPoint(x, y), g -> g.RangeFromPoint(x, y), 0)
+        );
     }
     private long ITextProvider_get_DocumentRange() {
-        long r = callProviderLongW(NativeITextProvider.class, NativeITextProvider::get_DocumentRange, WinAccessible::get_DocumentRange, 0);
-        InstanceTracker.setReason(r, "ITextProvider_get_DocumentRange");
-        return r;
+        return InstanceTracker.withReason("ITextProvider_get_DocumentRange", () ->
+            callProviderLongW(NativeITextProvider.class, NativeITextProvider::get_DocumentRange, WinAccessible::get_DocumentRange, 0)
+        );
     }
     private int ITextProvider_get_SupportedTextSelection() {
         return callProviderIntW(NativeITextProvider.class, NativeITextProvider::get_SupportedTextSelection, WinAccessible::get_SupportedTextSelection, 0);
@@ -898,9 +898,9 @@ public class ProxyAccessible extends Accessible {
         return callProviderLong(NativeITextChildProvider.class, NativeITextChildProvider::get_TextContainer, 0L, 0L);
     }
     private long ITextChildProvider_get_TextRange() {
-      long r = callProviderLong(NativeITextChildProvider.class, NativeITextChildProvider::get_TextRange, 0L, 0L);
-      InstanceTracker.setReason(r, "ITextChildProvider_get_TextRange");
-      return r;
+        return InstanceTracker.withReason("ITextChildProvider_get_TextRange", () -> 
+            callProviderLong(NativeITextChildProvider.class, NativeITextChildProvider::get_TextRange, 0L, 0L)
+        );
     }
 
     // ITextProvider2
@@ -909,25 +909,25 @@ public class ProxyAccessible extends Accessible {
         public long range;
     }
     private NCaretRangeResult   ITextProvider2_GetCaretRange() { 
-      NCaretRangeResult r = callProvider(NativeITextProvider2.class, NativeITextProvider2::GetCaretRange, null, null);
-      InstanceTracker.setReason(r.range, "ITextProvider2_GetCaretRange");
-      return r;
+        return InstanceTracker.withReason("ITextProvider2_GetCaretRange", ()-> 
+            callProvider(NativeITextProvider2.class, NativeITextProvider2::GetCaretRange, null, null)
+        );
     }
     private long                ITextProvider2_RangeFromAnnotation(long annotationElement) {
-      long r = callProviderLong(NativeITextProvider2.class, prov -> prov.RangeFromAnnotation(annotationElement), 0L, 0L);
-      InstanceTracker.setReason(r, "ITextProvider2_RangeFromAnnotation");
-      return r;
+        return InstanceTracker.withReason("ITextProvider2_RangeFromAnnotation", () ->
+            callProviderLong(NativeITextProvider2.class, prov -> prov.RangeFromAnnotation(annotationElement), 0L, 0L)
+        );
     }
     // ITextEditProvider
     private long ITextEditProvider_GetActiveComposition() {
-        long r = callProviderLong(NativeITextEditProvider.class, NativeITextEditProvider::GetActiveComposition, 0L, 0L);
-        InstanceTracker.setReason(r, "ITextEditProvider_GetActiveComposition");
-        return r;
+        return InstanceTracker.withReason("ITextEditProvider_GetActiveComposition", () ->
+            callProviderLong(NativeITextEditProvider.class, NativeITextEditProvider::GetActiveComposition, 0L, 0L)
+        );
     }
     private long ITextEditProvider_GetConversionTarget() {
-        long r = callProviderLong(NativeITextEditProvider.class, NativeITextEditProvider::GetConversionTarget, 0L, 0L);
-        InstanceTracker.setReason(r, "ITextEditProvider_GetConversionTarget");
-        return r;
+        return InstanceTracker.withReason("ITextEditProvider_GetConversionTarget", () ->
+            callProviderLong(NativeITextEditProvider.class, NativeITextEditProvider::GetConversionTarget, 0L, 0L)
+        );
     }
 
     // IVirtualizedItemProvider

@@ -8,6 +8,7 @@ jmethodID InstanceTracker::mid_setReason;
 jmethodID InstanceTracker::mid_setJava;
 jmethodID InstanceTracker::mid_addRef;
 jmethodID InstanceTracker::mid_release;
+jmethodID InstanceTracker::mid_debug;
 
 
 Logger* InstanceTracker::LOG;
@@ -35,8 +36,18 @@ void InstanceTracker::_init(JNIEnv* env, jclass jClass) {
   if (env->ExceptionCheck()) return;
   mid_release = env->GetStaticMethodID(jClass, "release", "(J)V");
   if (env->ExceptionCheck()) return;
+  mid_debug = env->GetStaticMethodID(jClass, "debug", "(J)V");
+  if (env->ExceptionCheck()) return;
 
   LOG = Logger::create(env, "native.InstanceTracker");
+}
+
+void InstanceTracker::debug(void* pointer) {
+  GetEnv()->CallVoidMethod(cls, mid_debug, (jlong) pointer);
+  if (GetEnv()->ExceptionOccurred()) {
+    LOG->errorf("InstanceTracker::debug failed");
+    GetEnv()->ExceptionDescribe();
+  }
 }
 
 void InstanceTracker::create(void* pointer) {

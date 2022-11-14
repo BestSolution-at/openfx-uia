@@ -228,10 +228,9 @@ public final class WinAccessible extends Accessible {
     private int id;
 
     /* Text Support */
-    // private WinTextRangeProvider documentRange;
-    // private WinTextRangeProvider selectionRange;
-    private ProxyTextRangeProvider documentRange;
-    private ProxyTextRangeProvider selectionRange;
+    private boolean documentRangeRequested = false;
+    private int curSelectionStart = -1;
+    private int curSelectionEnd = -1;
 
     /* The lastIndex is used by parents to keep track of the index of the last child
      * returned in Navigate. It is very common for Narrator to traverse the children
@@ -274,19 +273,18 @@ public final class WinAccessible extends Accessible {
     @Override
     public void dispose() {
         super.dispose();
-        if (selectionRange != null) {
-            selectionRange.dispose();
-            selectionRange = null;
-        }
-        if (documentRange != null) {
-            documentRange.dispose();
-            documentRange = null;
-        }
+        // if (glassSelectionRange != null) {
+        //   glassSelectionRange = null;
+        // }
+        // if (selectionRange != null) {
+        //     selectionRange.dispose();
+        //     selectionRange = null;
+        // }
+        // if (documentRange != null) {
+        //     documentRange.dispose();
+        //     documentRange = null;
+        // }
         peer = 0L;
-        //if (peer != 0L) {
-        //    _destroyGlassAccessible(peer);
-        //    peer = 0L;
-        //}
     }
 
     private boolean firstFocusEvent = true;
@@ -394,17 +392,15 @@ public final class WinAccessible extends Accessible {
             }
             case SELECTION_START:
             case SELECTION_END:
-                if (selectionRange != null) {
-                    Integer start = (Integer)getAttribute(SELECTION_START);
-                    boolean newStart = start != null && start != selectionRange.glassImpl.getStart();
-                    Integer end = (Integer)getAttribute(SELECTION_END);
-                    boolean newEnd = end != null && end != selectionRange.glassImpl.getEnd();
-                    /* Sending unnecessary selection changed events causes Narrator
-                     * not to focus an empty text control when clicking.
-                     */
-                    if (newStart || newEnd) {
-                        UiaRaiseAutomationEvent(peer, UIA_Text_TextSelectionChangedEventId);
-                    }
+                Integer start = (Integer)getAttribute(SELECTION_START);
+                boolean newStart = start != null && start != curSelectionStart; //glassSelectionRange.getStart();
+                Integer end = (Integer)getAttribute(SELECTION_END);
+                boolean newEnd = end != null && end != curSelectionEnd; //glassSelectionRange.getEnd();
+                /* Sending unnecessary selection changed events causes Narrator
+                  * not to focus an empty text control when clicking.
+                  */
+                if (newStart || newEnd) {
+                    UiaRaiseAutomationEvent(peer, UIA_Text_TextSelectionChangedEventId);
                 }
                 break;
             case TEXT:
@@ -424,7 +420,7 @@ public final class WinAccessible extends Accessible {
                     }
                 }
 
-                if (selectionRange != null || documentRange != null) {
+                if (curSelectionStart != -1 || documentRangeRequested) {
                     UiaRaiseAutomationEvent(peer, UIA_Text_TextChangedEventId);
                 }
                 break;
@@ -1232,14 +1228,10 @@ public final class WinAccessible extends Accessible {
             }
             case TEXT_FIELD:
             case TEXT_AREA: {
-                if (selectionRange == null) {
-                    selectionRange = ProxyTextRangeProvider.wrap(proxy, new WinTextRangeProvider(this));
-                    // selectionRange = new ProxyTextRangeProvider(proxy, new WinTextRangeProvider(this));
-                    selectionRange.setOnNativeDelete(() -> {
-                      this.selectionRange = null;
-                      LOG.debug(this, () -> "selectionRange auto clear");
-                    });
-                }
+                ProxyTextRangeProvider selectionRange = ProxyTextRangeProvider.wrap(proxy, new WinTextRangeProvider(this));
+                selectionRange.setOnNativeDelete(() -> {
+                  LOG.debug(this, () -> "selectionRange auto clear " + selectionRange);
+                });
                 Integer result = (Integer)getAttribute(SELECTION_START);
                 int start = result != null ? result : 0;
                 int end = -1;
@@ -1254,11 +1246,13 @@ public final class WinAccessible extends Accessible {
                 }
                 if (length != -1 && end <= length) {
                     selectionRange.glassImpl.setRange(start, end);
+                    curSelectionStart = start;
+                    curSelectionEnd = end;
                 } else {
                     selectionRange.glassImpl.setRange(0, 0);
+                    curSelectionStart = 0;
+                    curSelectionEnd = 0;
                 }
-
-
 
                 return new long[] {selectionRange.getNativeProvider()};
             }
@@ -1446,7 +1440,6 @@ public final class WinAccessible extends Accessible {
         if (offset != null) {
             WinTextRangeProvider range = new WinTextRangeProvider(this);
             range.setRange(offset, offset);
-            // return new ProxyTextRangeProvider(proxy, range).getNativeProvider();
             return ProxyTextRangeProvider.wrapNative(proxy, range);
         }
         return 0;
@@ -1454,16 +1447,15 @@ public final class WinAccessible extends Accessible {
 
     public long get_DocumentRange() {
         if (isDisposed()) return 0;
-        if (documentRange == null) {
-          documentRange = ProxyTextRangeProvider.wrap(proxy, new WinTextRangeProvider(this));
-            // documentRange = new ProxyTextRangeProvider(proxy, new WinTextRangeProvider(this));
-            documentRange.setOnNativeDelete(() -> {
-              this.documentRange = null;
-              LOG.debug(this, () -> "documentRange auto clear");
-            });
-        }
+
         String text = (String)getAttribute(TEXT);
         if (text == null) return 0;
+
+        ProxyTextRangeProvider documentRange = ProxyTextRangeProvider.wrap(proxy, new WinTextRangeProvider(this));
+        documentRangeRequested = true;
+        documentRange.setOnNativeDelete(() -> {
+          LOG.debug(this, () -> "documentRange auto clear");
+        });
         documentRange.glassImpl.setRange(0, text.length());
         return documentRange.getNativeProvider();
     }
