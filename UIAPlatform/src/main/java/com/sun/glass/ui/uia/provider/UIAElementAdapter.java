@@ -25,13 +25,11 @@
 package com.sun.glass.ui.uia.provider;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import com.sun.glass.ui.uia.Logger;
 import com.sun.glass.ui.uia.ProxyAccessible;
@@ -171,7 +169,7 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
 
     @Override
     public float[] get_BoundingRectangle() {
-        return Convert.convertBounds(provider.getBounds());
+        return Convert.convertBounds(accessible.getPlatformBounds(provider.getBounds()));
     }
 
     @Override

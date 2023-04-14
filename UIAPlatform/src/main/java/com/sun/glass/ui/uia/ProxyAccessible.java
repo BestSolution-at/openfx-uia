@@ -28,7 +28,6 @@ import java.lang.reflect.Method;
 import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
@@ -70,16 +69,21 @@ import com.sun.glass.ui.uia.provider.NativeIStylesProvider;
 import com.sun.glass.ui.uia.provider.UIAElementAdapter;
 import com.sun.javafx.tk.quantum.QuantumToolkit;
 
+import javafx.geometry.BoundingBox;
+import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.AccessibleAction;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.uia.ExpandCollapseState;
 import javafx.uia.IUIAElement;
 import javafx.uia.IUIAVirtualElement;
 import javafx.uia.IUIAVirtualRootElement;
 import javafx.uia.StandardPatternIds;
 import javafx.uia.Variant;
+
+import com.sun.glass.ui.uia.ProxyAccessible;
 
 @SuppressWarnings("restriction")
 public class ProxyAccessible extends Accessible {
@@ -169,6 +173,16 @@ public class ProxyAccessible extends Accessible {
         LOG.debug(this, () -> "created. (virtual)");
 
         saveCreationStack();
+    }
+
+    public float[] getPlatformBounds(float x, float y, float w, float h) {
+        Scene scene = (Scene) getGlassAccessibleRoot().getAttribute(AccessibleAttribute.SCENE);
+        return PlatformBoundsUtil.convertToPlatformBounds(scene, x, y, w, h);
+    }
+
+    public Bounds getPlatformBounds(Bounds bounds) {
+        float[] b = this.getPlatformBounds((float) bounds.getMinX(), (float) bounds.getMinY(), (float) bounds.getWidth(), (float) bounds.getHeight());
+        return new BoundingBox(b[0], b[1], b[2], b[3]);
     }
 
     @SuppressWarnings("unchecked")

@@ -371,7 +371,8 @@ public class ProxyTextRangeProvider {
         return Util.guard(() -> {
           if (this.isUIA()) {
             Bounds[] bounds = uiaImpl.GetBoundingRectangles();
-            return Convert.convertBoundsArrayDouble(bounds);
+            Bounds[] platformBounds = Arrays.stream(bounds).map(b -> accessible.getPlatformBounds((b))).toArray(size -> new Bounds[size]);
+            return Convert.convertBoundsArrayDouble(platformBounds);
           } else if (this.isGlass()) {
             return glassImpl.GetBoundingRectangles();
           } else {

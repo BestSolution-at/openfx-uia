@@ -958,7 +958,10 @@ public final class WinAccessible extends Accessible {
         }
         return variant;
     }
-
+    
+    float[] getPlatformBounds(float x, float y, float w, float h) {
+        return proxy.getPlatformBounds(x, y, w, h);
+    }
     /* **********************************************/
     /*       IRawElementProviderFragment           */
     /* **********************************************/
@@ -969,8 +972,10 @@ public final class WinAccessible extends Accessible {
 
         Bounds bounds = (Bounds)getAttribute(BOUNDS);
         if (bounds != null) {
-            return new float[] {(float)bounds.getMinX(), (float)bounds.getMinY(),
-                                (float)bounds.getWidth(), (float)bounds.getHeight()};
+            return getPlatformBounds(   (float) bounds.getMinX(),
+                                        (float) bounds.getMinY(),
+                                        (float) bounds.getWidth(),
+                                        (float) bounds.getHeight());                    
         }
         return null;
     }
