@@ -428,7 +428,20 @@ IFACEMETHODIMP ProxyAccessible::GetPatternProvider(PATTERNID patternId, IUnknown
 }
 
 IFACEMETHODIMP ProxyAccessible::GetPropertyValue(PROPERTYID propertyId, VARIANT* pResult) {
-  IMPL_CALL_VARIANT(pResult, mid_IRawElementProviderSimple_GetPropertyValue, _int(propertyId));
+  // For now we output here the propertyId on hr fail (#25)
+  //IMPL_CALL_VARIANT(pResult, mid_IRawElementProviderSimple_GetPropertyValue, _int(propertyId));
+  IMPL_BEGIN
+  try {
+    assert_arg(pResult);
+    auto env = get_env();
+    LocalFrame frame(env, 10);
+    auto result = call_object(env, get_jobject(), mid_IRawElementProviderSimple_GetPropertyValue, _int(propertyId));
+    fill_variant(env, result, pResult);
+  } catch (HRESULT hr) {
+    std::cerr << "[HR FAIL] The following HR FAIL happened during GetPropertyValue(propertyId = " << propertyId << ") call:" << std::endl;
+    throw hr;
+  }
+  IMPL_END
 }
 
 /***********************************************/
