@@ -438,7 +438,22 @@ IFACEMETHODIMP ProxyAccessible::GetPropertyValue(PROPERTYID propertyId, VARIANT*
     auto result = call_object(env, get_jobject(), mid_IRawElementProviderSimple_GetPropertyValue, _int(propertyId));
     fill_variant(env, result, pResult);
   } catch (HRESULT hr) {
-    std::cerr << "[HR FAIL] The following HR FAIL happened during GetPropertyValue(propertyId = " << propertyId << ") call:" << std::endl;
+
+    try {
+      VARIANT v;
+      VariantInit(&v);
+
+      auto env = get_env();
+      LocalFrame frame(env, 10);
+      auto r = call_object(env, get_jobject(), mid_IRawElementProviderSimple_GetPropertyValue, _int(UIA_ControlTypePropertyId));
+      fill_variant(env, r, &v);
+
+      auto controlTypeId = v.lVal;
+      VariantClear(&v);
+      std::cerr << "[HR FAIL] The following HR FAIL happened during GetPropertyValue(propertyId = " << propertyId << ") call (controlTypeId=" << controlTypeId << "):" << std::endl;
+    } catch(...) {
+    }
+    
     throw hr;
   }
   IMPL_END
