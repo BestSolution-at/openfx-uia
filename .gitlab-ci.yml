@@ -22,8 +22,8 @@ build:
       }
       $env:JAVA_HOME = "$pwd\java\zulu8.68.0.21-ca-fx-jdk8.0.362-win_x64"
       $env:JDK8FX = "$pwd\java\zulu8.68.0.21-ca-fx-jdk8.0.362-win_x64"
-    - Import-Module "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
-    - Enter-VsDevShell -VsInstallPath "C:\Program Files (x86)\Microsoft Visual Studio\2019\BuildTools"
+    - Import-Module "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\Common7\Tools\Microsoft.VisualStudio.DevShell.dll"
+    - Enter-VsDevShell -VsInstallPath "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools"
   script:
     - ./gradlew --no-daemon assemble phatJar
   tags:
