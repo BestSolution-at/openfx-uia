@@ -314,15 +314,17 @@ public final class WinAccessible extends Accessible {
                     long focus = GetFocus();
                     if (focus != 0) {
                         LOG.debug(this, () -> "->FocusChanged with View, " + focus);
-                        if (this.firstFocusEvent) {
-                          delay(() -> {
-                            LOG.debug(this, () -> "RESEND ->FocusChanged with View, " + focus);
-                            UiaRaiseAutomationEvent(focus, UIA_AutomationFocusChangedEventId);
-                          }, 15);
-                          this.firstFocusEvent = false;
-                        } else {
+                        // Note: This delay may be the cause for the JAWS crash
+                        // if (this.firstFocusEvent) {
+                        //   delay(() -> {
+                        //     long focus2 = GetFocus();
+                        //     LOG.debug(this, () -> "RESEND ->FocusChanged with View, " + focus);
+                        //     UiaRaiseAutomationEvent(focus, UIA_AutomationFocusChangedEventId);
+                        //   }, 15);
+                        //   this.firstFocusEvent = false;
+                        // } else {
                           UiaRaiseAutomationEvent(focus, UIA_AutomationFocusChangedEventId);
-                        }
+                        // }
                     }
                 } else {
                     // This is a Scene.transientFocusContainer
