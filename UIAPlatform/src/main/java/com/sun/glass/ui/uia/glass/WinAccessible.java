@@ -314,10 +314,17 @@ public final class WinAccessible extends Accessible {
                     long focus = GetFocus();
                     if (focus != 0) {
                         LOG.debug(this, () -> "->FocusChanged with View, " + focus);
+                        // Note: This delay is the cause for the JAWS crash (see Issue 30)
+                        // Note: The additional focus check prevents JAWS from crashing (we issued an event for an already disposed object)
                         if (this.firstFocusEvent) {
                           delay(() -> {
-                            LOG.debug(this, () -> "RESEND ->FocusChanged with View, " + focus);
-                            UiaRaiseAutomationEvent(focus, UIA_AutomationFocusChangedEventId);
+                            long focus2 = GetFocus();
+                            if (focus2 == 0 || focus != focus2) {
+                                LOG.debug(this, () -> "SKIP RESEND-> FocusChanged");
+                            } else {
+                                LOG.debug(this, () -> "RESEND ->FocusChanged with View, " + focus);
+                                UiaRaiseAutomationEvent(focus, UIA_AutomationFocusChangedEventId);
+                            }
                           }, 15);
                           this.firstFocusEvent = false;
                         } else {
