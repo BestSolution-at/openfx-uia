@@ -31,36 +31,41 @@ import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
 public class Util {
+
     private Util() {
 
+    }
+
+    static void onFallthrough(Throwable t) {
+        t.printStackTrace();
     }
 
     static void guard(Runnable code) {
         try {
             code.run();
+        } catch (HResultException he) {
+            throw he;
         } catch (Throwable t) {
-            t.printStackTrace();
+            onFallthrough(t);
+            throw new HResultException(HResultException.E_FAIL);
         }
     }
     static int guard(IntSupplier code) {
         try {
             return code.getAsInt();
+        } catch (HResultException he) {
+            throw he;
         } catch (Throwable t) {
-            t.printStackTrace();
-            return -1;
+            onFallthrough(t);
+            throw new HResultException(HResultException.E_FAIL);
         }
     }
-    static int guard(IntSupplier code, int errorValue) {
-        try {
-            return code.getAsInt();
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return errorValue;
-        }
-    }
+
     static long guard(LongSupplier code) {
         try {
             return code.getAsLong();
+        } catch (HResultException he) {
+            throw he;
         } catch (Throwable t) {
             t.printStackTrace();
             return -1;
@@ -70,68 +75,84 @@ public class Util {
     static long guard(LongSupplier code, long onFail) {
         try {
             return code.getAsLong();
+        } catch (HResultException he) {
+            throw he;
         } catch (Throwable t) {
-            t.printStackTrace();
-            return onFail;
+            onFallthrough(t);
+            throw new HResultException(HResultException.E_FAIL);
         }
     }
 
-    static double guard(DoubleSupplier code, double onFail) {
+    static double guard(DoubleSupplier code) {
         try {
             return code.getAsDouble();
+        } catch (HResultException he) {
+            throw he;
         } catch (Throwable t) {
-            t.printStackTrace();
-            return onFail;
+             onFallthrough(t);
+            throw new HResultException(HResultException.E_FAIL);
         }
     }
+
+    // static double guard(DoubleSupplier code, double onFail) {
+    //     try {
+    //         return code.getAsDouble();
+    //     } catch (HResultException he) {
+    //         throw he;
+    //     } catch (Throwable t) {
+    //         t.printStackTrace();
+    //         return onFail;
+    //     }
+    // }
 
     static <T> T guard(Supplier<T> code) {
         try {
             return code.get();
+        } catch (HResultException he) {
+            throw he;
         } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
+            onFallthrough(t);
+            throw new HResultException(HResultException.E_FAIL);
         }
     }
-    static <T> T guard(Supplier<T> code, T onFail) {
-        try {
-            return code.get();
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return onFail;
-        }
-    }
+    // static <T> T guard(Supplier<T> code, T onFail) {
+    //     try {
+    //         return code.get();
+    //     } catch (HResultException he) {
+    //         throw he;
+    //     } catch (Throwable t) {
+    //         t.printStackTrace();
+    //         return onFail;
+    //     }
+    // }
     static interface FloatArraySupplier {
         float[] get();
     }
     static float[] guard(FloatArraySupplier code) {
         try {
             return code.get();
+        } catch (HResultException he) {
+            throw he;
         } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
+            onFallthrough(t);
+            throw new HResultException(HResultException.E_FAIL);
         }
     }
     static interface IntArraySupplier {
         int[] get();
     }
-    static int[] guard(IntArraySupplier code) {
-        try {
-            return code.get();
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
-        }
-    }
+
     static interface LongArraySupplier {
         long[] get();
     }
     static long[] guard(LongArraySupplier code) {
         try {
             return code.get();
+        } catch (HResultException he) {
+            throw he;
         } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
+            onFallthrough(t);
+            throw new HResultException(HResultException.E_FAIL);
         }
     }
 }

@@ -85,3 +85,7 @@ For how to use UIA look at the Microsoft documentation (here is a link to the [C
  * Most types are provided in a java friendly way. Type names should be the same as in the C API.
  * Events are encapsulated in `IEvent` objects which can be obtained from the initialze method in the providers (There are also Context objects in the providers which provider the default events)
  * Property Change events are encapsulated in `IProperty` objects which can be obtained from the initialize method in the providers (Those are also provided by the Context objects)
+
+
+ # Development Notes
+ When launching via gradle the `--no-daemon` flag helps with the initial focus of the launched application. If omitted it behaves differently compared to starting by double clicking an icon.

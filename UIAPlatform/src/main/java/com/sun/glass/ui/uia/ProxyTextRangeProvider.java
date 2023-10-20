@@ -53,9 +53,11 @@ public class ProxyTextRangeProvider {
 
   private static Logger LOG = Logger.create(ProxyTextRangeProvider.class);
 
-    public static class TextRangeProviderException extends RuntimeException {
+    public static class TextRangeProviderException extends HResultException {
+      String msg;
       public TextRangeProviderException(String msg) {
-        super(msg);
+        super(E_INVALIDARG);
+        this.msg = msg;
       }
     }
     
@@ -109,7 +111,7 @@ public class ProxyTextRangeProvider {
       peer = _createTextRangeProvider(accessible.getNativeAccessible());
       id = idCount++;
 
-      LOG.debug(this, () -> "created. (glass) acc=" + accessible);
+      // LOG.debug(this, () -> "created. (glass) acc=" + accessible);
     }
 
     private ProxyTextRangeProvider(ProxyAccessible accessible, ITextRangeProvider uiaImpl) {
@@ -171,7 +173,7 @@ public class ProxyTextRangeProvider {
     }
 
     private void onNativeDelete() {
-     LOG.debug(this, () -> "TextRange was deleted by refcount.");
+    //  LOG.debug(this, () -> "TextRange was deleted by refcount.");
       if (this.nativeDeleteCallback != null) {
         this.nativeDeleteCallback.run();;
         this.nativeDeleteCallback = null;
@@ -364,7 +366,7 @@ public class ProxyTextRangeProvider {
           } else {
             throw new TextRangeProviderException("provider missing");
           }
-        }, Variant.vt_empty().toWinVariant());
+        });
     }
 
     private double[] GetBoundingRectangles() {
@@ -440,7 +442,7 @@ public class ProxyTextRangeProvider {
     }
 
     private void MoveEndpointByRange(int endpoint, ProxyTextRangeProvider targetRange, int targetEndpoint) {
-      LOG.debug(() -> "MoveEndpointByRange: " + endpoint + ", " + targetRange + ", " + targetEndpoint);
+      //LOG.debug(() -> "MoveEndpointByRange: " + endpoint + ", " + targetRange + ", " + targetEndpoint);
         Util.guard(() -> {
           if (this.isUIA() && targetRange.isUIA()) {
             uiaImpl.MoveEndpointByRange(TextPatternRangeEndpoint.fromNativeValue(endpoint).get(), targetRange.uiaImpl, TextPatternRangeEndpoint.fromNativeValue(targetEndpoint).get());
