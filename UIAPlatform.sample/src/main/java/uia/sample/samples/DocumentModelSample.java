@@ -39,6 +39,21 @@ import uia.sample.samples.model.UIATableHeaderCell;
 
 public class DocumentModelSample implements Sample {
 
+    static class EditorState {
+        int caretOffset;
+        int selectionBegin;
+        int selectionEnd;
+
+        EditorState(int caretOffset, int selectionBegin, int selectionEnd) {
+            this.caretOffset = caretOffset;
+            this.selectionBegin = selectionBegin;
+            this.selectionEnd = selectionEnd;
+        }
+    }
+    static interface InputHandler {
+        EditorState handle(EditorState state);
+    }
+
     private UIATable createTable() {
         UIATable table = new UIATable();
         table.colCount = 3;
@@ -235,6 +250,8 @@ public class DocumentModelSample implements Sample {
         public EditorPane(UIADocument uiaDocument) {
             this.doc = uiaDocument;
 
+
+
             canvas = new Canvas() {
 
             };
@@ -316,41 +333,91 @@ public class DocumentModelSample implements Sample {
             final KeyCombination RIGHT = KeyCombination.keyCombination("Right");
             final KeyCombination SHIFT_LEFT = KeyCombination.keyCombination("Shift+Left");
             final KeyCombination SHIFT_RIGHT = KeyCombination.keyCombination("Shift+Right");
+            final KeyCombination CTRL_LEFT = KeyCombination.keyCombination("Ctrl+Left");
+            final KeyCombination CTRL_RIGHT = KeyCombination.keyCombination("Ctrl+Right");
+
+            InputHandler onCtrlLeft = state -> {
+                System.err.println("Ctrl+Left");
+                return state;
+            };
+            InputHandler onCtrlRight = state -> {
+                System.err.println("Ctrl+Right");
+
+
+                return state;
+            };
+            InputHandler onShiftLeft = state -> {
+                System.err.println("Shift+Left");
+
+                if (state.selectionBegin == -1) state.selectionBegin = state.caretOffset;
+                if (state.caretOffset != 0) state.caretOffset -= 1;
+                state.selectionEnd = state.caretOffset;
+
+                return state;
+            };
+            InputHandler onShiftRight = state -> {
+                System.err.println("Shift+Right");
+
+                if (state.selectionBegin == -1) state.selectionBegin = state.caretOffset;
+                state.caretOffset += 1;
+                state.selectionEnd = state.caretOffset;
+
+                return state;
+            };
+            InputHandler onLeft = state -> {
+                System.err.println("Left");
+
+                if (state.caretOffset != 0) state.caretOffset -= 1;
+                state.selectionBegin = -1;
+                state.selectionEnd = -1;
+
+                return state;
+            };
+            InputHandler onRight = state -> {
+                System.err.println("Right");
+
+                state.caretOffset += 1;
+                state.selectionBegin = -1;
+                state.selectionEnd = -1;
+
+                return state;
+            };
+
+
             addEventHandler(KeyEvent.KEY_PRESSED, evt -> {
-                int offset = caretOffset.get();
-                int selBegin = selectionBegin.get();
-                int selEnd = selectionEnd.get();
+                EditorState state = new EditorState(caretOffset.get(), selectionBegin.get(), selectionEnd.get());
+
                 if (LEFT.match(evt)) {
-                   if (offset != 0) offset -= 1;
-                   selBegin = -1;
-                   selEnd = -1;
+                   state = onLeft.handle(state);
                    evt.consume();
                 }
                 if (RIGHT.match(evt)) {
-                    offset += 1;
-                    selBegin = -1;
-                    selEnd = -1;
+                    state = onRight.handle(state);
                     evt.consume();
                 }
                 if (SHIFT_LEFT.match(evt)) {
-                    if (selBegin == -1) selBegin = offset;
-                    if (offset != 0) offset -= 1;
-                    selEnd = offset;
+                    state = onShiftLeft.handle(state);
                     evt.consume();
                 }
                 if (SHIFT_RIGHT.match(evt)) {
-                    if (selBegin == -1) selBegin = offset;
-                    offset += 1;
-                    selEnd = offset;
+                    state = onShiftRight.handle(state);
+                    evt.consume();
+                }
+                if (CTRL_LEFT.match(evt)) {
+                    state = onCtrlLeft.handle(state);
+                    evt.consume();
+                }
+                if (CTRL_RIGHT.match(evt)) {
+                    state = onCtrlRight.handle(state);
                     evt.consume();
                 }
 
-                caretOffset.set(limit(offset));
-                if (selBegin == selEnd) {
-                    selBegin = selEnd = -1;
+                caretOffset.set(limit(state.caretOffset));
+                if (state.selectionBegin == state.selectionEnd) {
+                    state.selectionBegin = state.selectionEnd = -1;
                 }
-                selectionBegin.set(limit(selBegin));
-                selectionEnd.set(limit(selEnd));
+                selectionBegin.set(limit(state.selectionBegin));
+                selectionEnd.set(limit(state.selectionEnd));
             });
 
             getChildren().setAll(canvas);
