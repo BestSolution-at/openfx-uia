@@ -25,6 +25,7 @@
 package com.sun.glass.ui.uia;
 
 import java.lang.Runnable;
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
@@ -32,15 +33,17 @@ import java.util.function.Supplier;
 
 public class Util {
 
+    private static Logger LOG = Logger.create(Util.class);
+
     private Util() {
 
     }
 
     static void onFallthrough(Throwable t) {
-        t.printStackTrace();
+        LOG.error(null, () -> "A client exception occured in guarded code", t);
     }
 
-    static void guard(Runnable code) {
+    static void guardVoid(Runnable code) {
         try {
             code.run();
         } catch (HResultException he) {
@@ -50,7 +53,7 @@ public class Util {
             throw new HResultException(HResultException.E_FAIL);
         }
     }
-    static int guard(IntSupplier code) {
+    static int guardInt(IntSupplier code) {
         try {
             return code.getAsInt();
         } catch (HResultException he) {
@@ -60,8 +63,18 @@ public class Util {
             throw new HResultException(HResultException.E_FAIL);
         }
     }
+    static boolean guardBoolean(BooleanSupplier code) {
+        try {
+            return code.getAsBoolean();
+        } catch (HResultException he) {
+            throw he;
+        } catch (Throwable t) {
+            onFallthrough(t);
+            throw new HResultException(HResultException.E_FAIL);
+        }
+    }
 
-    static long guard(LongSupplier code) {
+    static long guardLong(LongSupplier code) {
         try {
             return code.getAsLong();
         } catch (HResultException he) {
@@ -72,18 +85,7 @@ public class Util {
         }
     }
 
-    static long guard(LongSupplier code, long onFail) {
-        try {
-            return code.getAsLong();
-        } catch (HResultException he) {
-            throw he;
-        } catch (Throwable t) {
-            onFallthrough(t);
-            throw new HResultException(HResultException.E_FAIL);
-        }
-    }
-
-    static double guard(DoubleSupplier code) {
+    static double guardDouble(DoubleSupplier code) {
         try {
             return code.getAsDouble();
         } catch (HResultException he) {
@@ -94,18 +96,7 @@ public class Util {
         }
     }
 
-    // static double guard(DoubleSupplier code, double onFail) {
-    //     try {
-    //         return code.getAsDouble();
-    //     } catch (HResultException he) {
-    //         throw he;
-    //     } catch (Throwable t) {
-    //         t.printStackTrace();
-    //         return onFail;
-    //     }
-    // }
-
-    static <T> T guard(Supplier<T> code) {
+    static <T> T guardObject(Supplier<T> code) {
         try {
             return code.get();
         } catch (HResultException he) {
@@ -115,20 +106,23 @@ public class Util {
             throw new HResultException(HResultException.E_FAIL);
         }
     }
-    // static <T> T guard(Supplier<T> code, T onFail) {
-    //     try {
-    //         return code.get();
-    //     } catch (HResultException he) {
-    //         throw he;
-    //     } catch (Throwable t) {
-    //         t.printStackTrace();
-    //         return onFail;
-    //     }
-    // }
     static interface FloatArraySupplier {
         float[] get();
     }
-    static float[] guard(FloatArraySupplier code) {
+    static float[] guardFloatArray(FloatArraySupplier code) {
+        try {
+            return code.get();
+        } catch (HResultException he) {
+            throw he;
+        } catch (Throwable t) {
+            onFallthrough(t);
+            throw new HResultException(HResultException.E_FAIL);
+        }
+    }
+    static interface DoubleArraySupplier {
+        double[] get();
+    }
+    static double[] guardDoubleArray(DoubleArraySupplier code) {
         try {
             return code.get();
         } catch (HResultException he) {
@@ -141,11 +135,21 @@ public class Util {
     static interface IntArraySupplier {
         int[] get();
     }
+    static int[] guardIntArray(IntArraySupplier code) {
+        try {
+            return code.get();
+        } catch (HResultException he) {
+            throw he;
+        } catch (Throwable t) {
+            onFallthrough(t);
+            throw new HResultException(HResultException.E_FAIL);
+        }
+    }
 
     static interface LongArraySupplier {
         long[] get();
     }
-    static long[] guard(LongArraySupplier code) {
+    static long[] guardLongArray(LongArraySupplier code) {
         try {
             return code.get();
         } catch (HResultException he) {

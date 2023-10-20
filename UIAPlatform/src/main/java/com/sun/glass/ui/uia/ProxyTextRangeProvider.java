@@ -49,6 +49,8 @@ import javafx.uia.TextPatternRangeEndpoint;
 import javafx.uia.TextUnit;
 import javafx.uia.Variant;
 
+import static com.sun.glass.ui.uia.Util.*;
+
 public class ProxyTextRangeProvider {
 
   private static Logger LOG = Logger.create(ProxyTextRangeProvider.class);
@@ -191,7 +193,7 @@ public class ProxyTextRangeProvider {
     /*            ITextRangeProvider               */
     /***********************************************/
     private long Clone() {
-        return Util.guard(() -> {
+        return guardLong(() -> {
           return InstanceTracker.withReason("ITextRangeProvider_Clone", () -> {
 
             if (this.isUIA()) {
@@ -210,11 +212,11 @@ public class ProxyTextRangeProvider {
             
           });
 
-        }, 0L);
+        });
     }
 
     private boolean Compare(ProxyTextRangeProvider range) {
-        return Util.guard(() -> {
+        return guardBoolean(() -> {
           if (range == null) {
             return false;
           }
@@ -229,7 +231,7 @@ public class ProxyTextRangeProvider {
     }
 
     private int CompareEndpoints(int endpoint, ProxyTextRangeProvider targetRange, int targetEndpoint) {
-        return Util.guard(() -> {
+        return guardInt(() -> {
           if (this.isUIA() && targetRange.isUIA()) {
             return uiaImpl.CompareEndpoints(TextPatternRangeEndpoint.fromNativeValue(endpoint).get(), targetRange.uiaImpl, TextPatternRangeEndpoint.fromNativeValue(targetEndpoint).get());
           } else if (this.isGlass() && targetRange.isGlass()) {
@@ -241,7 +243,7 @@ public class ProxyTextRangeProvider {
     }
 
     private void ExpandToEnclosingUnit(int unit) {
-        Util.guard(() -> {
+        guardVoid(() -> {
           if (this.isUIA()) {
             uiaImpl.ExpandToEnclosingUnit(TextUnit.fromNativeValue(unit).get());
           } else if (this.isGlass()) {
@@ -274,34 +276,26 @@ public class ProxyTextRangeProvider {
             case Windows.VT_UNKNOWN:
                 return Variant.vt_unknown(Windows.VariantGetPunkVal(variant));
         }
-        LOG.warning(this, () -> "Variant unknown; using VT_EMPTY");
-        Thread.dumpStack();
+        LOG.warning(this, () -> "Variant unknown; using VT_EMPTY", new Exception());
         return Variant.vt_empty();
     }
 
     private long FindAttribute(int attributeId, long variantValue, boolean backward) {
-        return Util.guard(() -> {
-          return InstanceTracker.withReason("ITextRangeProvider_FindAttribute", ()->{
+        return guardLong(() -> {
+          return InstanceTracker.withReason("ITextRangeProvider_FindAttribute", () -> {
 
             if (this.isUIA()) {
-              try {
-                  ITextAttributeId id = ITextAttributeId.fromNativeValue(attributeId);
-                  javafx.uia.FindAttribute<Object> findAttribute = findAttributes.get(id);
-                  if (findAttribute != null) {
-                      Variant variant = convert(variantValue);
-                      IVariantConverter<Object> converter = converters.get(id);
-                      Object value = converter.toObject(variant);
-                      ITextRangeProvider range = findAttribute.findAttribute(backward, value);
-                      return wrapNative(accessible, range);
-                  } else {
-                      return 0L;
-                  }
-  
-  
-              } catch (Exception e) {
-                  e.printStackTrace();
-                  return 0L;
-              }
+                ITextAttributeId id = ITextAttributeId.fromNativeValue(attributeId);
+                javafx.uia.FindAttribute<Object> findAttribute = findAttributes.get(id);
+                if (findAttribute != null) {
+                    Variant variant = convert(variantValue);
+                    IVariantConverter<Object> converter = converters.get(id);
+                    Object value = converter.toObject(variant);
+                    ITextRangeProvider range = findAttribute.findAttribute(backward, value);
+                    return wrapNative(accessible, range);
+                } else {
+                    return 0L;
+                }
             } else if (this.isGlass()) {
               // TODO convert variant
               // but since glass FindAttribute always returns 0 we do it here
@@ -311,7 +305,7 @@ public class ProxyTextRangeProvider {
               throw new TextRangeProviderException("provider missing");
             }
           });
-        }, 0L);
+        });
     }
 
     private long FindAttribute(int attributeId, WinVariant val, boolean backward) {
@@ -319,7 +313,7 @@ public class ProxyTextRangeProvider {
     }
 
     private long FindText(String text, boolean backward, boolean ignoreCase) {
-        return Util.guard(() -> {
+        return guardLong(() -> {
           return InstanceTracker.withReason("ITextRangeProvider_FindText", () -> {
             if (this.isUIA()) {
               ITextRangeProvider range = uiaImpl.FindText(text, backward, ignoreCase);
@@ -331,7 +325,7 @@ public class ProxyTextRangeProvider {
               throw new TextRangeProviderException("provider missing");
             }
           });
-        }, 0L);
+        });
     }
 
     private WinVariant convert(Variant variant) {
@@ -339,7 +333,7 @@ public class ProxyTextRangeProvider {
     }
 
     private WinVariant GetAttributeValue(int attributeId) {
-        return Util.guard(() -> {
+        return guardObject(() -> {
           if (this.isUIA()) {
             ITextAttributeId id = ITextAttributeId.fromNativeValue(attributeId);
 
@@ -370,7 +364,7 @@ public class ProxyTextRangeProvider {
     }
 
     private double[] GetBoundingRectangles() {
-        return Util.guard(() -> {
+        return guardDoubleArray(() -> {
           if (this.isUIA()) {
             Bounds[] bounds = uiaImpl.GetBoundingRectangles();
             Bounds[] platformBounds = Arrays.stream(bounds).map(b -> accessible.getPlatformBounds((b))).toArray(size -> new Bounds[size]);
@@ -384,7 +378,7 @@ public class ProxyTextRangeProvider {
     }
 
     private long GetEnclosingElement() {
-        return Util.guard(() -> {
+        return guardLong(() -> {
           if (this.isUIA()) {
             return (long) Optional.ofNullable(uiaImpl.GetEnclosingElement())
             .map(element -> {
@@ -406,7 +400,7 @@ public class ProxyTextRangeProvider {
     }
 
     private String GetText(int maxLength) {
-        return Util.guard(() -> {
+        return guardObject(() -> {
           if (this.isUIA()) {
             return uiaImpl.GetText(maxLength);
           } else if (this.isGlass()) {
@@ -418,7 +412,7 @@ public class ProxyTextRangeProvider {
     }
 
     private int Move(int unit, final int requestedCount) {
-        return Util.guard(() -> {
+        return guardInt(() -> {
           if (this.isUIA()) {
             return uiaImpl.Move(TextUnit.fromNativeValue(unit).get(), requestedCount);
           } else if (this.isGlass()) {
@@ -430,7 +424,7 @@ public class ProxyTextRangeProvider {
     }
 
     private int MoveEndpointByUnit(int endpoint, int unit, final int requestedCount) {
-        return Util.guard(() -> {
+        return guardInt(() -> {
           if (this.isUIA()) {
             return uiaImpl.MoveEndpointByUnit(TextPatternRangeEndpoint.fromNativeValue(endpoint).get(), TextUnit.fromNativeValue(unit).get(), requestedCount);
           } else if (this.isGlass()) {
@@ -443,7 +437,7 @@ public class ProxyTextRangeProvider {
 
     private void MoveEndpointByRange(int endpoint, ProxyTextRangeProvider targetRange, int targetEndpoint) {
       //LOG.debug(() -> "MoveEndpointByRange: " + endpoint + ", " + targetRange + ", " + targetEndpoint);
-        Util.guard(() -> {
+        guardVoid(() -> {
           if (this.isUIA() && targetRange.isUIA()) {
             uiaImpl.MoveEndpointByRange(TextPatternRangeEndpoint.fromNativeValue(endpoint).get(), targetRange.uiaImpl, TextPatternRangeEndpoint.fromNativeValue(targetEndpoint).get());
           } else if (this.isGlass() && targetRange.isGlass()) {
@@ -455,7 +449,7 @@ public class ProxyTextRangeProvider {
     }
 
     private void Select() {
-        Util.guard(() -> {
+        guardVoid(() -> {
           if (this.isUIA()) {
             uiaImpl.Select();
           } else if (this.isGlass()) {
@@ -467,7 +461,7 @@ public class ProxyTextRangeProvider {
     }
 
     private void AddToSelection() {
-        Util.guard(() -> {
+        guardVoid(() -> {
           if (this.isUIA()) {
             uiaImpl.AddToSelection();
           } else if (this.isGlass()) {
@@ -479,7 +473,7 @@ public class ProxyTextRangeProvider {
     }
 
     private void RemoveFromSelection() {
-        Util.guard(() -> {
+        guardVoid(() -> {
           if (this.isUIA()) {
             uiaImpl.RemoveFromSelection();
           } else if (this.isGlass()) {
@@ -492,7 +486,7 @@ public class ProxyTextRangeProvider {
     }
 
     private void ScrollIntoView(boolean alignToTop) {
-        Util.guard(() -> {
+        guardVoid(() -> {
           if (this.isUIA()) {
             uiaImpl.ScrollIntoView(alignToTop);
           } else if (this.isGlass()) {
@@ -504,7 +498,7 @@ public class ProxyTextRangeProvider {
     }
 
     private long[] GetChildren() {
-        return Util.guard(() -> {
+        return guardLongArray(() -> {
           if (this.isUIA()) {
             IUIAElement[] childElements = uiaImpl.GetChildren();
             return Arrays.stream(childElements)
@@ -530,7 +524,7 @@ public class ProxyTextRangeProvider {
     /*            ITextRangeProvider2              */
     /***********************************************/
     private void ShowContextMenu() {
-        Util.guard(() -> {
+        guardVoid(() -> {
           if (this.isUIA()) {
             // TODO disable ITextRangeProvider2 interface in IUnknown casting if not available
             if (uiaImpl instanceof ITextRangeProvider2) {

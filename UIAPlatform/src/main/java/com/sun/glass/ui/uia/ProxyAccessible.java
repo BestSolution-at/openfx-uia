@@ -83,6 +83,9 @@ import javafx.uia.StandardPatternIds;
 
 import com.sun.glass.ui.uia.ProxyAccessible;
 
+
+import static com.sun.glass.ui.uia.Util.*;
+
 @SuppressWarnings("restriction")
 public class ProxyAccessible extends Accessible {
 
@@ -493,7 +496,7 @@ public class ProxyAccessible extends Accessible {
     /*     IRawElementProviderFragmentRoot         */
     /***********************************************/
     private long IRawElementProviderFragmentRoot_ElementProviderFromPoint(double x, double y) {
-        return Util.guard(() -> {
+        return guardLong(() -> {
             // glass should never be null, since this query is only executed at Scene Level
             Node node = glass.ElementProviderFromPointAsNode(x, y);
             ProxyAccessible accessible = getNodeAccessible(node);
@@ -519,7 +522,7 @@ public class ProxyAccessible extends Accessible {
     }
     private long IRawElementProviderFragmentRoot_GetFocus() {
         // Our only root is the scene itself, so GetFocus needs to be answered by the scene
-        return Util.guard(() -> {
+        return guardLong(() -> {
             checkGlass();
             return glass.GetFocus();
         });
@@ -528,13 +531,13 @@ public class ProxyAccessible extends Accessible {
     /*     IRawElementProviderAdviseEvents         */
     /***********************************************/
     private void IRawElementProviderAdviseEvents_AdviseEventAdded(int eventId, long propertyIDs) {
-        Util.guard(() -> {
+        guardVoid(() -> {
             checkGlass();
             glass.AdviseEventAdded(eventId, propertyIDs);
         });
     }
     private void IRawElementProviderAdviseEvents_AdviseEventRemoved(int eventId, long propertyIDs) {
-        Util.guard(() -> {
+        guardVoid(() -> {
             checkGlass();
             glass.AdviseEventRemoved(eventId, propertyIDs);
         });
@@ -587,7 +590,7 @@ public class ProxyAccessible extends Accessible {
     }
     /*  Note that this method is called by the IValueProvider also. */
     private boolean IRangeValueProvider_get_IsReadOnly() {
-        return Util.guard(() -> {
+        return guardBoolean(() -> {
             if (uiaElementAdapter != null) {
                 if (uiaElementAdapter.getProviderRegistry().isProviderAvailable(StandardPatternIds.UIA_RangeValuePatternId.getNativeValue())) {
                     return callProviderBoolean(NativeIRangeValueProvider.class, NativeIRangeValueProvider::get_IsReadOnly);
@@ -973,7 +976,7 @@ public class ProxyAccessible extends Accessible {
     // Utility functions
 
     <R> R callElementObjW(Function<UIAElementAdapter, R> method, Function<WinAccessible, R> glassMethod) {
-        return Util.guard(() -> {
+        return guardObject(() -> {
             if (uiaElementAdapter != null) {
                 return method.apply(uiaElementAdapter);
             } else {
@@ -984,7 +987,7 @@ public class ProxyAccessible extends Accessible {
     }
 
     void callElementW(Consumer<UIAElementAdapter> method, Consumer<WinAccessible> glassMethod) {
-        Util.guard(() -> {
+        guardVoid(() -> {
             if (uiaElementAdapter != null) {
                 method.accept(uiaElementAdapter);
             } else {
@@ -996,7 +999,7 @@ public class ProxyAccessible extends Accessible {
 
 
     long callElementLongW(ToLongFunction<UIAElementAdapter> method, ToLongFunction<WinAccessible> glassMethod) {
-        return Util.guard(() -> {
+        return guardLong(() -> {
             if (uiaElementAdapter != null) {
                 return method.applyAsLong(uiaElementAdapter);
             } else {
@@ -1007,7 +1010,7 @@ public class ProxyAccessible extends Accessible {
     }
 
     long[] callElementLongArrayW(ToLongArrayFunction<UIAElementAdapter> method, ToLongArrayFunction<WinAccessible> glassMethod) {
-        return Util.guard(() -> {
+        return guardLongArray(() -> {
             if (uiaElementAdapter != null) {
                 return method.applyAsLongArray(uiaElementAdapter);
             } else {
@@ -1018,7 +1021,7 @@ public class ProxyAccessible extends Accessible {
     }
 
     float[] callElementFloatArrayW(ToFloatArrayFunction<UIAElementAdapter> method, ToFloatArrayFunction<WinAccessible> glassMethod) {
-        return Util.guard(() -> {
+        return guardFloatArray(() -> {
             if (uiaElementAdapter != null) {
                 return method.applyAsFloatArray(uiaElementAdapter);
             } else {
@@ -1029,7 +1032,7 @@ public class ProxyAccessible extends Accessible {
     }
 
     int[] callElementIntArrayW(ToIntArrayFunction<UIAElementAdapter> method, ToIntArrayFunction<WinAccessible> glassMethod) {
-        return Util.guard(() -> {
+        return guardIntArray(() -> {
             if (uiaElementAdapter != null) {
                 return method.applyAsIntArray(uiaElementAdapter);
             } else {
@@ -1040,7 +1043,7 @@ public class ProxyAccessible extends Accessible {
     }
 
     <P> void callVoidProviderW(Class<P> providerType, Consumer<P> method, Consumer<WinAccessible> glassMethod) {
-        Util.guard(() -> {
+        guardVoid(() -> {
             P provider = getNativeProvider(providerType);
             if (provider != null) {
                 method.accept(provider);
@@ -1052,7 +1055,7 @@ public class ProxyAccessible extends Accessible {
     }
 
     <P> void callVoidProvider(Class<P> providerType, Consumer<P> method) {
-        Util.guard(() -> {
+        guardVoid(() -> {
             P provider = getNativeProvider(providerType);
             if (provider != null) {
                 method.accept(provider);
@@ -1063,7 +1066,7 @@ public class ProxyAccessible extends Accessible {
     }
 
     <P, R> R callProviderW(Class<P> providerType, Function<P, R> method, Function<WinAccessible, R> glassMethod) {
-        return Util.guard(() -> {
+        return guardObject(() -> {
             P provider = getNativeProvider(providerType);
             if (provider != null) {
                 return method.apply(provider);
@@ -1075,7 +1078,7 @@ public class ProxyAccessible extends Accessible {
     }
     
     <P, R> R callProvider(Class<P> providerType, Function<P, R> method) {
-        return Util.guard(() -> {
+        return guardObject(() -> {
             P provider = getNativeProvider(providerType);
             if (provider != null) {
                 return method.apply(provider);
@@ -1086,7 +1089,7 @@ public class ProxyAccessible extends Accessible {
     }
 
     <P> long callProviderLongW(Class<P> providerType, ToLongFunction<P> method, ToLongFunction<WinAccessible> glassMethod) {
-        return Util.guard(() -> {
+        return guardLong(() -> {
             P provider = getNativeProvider(providerType);
             if (provider != null) {
                 return method.applyAsLong(provider);
@@ -1097,7 +1100,7 @@ public class ProxyAccessible extends Accessible {
         });
     }
     <P> long callProviderLong(Class<P> providerType, ToLongFunction<P> method) {
-        return Util.guard(() -> {
+        return guardLong(() -> {
             P provider = getNativeProvider(providerType);
             if (provider != null) {
                 return method.applyAsLong(provider);
@@ -1108,7 +1111,7 @@ public class ProxyAccessible extends Accessible {
     }
    
     <P> long[] callProviderLongArrayW(Class<P> providerType, ToLongArrayFunction<P> method, ToLongArrayFunction<WinAccessible> alternative) {
-        return Util.guard(() -> {
+        return guardLongArray(() -> {
             P provider = getNativeProvider(providerType);
             if (provider != null) {
                 return method.applyAsLongArray(provider);
@@ -1120,7 +1123,7 @@ public class ProxyAccessible extends Accessible {
     }
 
     <P> int callProviderIntW(Class<P> providerType, ToIntFunction<P> method, ToIntFunction<WinAccessible> glassMethod) {
-        return Util.guard(() -> {
+        return guardInt(() -> {
             P provider = getNativeProvider(providerType);
             if (provider != null) {
                 return method.applyAsInt(provider);
@@ -1132,7 +1135,7 @@ public class ProxyAccessible extends Accessible {
     }
 
     <P> int callProviderInt(Class<P> providerType, ToIntFunction<P> method) {
-        return Util.guard(() -> {
+        return guardInt(() -> {
             P provider = getNativeProvider(providerType);
             if (provider != null) {
                 return method.applyAsInt(provider);
@@ -1144,7 +1147,7 @@ public class ProxyAccessible extends Accessible {
 
 
     <P> double callProviderDoubleW(Class<P> providerType, ToDoubleFunction<P> method, ToDoubleFunction<WinAccessible> glassMethod) {
-        return Util.guard(() -> {
+        return guardDouble(() -> {
             P provider = getNativeProvider(providerType);
             if (provider != null) {
                 return method.applyAsDouble(provider);
@@ -1156,7 +1159,7 @@ public class ProxyAccessible extends Accessible {
     }
 
     <P> double callProviderDouble(Class<P> providerType, ToDoubleFunction<P> method) {
-        return Util.guard(() -> {
+        return guardDouble(() -> {
             P provider = getNativeProvider(providerType);
             if (provider != null) {
                 return method.applyAsDouble(provider);
@@ -1168,7 +1171,7 @@ public class ProxyAccessible extends Accessible {
 
     
     <P> boolean callProviderBooleanW(Class<P> providerType, ToBooleanFunction<P> method, ToBooleanFunction<WinAccessible> alternative) {
-        return Util.guard(() -> {
+        return guardBoolean(() -> {
             P provider = getNativeProvider(providerType);
             if (provider != null) {
                 return method.applyAsBoolean(provider);
@@ -1180,7 +1183,7 @@ public class ProxyAccessible extends Accessible {
     }
 
     <P> boolean callProviderBoolean(Class<P> providerType, ToBooleanFunction<P> method) {
-        return Util.guard(() -> {
+        return guardBoolean(() -> {
             P provider = getNativeProvider(providerType);
             if (provider != null) {
                 return method.applyAsBoolean(provider);
