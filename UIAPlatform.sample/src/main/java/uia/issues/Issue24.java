@@ -1,4 +1,4 @@
-package uia.sample;
+package uia.issues;
 
 import javafx.application.Application;
 import javafx.collections.FXCollections;

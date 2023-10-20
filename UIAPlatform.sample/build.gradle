@@ -123,6 +123,35 @@ task debugWithAgent(type: JavaExec) {
     jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,address=5005'
 }
 
+// create run tasks for all issue classes
+fileTree("${project.projectDir}/src/main/java/uia/issues")
+.matching {
+    include "*.java"
+}.each {
+    String className = it.name.replaceAll("[.]java", "")
+    String taskName = "runIssue-" + className
+    String fullClassName = "uia.issues." + className
+
+    tasks.create(name: taskName, type: JavaExec) {
+        dependsOn configurations.agent
+
+        group = 'Issues'
+        description = "Runs the issue sample ${className}"
+
+        javaLauncher = javaToolchains.launcherFor {
+            languageVersion = JavaLanguageVersion.of(8)
+        }
+
+        classpath sourceSets.main.runtimeClasspath
+        main = fullClassName
+
+        systemProperties "uia.log": true
+        jvmArgs "-javaagent:${getAgentJar()}"
+        // jvmArgs "-verbose:jni"
+    }
+}
+
+
 
 task runIssue23(type: JavaExec) {
   dependsOn configurations.agent
@@ -191,7 +220,72 @@ task runIssue30(type: JavaExec) {
   // jvmArgs "-verbose:jni"
 }
 
+task runIllegalNotify(type: JavaExec) {
+  dependsOn configurations.agent
 
+  dependsOn configurations.withLogging
+  classpath configurations.withLogging
+
+  group = 'application'
+  description = 'Runs the sample with the glass platfrom configured'
+
+  javaLauncher = javaToolchains.launcherFor {
+      languageVersion = JavaLanguageVersion.of(8)
+  }
+
+  classpath sourceSets.main.runtimeClasspath
+  main = 'uia.sample.IllegalNotify'
+
+  systemProperties "uia.log": true
+  jvmArgs "-javaagent:${getAgentJar()}"
+  // jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,address=5005'
+  // jvmArgs "-verbose:jni"
+}
+
+task runTestUiaTextArea(type: JavaExec) {
+  dependsOn configurations.agent
+
+  dependsOn configurations.withLogging
+  classpath configurations.withLogging
+
+  group = 'application'
+  description = 'Runs the sample with the glass platfrom configured'
+
+  javaLauncher = javaToolchains.launcherFor {
+      languageVersion = JavaLanguageVersion.of(8)
+  }
+
+  classpath sourceSets.main.runtimeClasspath
+  main = 'uia.sample.TestUiaTextArea'
+
+  systemProperties "uia.log": true
+  jvmArgs "-javaagent:${getAgentJar()}"
+  // jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,address=5005'
+  // jvmArgs "-verbose:jni"
+}
+
+
+task runNotepad(type: JavaExec) {
+  dependsOn configurations.agent
+
+  dependsOn configurations.withLogging
+  classpath configurations.withLogging
+
+  group = 'application'
+  description = 'Runs the sample with the glass platfrom configured'
+
+  javaLauncher = javaToolchains.launcherFor {
+      languageVersion = JavaLanguageVersion.of(8)
+  }
+
+  classpath sourceSets.main.runtimeClasspath
+  main = 'uia.sample.samples.notepad.TextAst'
+
+  systemProperties "uia.log": true
+  jvmArgs "-javaagent:${getAgentJar()}"
+  // jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,address=5005'
+  // jvmArgs "-verbose:jni"
+}
 
 task runAlert(type: JavaExec) {
   dependsOn configurations.agent
