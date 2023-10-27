@@ -50,7 +50,7 @@ public class Util {
             throw he;
         } catch (Throwable t) {
             onFallthrough(t);
-            throw new HResultException(HResultException.E_FAIL);
+            throw new HResultException(HResultException.E_JAVAEXCEPTION);
         }
     }
     static int guardInt(IntSupplier code) {
@@ -60,7 +60,7 @@ public class Util {
             throw he;
         } catch (Throwable t) {
             onFallthrough(t);
-            throw new HResultException(HResultException.E_FAIL);
+            throw new HResultException(HResultException.E_JAVAEXCEPTION);
         }
     }
     static boolean guardBoolean(BooleanSupplier code) {
@@ -70,7 +70,7 @@ public class Util {
             throw he;
         } catch (Throwable t) {
             onFallthrough(t);
-            throw new HResultException(HResultException.E_FAIL);
+            throw new HResultException(HResultException.E_JAVAEXCEPTION);
         }
     }
 
@@ -92,7 +92,7 @@ public class Util {
             throw he;
         } catch (Throwable t) {
              onFallthrough(t);
-            throw new HResultException(HResultException.E_FAIL);
+            throw new HResultException(HResultException.E_JAVAEXCEPTION);
         }
     }
 
@@ -103,7 +103,7 @@ public class Util {
             throw he;
         } catch (Throwable t) {
             onFallthrough(t);
-            throw new HResultException(HResultException.E_FAIL);
+            throw new HResultException(HResultException.E_JAVAEXCEPTION);
         }
     }
     static interface FloatArraySupplier {
@@ -116,7 +116,7 @@ public class Util {
             throw he;
         } catch (Throwable t) {
             onFallthrough(t);
-            throw new HResultException(HResultException.E_FAIL);
+            throw new HResultException(HResultException.E_JAVAEXCEPTION);
         }
     }
     static interface DoubleArraySupplier {
@@ -129,7 +129,7 @@ public class Util {
             throw he;
         } catch (Throwable t) {
             onFallthrough(t);
-            throw new HResultException(HResultException.E_FAIL);
+            throw new HResultException(HResultException.E_JAVAEXCEPTION);
         }
     }
     static interface IntArraySupplier {
@@ -142,7 +142,7 @@ public class Util {
             throw he;
         } catch (Throwable t) {
             onFallthrough(t);
-            throw new HResultException(HResultException.E_FAIL);
+            throw new HResultException(HResultException.E_JAVAEXCEPTION);
         }
     }
 
@@ -156,7 +156,7 @@ public class Util {
             throw he;
         } catch (Throwable t) {
             onFallthrough(t);
-            throw new HResultException(HResultException.E_FAIL);
+            throw new HResultException(HResultException.E_JAVAEXCEPTION);
         }
     }
 }
