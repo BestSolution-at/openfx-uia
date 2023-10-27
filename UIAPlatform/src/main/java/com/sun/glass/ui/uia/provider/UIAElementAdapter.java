@@ -399,8 +399,9 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
             }
             
         }
-        // no defaults!
-        return null;
+        WinVariant empty = new WinVariant();
+        empty.vt = WinVariant.VT_EMPTY;
+        return empty;
     }
 
     
