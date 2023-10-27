@@ -1,4 +1,4 @@
-package uia.sample;
+package uia.issues;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
@@ -19,6 +19,8 @@ public class Issue23 extends Application {
         Scene scene = new Scene(hBox, 300, 275);
         primaryStage.setScene(scene);
         primaryStage.show();
+
+        primaryStage.toFront();
 
     }
 

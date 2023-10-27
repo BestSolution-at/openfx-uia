@@ -220,10 +220,13 @@ public class UIATextRange implements ITextRangeProvider {
                     }
                     break;
                 }
-                case Line: {
-                    break;
-                }
+                case Line:
                 case Paragraph: {
+                    BreakIterator bi = BreakIterator.getLineInstance();
+                    bi.setText(text);
+
+                    start = bi.preceding(start);
+                    end = bi.following(end);
                     break;
                 }
                 case Page:
@@ -393,7 +396,7 @@ public class UIATextRange implements ITextRangeProvider {
                     break;
                 }
                 case Paragraph: {
-                    BreakIterator bi = BreakIterator.getSentenceInstance();
+                    BreakIterator bi = BreakIterator.getLineInstance();
                     bi.setText(text);
                     int offset = bi.isBoundary(start) ? start : bi.preceding(start);
                     while (offset != BreakIterator.DONE && actualCount != requestedCount) {
@@ -516,7 +519,7 @@ public class UIATextRange implements ITextRangeProvider {
                     break;
                 }
                 case Paragraph: {
-                    BreakIterator bi = BreakIterator.getSentenceInstance();
+                    BreakIterator bi = BreakIterator.getLineInstance();
                     bi.setText(text);
                     while (offset != BreakIterator.DONE && actualCount != requestedCount) {
                         if (requestedCount > 0) {

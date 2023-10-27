@@ -288,21 +288,6 @@ public final class WinAccessible extends Accessible {
         peer = 0L;
     }
 
-    private boolean firstFocusEvent = true;
-
-    private void delay(Runnable action, long time) {
-      Thread delayThread = new Thread(() -> {
-        try {
-          Thread.sleep(time);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        }
-        Platform.runLater(action);
-      });
-      delayThread.setDaemon(true);
-      delayThread.start();
-    }
-
     @Override
     public void sendNotification(AccessibleAttribute notification) {
         if (isDisposed()) return;
@@ -313,23 +298,7 @@ public final class WinAccessible extends Accessible {
                     // This is a Scene
                     long focus = GetFocus();
                     if (focus != 0) {
-                        LOG.debug(this, () -> "->FocusChanged with View, " + focus);
-                        // Note: This delay is the cause for the JAWS crash (see Issue 30)
-                        // Note: The additional focus check prevents JAWS from crashing (we issued an event for an already disposed object)
-                        if (this.firstFocusEvent) {
-                          delay(() -> {
-                            long focus2 = GetFocus();
-                            if (focus2 == 0 || focus != focus2) {
-                                LOG.debug(this, () -> "SKIP RESEND-> FocusChanged");
-                            } else {
-                                LOG.debug(this, () -> "RESEND ->FocusChanged with View, " + focus);
-                                UiaRaiseAutomationEvent(focus, UIA_AutomationFocusChangedEventId);
-                            }
-                          }, 15);
-                          this.firstFocusEvent = false;
-                        } else {
-                          UiaRaiseAutomationEvent(focus, UIA_AutomationFocusChangedEventId);
-                        }
+                        UiaRaiseAutomationEvent(focus, UIA_AutomationFocusChangedEventId);
                     }
                 } else {
                     // This is a Scene.transientFocusContainer

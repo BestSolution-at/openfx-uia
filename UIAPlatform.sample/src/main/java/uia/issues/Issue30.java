@@ -1,4 +1,4 @@
-package uia.sample;
+package uia.issues;
 
 import java.util.Arrays;
 import java.util.List;

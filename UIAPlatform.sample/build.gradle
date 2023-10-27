@@ -123,75 +123,78 @@ task debugWithAgent(type: JavaExec) {
     jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,address=5005'
 }
 
+// create run tasks for all issue classes
+fileTree("${project.projectDir}/src/main/java/uia/issues")
+.matching {
+    include "*.java"
+}.each {
+    String className = it.name.replaceAll("[.]java", "")
+    String taskName = "runIssue-" + className
+    String fullClassName = "uia.issues." + className
 
-task runIssue23(type: JavaExec) {
-  dependsOn configurations.agent
+    tasks.create(name: taskName, type: JavaExec) {
+        dependsOn configurations.agent
 
-  dependsOn configurations.withLogging
-  classpath configurations.withLogging
+        group = 'Issues'
+        description = "Runs the issue sample ${className}"
 
-  group = 'application'
-  description = 'Runs the sample with the glass platfrom configured'
+        javaLauncher = javaToolchains.launcherFor {
+            languageVersion = JavaLanguageVersion.of(8)
+        }
 
-  javaLauncher = javaToolchains.launcherFor {
-      languageVersion = JavaLanguageVersion.of(8)
-  }
+        classpath sourceSets.main.runtimeClasspath
+        main = fullClassName
 
-  classpath sourceSets.main.runtimeClasspath
-  main = 'uia.sample.Issue23'
-
-  systemProperties "uia.log": true
-  jvmArgs "-javaagent:${getAgentJar()}"
-  // jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,address=5005'
-  // jvmArgs "-verbose:jni"
+        systemProperties "uia.log": true
+        jvmArgs "-javaagent:${getAgentJar()}"
+        // jvmArgs "-verbose:jni"
+    }
 }
 
+// task runTestUiaTextArea(type: JavaExec) {
+//   dependsOn configurations.agent
 
-task runIssue24(type: JavaExec) {
-  dependsOn configurations.agent
+//   dependsOn configurations.withLogging
+//   classpath configurations.withLogging
 
-  dependsOn configurations.withLogging
-  classpath configurations.withLogging
+//   group = 'application'
+//   description = 'Runs the sample with the glass platfrom configured'
 
-  group = 'application'
-  description = 'Runs the sample with the glass platfrom configured'
+//   javaLauncher = javaToolchains.launcherFor {
+//       languageVersion = JavaLanguageVersion.of(8)
+//   }
 
-  javaLauncher = javaToolchains.launcherFor {
-      languageVersion = JavaLanguageVersion.of(8)
-  }
+//   classpath sourceSets.main.runtimeClasspath
+//   main = 'uia.sample.TestUiaTextArea'
 
-  classpath sourceSets.main.runtimeClasspath
-  main = 'uia.sample.Issue24'
-
-  systemProperties "uia.log": true
-  jvmArgs "-javaagent:${getAgentJar()}"
-  // jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,address=5005'
-  // jvmArgs "-verbose:jni"
-}
-
-task runIssue30(type: JavaExec) {
-  dependsOn configurations.agent
-
-  dependsOn configurations.withLogging
-  classpath configurations.withLogging
-
-  group = 'application'
-  description = 'Runs the sample with the glass platfrom configured'
-
-  javaLauncher = javaToolchains.launcherFor {
-      languageVersion = JavaLanguageVersion.of(8)
-  }
-
-  classpath sourceSets.main.runtimeClasspath
-  main = 'uia.sample.Issue30'
-
-  systemProperties "uia.log": true
-  jvmArgs "-javaagent:${getAgentJar()}"
-  // jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,address=5005'
-  // jvmArgs "-verbose:jni"
-}
+//   systemProperties "uia.log": true
+//   jvmArgs "-javaagent:${getAgentJar()}"
+//   // jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,address=5005'
+//   // jvmArgs "-verbose:jni"
+// }
 
 
+// task runNotepad(type: JavaExec) {
+//   dependsOn configurations.agent
+
+//   dependsOn configurations.withLogging
+//   classpath configurations.withLogging
+
+//   group = 'application'
+//   description = 'Runs the sample with the glass platfrom configured'
+
+//   javaLauncher = javaToolchains.launcherFor {
+//       languageVersion = JavaLanguageVersion.of(8)
+//   }
+
+//   classpath sourceSets.main.runtimeClasspath
+//   main = 'uia.sample.samples.notepad.TextAst'
+
+//   systemProperties "uia.log": true
+//   jvmArgs "-javaagent:${getAgentJar()}"
+//   // jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,address=5005'
+//   // jvmArgs "-verbose:jni"
+// }
 
 task runAlert(type: JavaExec) {
   dependsOn configurations.agent

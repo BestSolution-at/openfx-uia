@@ -99,7 +99,7 @@ public class Logger {
     log(source, level, message, null);
   }
 
-  public void log(Object source, Level level, Supplier<String> message, Exception e) {
+  public void log(Object source, Level level, Supplier<String> message, Throwable e) {
     String sourceString = source == null ? "" : (source + ": ");
     if (logger != null) {
       logger.log(mapLevel(level), () -> sourceString + message.get(), e);
@@ -140,6 +140,10 @@ public class Logger {
   }
 
   public void error(Object source, Supplier<String> message, Exception e) {
+    log(source, Level.ERROR, message, e);
+  }
+
+  public void error(Object source, Supplier<String> message, Throwable e) {
     log(source, Level.ERROR, message, e);
   }
 
