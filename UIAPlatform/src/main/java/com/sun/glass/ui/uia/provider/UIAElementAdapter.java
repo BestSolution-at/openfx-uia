@@ -162,7 +162,8 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
 
 
     private void log(IUIAElement element, String msg) {
-        String glass = " (" + ProxyAccessibleRegistry.getInstance().findAccessible(element).getGlassAccessible() + ")";
+        ProxyAccessible proxy = ProxyAccessibleRegistry.getInstance().findAccessible(element);
+        String glass = " (" + (proxy != null ? proxy.getGlassAccessible() : null) + ")";
         LOG.debug(this, () -> "V: " + element + glass + " - " + msg);
     }
 
@@ -399,9 +400,7 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
             }
             
         }
-        WinVariant empty = new WinVariant();
-        empty.vt = WinVariant.VT_EMPTY;
-        return empty;
+        return Variant.vt_empty().toWinVariant();
     }
 
     
