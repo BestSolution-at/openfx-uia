@@ -33,9 +33,11 @@ import java.util.stream.Collectors;
 import javafx.uia.IUIAElement;
 
 public class ProxyAccessibleRegistry {
-    
-    private final static ProxyAccessibleRegistry INSTANCE = new ProxyAccessibleRegistry();
 
+    private static class LazyHolder {
+        final static ProxyAccessibleRegistry INSTANCE = new ProxyAccessibleRegistry();
+    }
+    
     // TODO dispose = ?
     private Map<IUIAElement, ProxyAccessible> fxAccessibles = new HashMap<>();
     // TODO management & dispose
@@ -46,7 +48,7 @@ public class ProxyAccessibleRegistry {
     private Map<Long, ProxyAccessible> natives2 = new HashMap<>();
 
     public static ProxyAccessibleRegistry getInstance() {
-        return INSTANCE;
+        return LazyHolder.INSTANCE;
     }
 
     public void unregister(ProxyAccessible accessible) {
