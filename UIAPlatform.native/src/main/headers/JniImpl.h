@@ -33,10 +33,10 @@
 
 #define IMPL_END return S_OK; \
 } catch (HRESULT hr) { \
-  DBG_OUTPUT(hr);\
+  /* DBG_OUTPUT(hr); */\
   return hr;\
 } catch(...){\
-  fprintf(stderr, "[Exception Fallthrough!!] %s:%d\n", __FUNCTION__, __LINE__); \
+  fprintf(stderr, "[Native Exception Fallthrough!!] %s:%d\n", __FUNCTION__, __LINE__); \
   return E_FAIL; \
 }
 

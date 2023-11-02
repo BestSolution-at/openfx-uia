@@ -73,6 +73,9 @@ jobject _object(ITextRangeProvider* textRange);
 jstring _string0(JNIEnv* env, BSTR value);
 jstring _string0(JNIEnv* env, LPCWSTR value);
 
+bool isHResultException(JNIEnv* env, jobject t);
+HRESULT getHResult(JNIEnv* env, jobject t);
+
 
 jstring call_string(JNIEnv* env, jobject obj, jmethodID mid, ...);
 void call_void(JNIEnv* env, jobject obj, jmethodID mid, ...);

@@ -24,6 +24,8 @@
  */
 #include "JniUtil.h"
 
+#include <iostream>
+
 
 namespace jni { namespace ids {
   /* Variant Field IDs */
@@ -48,6 +50,13 @@ namespace jni { namespace ids {
     jmethodID toString;
   };
   ObjectIDs Object;
+
+  struct HResultExceptionIDs {
+    jclass clazz;
+    jmethodID getHResult;
+    jmethodID isHResultException;
+  };
+  HResultExceptionIDs HResultException;
 
 
   HRESULT initIDs(JNIEnv* env) {
@@ -83,6 +92,16 @@ namespace jni { namespace ids {
     jclass jObjectClass = env->FindClass("java/lang/Object");
     if (env->ExceptionCheck()) return E_FAIL;
     Object.toString = env->GetMethodID(jObjectClass, "toString", "()Ljava/lang/String;");
+    if (env->ExceptionCheck()) return E_FAIL;
+
+    /* HResultException */
+    jclass jHResultExceptionClass = env->FindClass("com/sun/glass/ui/uia/HResultException");
+    if (env->ExceptionCheck()) return E_FAIL;
+    HResultException.clazz = (jclass) env->NewGlobalRef(jHResultExceptionClass);
+    if (env->ExceptionCheck()) return E_FAIL;
+    HResultException.getHResult = env->GetMethodID(HResultException.clazz, "getHResult", "()I");
+    if (env->ExceptionCheck()) return E_FAIL;
+    HResultException.isHResultException = env->GetStaticMethodID(HResultException.clazz, "isHResultException", "(Ljava/lang/Throwable;)Z");
     if (env->ExceptionCheck()) return E_FAIL;
 
     return S_OK;
@@ -244,16 +263,33 @@ void jni::assert_arg(void* arg) {
   }
 }
 
+bool jni::isHResultException(JNIEnv* env, jobject t) {
+  jboolean result = env->CallStaticBooleanMethod(ids::HResultException.clazz, ids::HResultException.isHResultException, t);
+
+  return result == JNI_TRUE;
+}
+
+HRESULT jni::getHResult(JNIEnv* env, jobject t) {
+  jint hr = env->CallIntMethod(t, ids::HResultException.getHResult);
+  return (HRESULT) hr;
+}
+
 void jni::check_and_throw(JNIEnv* env) {
   jthrowable t = env->ExceptionOccurred();
   if (t == nullptr) {
     return;
   }
 
+  if (isHResultException(env, t)) {
+    HRESULT hr = getHResult(env, t);
+    env->ExceptionClear();
+    throw hr;
+  }
+
   // print it
-  fprintf(stderr, "CheckAndClearException[\n");
+  std::cerr << "check_and_throw(): fallthrough[" << std::endl;
   env->ExceptionDescribe();
-  fprintf(stderr, "]\n");
+   std::cerr << "] returning HRESULT E_JAVAEXCEPTION" << std::endl;
   env->ExceptionClear();
 
   throw E_JAVAEXCEPTION;

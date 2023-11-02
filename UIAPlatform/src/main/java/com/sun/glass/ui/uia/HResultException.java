@@ -20,8 +20,13 @@ public class HResultException extends RuntimeException {
         this.hresult = hresult;
     }
 
+    // called by native code
     public int getHResult() {
         return hresult;
     }
-
+    
+    // called by native code
+    public static boolean isHResultException(Throwable t) {
+        return t instanceof HResultException;
+    }
 }
