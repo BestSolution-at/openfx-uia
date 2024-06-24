@@ -28,7 +28,7 @@ public class VListSample implements Sample {
 
     @Override
     public Node getSample() {
-        List<String> data = IntStream.range(0, 10).mapToObj(i -> "Item "+ i).collect(Collectors.toList());
+        List<String> data = IntStream.range(0, 400).mapToObj(i -> "Item "+ i).collect(Collectors.toList());
         VList<String> list = new VList<>(model -> model);
         list.getItems().addAll(data);
         return list;
