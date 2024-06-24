@@ -32,6 +32,7 @@ jar {
     dependsOn configurations.includeJars
     manifest {
         attributes('Premain-Class': 'javafx.uia.agent.UIAPlatformAgent')
+        attributes('Git-Hash':"${gitHash}")
     }
 
     from configurations.includeJars.files

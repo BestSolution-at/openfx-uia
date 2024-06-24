@@ -98,6 +98,15 @@ public class ProxyAccessible extends Accessible {
         return num;
     }
 
+    public ProxyAccessible getFocusDelegate() {
+        if (uiaElement != null && uiaElement instanceof IUIAVirtualRootElement) {
+            IUIAVirtualRootElement rootElement = (IUIAVirtualRootElement) uiaElement;
+            IUIAElement focusDelegate = rootElement.getFocus();
+            return ProxyAccessibleRegistry.getInstance().getVirtualAccessible(this, focusDelegate);
+        }
+        return null;
+    }
+
     public static void requireLibrary() {
 
     }
@@ -137,7 +146,7 @@ public class ProxyAccessible extends Accessible {
       
       glass = new WinAccessible(this);
       
-      LOG.debug(this, () -> "created. (glass)");
+      //LOG.debug(this, () -> "created. (glass)");
 
         saveCreationStack();
     }
@@ -171,7 +180,7 @@ public class ProxyAccessible extends Accessible {
             initializeVirtualElement(uiaElement);
         }
 
-        LOG.debug(this, () -> "created. (virtual)");
+        //LOG.debug(this, () -> "created. (virtual)");
 
         saveCreationStack();
     }
@@ -270,9 +279,9 @@ public class ProxyAccessible extends Accessible {
         connect();
 
         if (this.uiaElement != null) {
-          LOG.debug(this, () -> "connected to " + this.uiaElement);
+        //   LOG.debug(this, () -> "connected to " + this.uiaElement);
         } else {
-          LOG.debug(this, () -> "connected to " + eventHandler);
+        //   LOG.debug(this, () -> "connected to " + eventHandler);
         }
     }
 
@@ -403,7 +412,7 @@ public class ProxyAccessible extends Accessible {
         // }
         // return "ProxyAccessible " + num + " [" + getNativeAccessible()+ "]" + " [" + glassStr  + ", " + glassRoot + ", " + uiaElement + "]";
 
-        return "ProxyAccessible " + num + " [" + getNativeAccessible()+ "]";
+        return "ProxyAccessible " + num + " [" + getNativeAccessible()+ "] ("+uiaElement+")";
     }
 
     public WinAccessible getGlassAccessible() {
@@ -524,6 +533,7 @@ public class ProxyAccessible extends Accessible {
         // Our only root is the scene itself, so GetFocus needs to be answered by the scene
         return guardLong(() -> {
             checkGlass();
+            System.err.println("FragmentRoot_GetFocus()");
             return glass.GetFocus();
         });
     }

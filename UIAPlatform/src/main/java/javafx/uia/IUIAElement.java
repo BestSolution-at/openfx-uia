@@ -115,4 +115,8 @@ public interface IUIAElement extends IInitable {
         return (T) this;
     }
 
+    default IUIAElement GetFocusDelegate() {
+        return this;
+    }
+
 }

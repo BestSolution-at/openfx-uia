@@ -34,6 +34,9 @@ task writeServiceFiles() {
 }
 
 jar {
+  manifest {
+    attributes('Git-Hash':"${gitHash}")
+  }
   into("META-INF/services") {
     from tasks.writeServiceFiles
   }

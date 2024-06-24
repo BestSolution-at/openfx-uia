@@ -115,6 +115,10 @@ public class Logger {
     }
   }
 
+  public static boolean isLog() {
+    return LOG;
+  }
+
   public void debug(Supplier<String> message) {
     log(null, Level.DEBUG, message);
   }

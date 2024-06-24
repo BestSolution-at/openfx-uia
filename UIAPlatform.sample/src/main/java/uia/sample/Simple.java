@@ -29,6 +29,8 @@ package uia.sample;
 import java.util.Arrays;
 import java.util.List;
 
+import com.sun.glass.ui.uia.HResultException;
+
 //import com.sun.glass.ui.uia.AccessibleMonitor;
 
 import javafx.application.Application;
@@ -68,6 +70,7 @@ import uia.sample.samples.SimpleTextProviderWithChildren2;
 import uia.sample.samples.SimpleUIAElement;
 import uia.sample.samples.SimpleUIAElementWithProperties;
 import uia.sample.samples.ToggleProviderSample;
+import uia.sample.samples.VListSample;
 
 public class Simple extends Application {
 
@@ -88,12 +91,15 @@ public class Simple extends Application {
 
         //new AccessibleMonitor();
 
+        System.err.println("E_JAVAEXCEPTION = " + Integer.toHexString(HResultException.E_JAVAEXCEPTION));
+
         BorderPane root = new BorderPane();
 
         
         root.setPrefSize(800, 600);
 
         List<Sample> samples = Arrays.asList(
+            new VListSample(),
             new AllDummyProviders(),
             new SimpleUIAElement(), 
             new SimpleUIAElementWithProperties(),

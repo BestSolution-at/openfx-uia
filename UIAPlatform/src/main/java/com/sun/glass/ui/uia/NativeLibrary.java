@@ -11,6 +11,8 @@ public class NativeLibrary {
   }
 
   static {
+    at.bestsolution.uia.core.Lib.reportVersionInfo();
+    at.bestsolution.uia.Lib.reportVersionInfo();
     try {
       System.load(LibMan.uiaPlatformDll.toString());
     } catch (Exception e) {
@@ -20,6 +22,8 @@ public class NativeLibrary {
     LOG = Logger.create(NativeLibrary.class);
     reportEnvironment();
   }
+
+  
 
 
   private static void reportEnvironment() {

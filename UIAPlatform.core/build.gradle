@@ -23,4 +23,7 @@ dependencies {
 }
 
 jar {
+    manifest {
+        attributes('Git-Hash':"${gitHash}")
+    }
 }

@@ -13,6 +13,9 @@ java {
 }
 
 jar {
+    manifest {
+        attributes('Git-Hash':"${gitHash}")
+    }
     from sourceSets.main.output
 }
 

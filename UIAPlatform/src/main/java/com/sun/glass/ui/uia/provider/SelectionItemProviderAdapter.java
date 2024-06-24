@@ -24,6 +24,9 @@
  */
 package com.sun.glass.ui.uia.provider;
 
+
+
+import com.sun.glass.ui.uia.Logger;
 import com.sun.glass.ui.uia.ProxyAccessible;
 import com.sun.glass.ui.uia.ProxyAccessibleRegistry;
 
@@ -32,22 +35,27 @@ import javafx.uia.IUIAElement;
 
 public class SelectionItemProviderAdapter extends BaseAdapter<ISelectionItemProvider> implements NativeISelectionItemProvider {
 
+    private static Logger LOG = Logger.create(SelectionItemProviderAdapter.class);
+
     public SelectionItemProviderAdapter(ProxyAccessible accessible, ISelectionItemProvider provider) {
         super(accessible, provider);
     }
 
     @Override
     public void AddToSelection() {
+        LOG.debug(this, () -> "AddToSelection()");
         provider.AddToSelection();
     }
 
     @Override
     public void RemoveFromSelection() {
+        LOG.debug(this, () -> "RemoveFromSelection()");
         provider.RemoveFromSelection();
     }
 
     @Override
     public void Select() {
+        LOG.debug(this, () -> "Select()");
         provider.Select();
     }
 

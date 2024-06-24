@@ -40,6 +40,10 @@ import javassist.scopedpool.ScopedClassPoolFactoryImpl;
 import javassist.scopedpool.ScopedClassPoolRepositoryImpl;
 
 public class UIAPlatformAgent {
+
+    static {
+        at.bestsolution.uia.agent.Lib.reportVersionInfo();
+    }
     
     public static void premain(String agentArgument, Instrumentation instrumentation) {
         Logger.debug(UIAPlatformAgent.class, () -> "agent init");

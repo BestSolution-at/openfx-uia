@@ -127,7 +127,7 @@ public class ProxyTextRangeProvider {
         peer = _createTextRangeProvider(accessible.getNativeAccessible());
         id = idCount++;
 
-        LOG.debug(this, () -> "created. (uia) acc=" + accessible);
+        // LOG.debug(this, () -> "created. (uia) acc=" + accessible);
 
         uiaImpl.initialize(support);
     }

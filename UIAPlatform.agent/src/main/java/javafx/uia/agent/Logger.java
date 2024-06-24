@@ -34,4 +34,11 @@ public class Logger {
             System.err.println("UIAPlatform.agent: " + msg.get());
         }
     }
+
+    public static void debug(Class<?> source, Supplier<String> msg, Exception e) {
+        if (LOG) {
+            System.err.println("UIAPlatform.agent: " + msg.get());
+            e.printStackTrace();
+        }
+    }
 }

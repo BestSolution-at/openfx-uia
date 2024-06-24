@@ -25,15 +25,18 @@
 package com.sun.glass.ui.uia.provider;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.sun.glass.ui.uia.Logger;
 import com.sun.glass.ui.uia.ProxyAccessible;
 import com.sun.glass.ui.uia.ProxyAccessibleRegistry;
+import com.sun.glass.ui.uia.glass.WinAccessible;
 import com.sun.glass.ui.uia.glass.WinVariant;
 import com.sun.glass.ui.uia.provider.ProviderRegistry.ProviderInstance;
 
@@ -51,7 +54,8 @@ import javafx.uia.IUIAElement;
 import javafx.uia.IUIAVirtualElement;
 import javafx.uia.IUIAVirtualRootElement;
 import javafx.uia.IVariantConverter;
-import javafx.uia.StandardPatternIds;
+import javafx.uia.NotificationKind;
+import javafx.uia.NotificationProcessing;
 import javafx.uia.StandardPropertyIds;
 import javafx.uia.StandardVariantConverters;
 import javafx.uia.Variant;
@@ -77,7 +81,59 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
 
         @Override
         public void fireChanged(T oldValue, T newValue) {
+            LOG.debug(UIAElementAdapter.this, () -> {
+                String oldString;
+                String newString;
+                if (oldValue instanceof IUIAElement[]) {
+                    oldString = Arrays.toString((IUIAElement[])oldValue);
+                } else {
+                    oldString = Objects.toString(oldValue);
+                }
+                if (newValue instanceof IUIAElement[]) {
+                    newString = Arrays.toString((IUIAElement[])newValue);
+                } else {
+                    newString = Objects.toString(newValue);
+                }
+                return id + ".fireChanged("+oldString+", "+newString+")";
+            });
+
+            // ensure all reported IVirtualUIAElements are initialized
+            ensureExists(oldValue);
+            ensureExists(newValue);
             UiaRaiseAutomationPropertyChangedEvent(id, converter.toVariant(oldValue), converter.toVariant(newValue));
+        }
+    }
+
+    private class Event implements IEvent {
+        IEventId eventId;
+        public Event(IEventId eventId) {
+            this.eventId = eventId;
+        }
+        @Override
+        public void fire() {
+            LOG.debug(UIAElementAdapter.this, () -> eventId + ".fire()");
+            UiaRaiseAutomationEvent(eventId);
+        }
+    }
+
+    private class NotificationEvent implements INotificationEvent {
+        @Override
+        public void fire(NotificationKind notificationKind, NotificationProcessing notificaitonProcessing,
+                String displayString, String activityId) {
+            LOG.debug(UIAElementAdapter.this, () -> "UiaRaiseNotificationEvent("+notificationKind+", "+notificaitonProcessing+", "+displayString+", "+activityId+")");
+            UiaRaiseNotificationEvent(notificationKind, notificaitonProcessing, displayString, activityId);
+        }
+    }
+
+    private void ensureExists(Object o) {
+        // TODO do we need to do the same for IUIAElements?
+        if (o instanceof IUIAVirtualElement) {
+            IUIAVirtualElement element = (IUIAVirtualElement) o;
+            boolean created = ProxyAccessibleRegistry.getInstance().ensureExists(accessible, element);
+            LOG.debug(this, () -> " * ensureExists("+element+") " + (created ? " -> was created!" : " -> already existed")) ;
+        } else if (o instanceof IUIAElement[]) {
+            IUIAElement[] elementArray = (IUIAElement[]) o;
+            Arrays.stream(elementArray).forEach(el -> ensureExists(el));
         }
     }
 
@@ -91,12 +147,12 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
 
         @Override
         public IEvent addEvent(IEventId id) {
-            return () -> UiaRaiseAutomationEvent(id);
+            return new Event(id);
         }
 
         @Override
         public INotificationEvent addNotificationEvent() {
-            return UIAElementAdapter.this::UiaRaiseNotificationEvent;
+            return new NotificationEvent();
         }
         
         @Override
@@ -280,10 +336,63 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
 
     @Override
     public long Navigate(int direction) {
-        IUIAElement element = accessible.getUIAElement();
+        NavRes result = DoNavigate(direction);
+        // IUIAElement element = accessible.getUIAElement();
         // if (element != null && (isVirtual(element) || isVirtualRoot(element))) {
-        //     log(element, "Navigate("+direction+")");
+        //     log(element, "Navigate("+NavigateDirection.fromNativeValue(direction)+") -> " + result);
         // }
+        return result.toLong();
+    }
+
+    interface NavRes {
+        long toLong();
+    }
+    class UIANavRes implements NavRes {
+        Optional<IUIAElement> data;
+        public UIANavRes(Optional<IUIAElement> data) {
+            this.data = data;
+        }
+        @Override
+        public String toString() {
+            return data.toString();
+        }
+        @Override
+        public long toLong() {
+            return data.flatMap(UIAElementAdapter.this::getNative).orElse(0L);
+        }
+    }
+    class NativeNavRes implements NavRes {
+        long result;
+        public NativeNavRes(long result) {
+            this.result = result;
+        }
+        @Override
+        public String toString() {
+            return "Glass("+result+")";
+        }
+        @Override
+        public long toLong() {
+            return result;
+        }
+    }
+    class WinAccessibleNavRes implements NavRes {
+        private WinAccessible accessible;
+        public WinAccessibleNavRes(WinAccessible accessible) {
+            this.accessible = accessible;
+        }
+        @Override
+        public String toString() {
+            return "" + accessible;
+        }
+        @Override
+        public long toLong() {
+            return accessible.getPeer();
+        }
+    }
+
+    public NavRes DoNavigate(int direction) {
+        IUIAElement element = accessible.getUIAElement();
+       
         if (element != null) {
             if (isVirtual(element) || isVirtualRoot(element)) {
                 final int NavigateDirection_Parent            = 0;
@@ -297,51 +406,58 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
                         case NavigateDirection_FirstChild: {
                             Optional<IUIAElement> firstChild = findFirstChild(element);
                             // log(element, "First Child: " + firstChild);
-                            return firstChild.flatMap(this::getNative).orElse(0L);
+                            return new UIANavRes(firstChild);
                         } 
                         case NavigateDirection_LastChild: {
                             Optional<IUIAElement> lastChild = findLastChild(element);
                             // log(element, "Last Child: " + lastChild);
-                            return lastChild.flatMap(this::getNative).orElse(0L);
+                            return new UIANavRes(lastChild);
                         }
                     
                         case NavigateDirection_Parent: 
                             if (isVirtualRoot(element)) {
                                 // a virtual root needs to delegate to the glass version
-                                // log(element, "PARENT: " + accessible + " / glass: " + (accessible!=null?""+accessible.getGlassAccessible():"-"));
-                                return accessible.getGlassAccessible().Navigate(direction);
+                                // TODO CHECK THIS MESS!!
+                                log(element, "PARENT: " + accessible + " / glass: " + (accessible!=null?""+accessible.getGlassAccessible():"-"));
+                                WinAccessible glass = accessible.getGlassAccessible();
+                                if (glass == null) {
+                                    glass = accessible.getGlassAccessibleRoot();
+                                    return new WinAccessibleNavRes(glass);
+                                } else {
+                                    return new NativeNavRes(glass.Navigate(direction));
+                                }
                             } else {
                                 Optional<IUIAElement> parent = findParent(element);
                                 if (!parent.isPresent()) {
                                     // Runtime panic
                                     log(element, "ERROR parent of " + element + " not found!");
                                 }
-                                return parent.flatMap(this::getNative).orElse(0L);
+                                return new UIANavRes(parent);
                             } 
 
                         case NavigateDirection_NextSibling:
                             if (isVirtualRoot(element)) {
-                                return accessible.getGlassAccessible().Navigate(direction);
+                                return new NativeNavRes(accessible.getGlassAccessible().Navigate(direction));
                             }
                             Optional<IUIAElement> nextSibling = findNextSibling(element);
                             // log(element, "Next Sibling: " + nextSibling);
-                            return nextSibling.flatMap(this::getNative).orElse(0L);
+                            return new UIANavRes(nextSibling);
                         case NavigateDirection_PreviousSibling:
                             if (isVirtualRoot(element)) {
-                                return accessible.getGlassAccessible().Navigate(direction);
+                                return new NativeNavRes(accessible.getGlassAccessible().Navigate(direction));
                             }
                             Optional<IUIAElement> prevSibling = findPreviousSibling(element);
                             // log(element, "Prev Sibling: " + prevSibling);
-                            return prevSibling.flatMap(this::getNative).orElse(0L);
+                            return new UIANavRes(prevSibling);
 
                         default:
                             log(element, "DEFAULT FALLTHROUGH!");
-                        return 0L;
+                        return new NativeNavRes(0L);
 
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
-                    return 0L;
+                    return new NativeNavRes(0L);
                 }
             }
         }
@@ -349,23 +465,25 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
         // default handling for non virtual elements
         if (accessible.getGlassAccessible() != null) {
             // no node means glass should handle it
-            return accessible.getGlassAccessible().Navigate(direction);
+            return new NativeNavRes(accessible.getGlassAccessible().Navigate(direction));
         }
 
         log(element, "FALLTHROGH PANIK!! - this should never happen!"); 
         Thread.dumpStack();
-        return 0L;
+        return new NativeNavRes(0L);
     }
+
 
     @Override
     public void SetFocus() {
+        LOG.debug(this, () -> "SetFocus()");
         provider.SetFocus();
     }
 
     @Override
     public long GetPatternProvider(int patternId) {
         if (providerRegistry.isProviderAvailable(patternId)) {
-            log(provider, "GetPatternProvider("+StandardPatternIds.fromNativeValue(patternId)+")");
+            // log(provider, "GetPatternProvider("+StandardPatternIds.fromNativeValue(patternId)+")");
             return accessible.getNativeAccessible();
         } else {
             return 0L;

@@ -57,6 +57,11 @@ public abstract class BaseAdapter<T> {
         this.provider = provider;
     }
 
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName() + "["+this.provider+"]";
+    }
+
     protected void UiaRaiseAutomationPropertyChangedEvent(IPropertyId propertyId, Variant oldV, Variant newV) {
         ProxyAccessible.UiaRaiseAutomationPropertyChangedEvent(accessible.getNativeAccessible(), propertyId.getNativeValue(), oldV.toWinVariant(), newV.toWinVariant());       
     }

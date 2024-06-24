@@ -62,7 +62,7 @@ jar {
     from configurations.debugDll.files
     
     manifest {
-        //attributes('': '')
+        attributes('Git-Hash':"${gitHash}")
     }
 
     into("META-INF/services") {
