@@ -12,10 +12,12 @@ public class Lib {
 
     public final static String NAME = "UIAPlatform.agent";
     public final static String GIT_HASH;
+    public final static String GIT_VERSION;
     
     static {
       Optional<Manifest> manifest = readManifest(Lib.class);
       GIT_HASH = manifest.map(m -> m.getMainAttributes().getValue("Git-Hash")).orElse("<unknown>");
+      GIT_VERSION = manifest.map(m -> m.getMainAttributes().getValue("Git-Version")).orElse("<unknown>");
     }
 
     private static Optional<Manifest> readManifest(Class<?> cls) {
@@ -38,6 +40,7 @@ public class Lib {
   public static void reportVersionInfo() {
     if (LOG) {
       System.out.println(NAME + ": Git-Hash: " + GIT_HASH);
+      System.out.println(NAME + ": Git-Version: " + GIT_VERSION);
     }
   }
 }

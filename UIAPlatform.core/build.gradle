@@ -25,5 +25,6 @@ dependencies {
 jar {
     manifest {
         attributes('Git-Hash':"${gitHash}")
+        attributes('Git-Version': "${gitVersion}")
     }
 }
