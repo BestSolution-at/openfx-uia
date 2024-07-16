@@ -11,6 +11,8 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import com.sun.glass.ui.uia.HResultException;
+import com.sun.glass.ui.uia.Logger;
+import com.sun.glass.ui.uia.LoggerFactory;
 
 import javafx.animation.AnimationTimer;
 import javafx.beans.InvalidationListener;
@@ -56,6 +58,8 @@ import javafx.uia.UIA;
 
 public class VList<T> extends BorderPane {
 
+    private static Logger LOG = LoggerFactory.create("sample.VList");
+
     class UIAItem implements IUIAVirtualElement, ISelectionItemProvider, IScrollItemProvider/*, IVirtualizedItemProvider*/ {
         T model;
 
@@ -68,7 +72,9 @@ public class VList<T> extends BorderPane {
 
         IEvent SelectionItem_ElementSelected;
         IEvent AutomationFocusChanged;
- 
+
+        IProperty<Boolean> IsControlElement;
+        IProperty<Boolean> IsContentElement;
 
         IEvent SelectionItem_ElementAddedToSelection;
         IEvent SelectionItem_ElementRemovedFromSelection;
@@ -91,10 +97,6 @@ public class VList<T> extends BorderPane {
             return "UIAItem("+model+")";
         }
 
-        final void log(String msg) {
-            System.err.println("UIAItem("+model+"): "+msg);
-        }
-
         @Override
         public void initialize(IInitContext init) {
             
@@ -108,6 +110,8 @@ public class VList<T> extends BorderPane {
             SelectionItem_ElementAddedToSelection = init.addEvent(StandardEventIds.UIA_SelectionItem_ElementAddedToSelectionEventId);
             SelectionItem_ElementRemovedFromSelection = init.addEvent(StandardEventIds.UIA_SelectionItem_ElementRemovedFromSelectionEventId);
         
+            IsControlElement = init.addIsControlElementProperty(() -> true);
+            IsContentElement = init.addIsContentElementProperty(() -> true);
         
             IsKeyboardFocusable = init.addIsKeyboardFocusableProperty(() -> true);
 
@@ -169,7 +173,7 @@ public class VList<T> extends BorderPane {
         }
         @Override
         public void Select() {
-            System.err.println("UIA__Select");
+            LOG.debug(() -> "UIA__Select");
             VList.this.selected.set(model);
         }
         @Override
@@ -192,7 +196,7 @@ public class VList<T> extends BorderPane {
 
         @Override
         public void SetFocus() {
-            System.err.println("UIA__SetFocus");
+            LOG.debug(() -> "UIA__SetFocus");
             VList.this.uia.virtualFocused.set(model);
         }
 
@@ -223,6 +227,10 @@ public class VList<T> extends BorderPane {
         IProperty<Boolean> IsKeyboardFocusable;
         IProperty<Boolean> HasKeyboardFocus;
 
+        IProperty<Boolean> IsControlElement;
+        IProperty<Boolean> IsContentElement;
+        IProperty<Boolean> IsEnabled;
+
         IProperty<String> Name;
 
         ObjectProperty<T> virtualFocused = new SimpleObjectProperty<>();
@@ -240,7 +248,7 @@ public class VList<T> extends BorderPane {
 
         UIAList() {
             VList.this.selected.addListener((x, o, n) -> {
-                System.err.println("VList.selected changed: " + o + " -> " + n);      
+                LOG.debug(() -> "VList.selected changed: " + o + " -> " + n);      
 
                 withContext(SelectionProviderContext.class, ctx -> {
                     ctx.Selection.fireChanged(toSel(o), toSel(n));
@@ -254,11 +262,18 @@ public class VList<T> extends BorderPane {
                 if (StructureChanged != null) {
                     StructureChanged.fire(StructureChangeType.ChildrenInvalidated, null);
                 }
+
+                // ensure the virtual focus is set to the first item, otherwise JAWS says 'unavailable'
+                if (items.size() > 0 && virtualFocused.get() == null) {
+                    virtualFocused.set(items.get(0));
+                }
             });
 
             virtualFocused.addListener((x, o, n) -> {
-                System.err.println("virtualFocused changed: " + o + " -> " + n);
+                LOG.debug(() -> "virtualFocused changed: " + o + " -> " + n);
             });
+
+            
             
         }
 
@@ -284,14 +299,21 @@ public class VList<T> extends BorderPane {
             AutomationFocusChanged = init.addEvent(StandardEventIds.UIA_AutomationFocusChangedEventId);
             IsKeyboardFocusable = init.addIsKeyboardFocusableProperty(() -> true);
             HasKeyboardFocus = init.addHasKeyboardFocusProperty(() -> VList.this.isFocused());
+
+            IsControlElement = init.addIsControlElementProperty(() -> true);
+            IsContentElement = init.addIsContentElementProperty(() -> true);
+            IsEnabled = init.addIsEnabledElementProperty(() -> !isDisabled());
+            disabledProperty().addListener((x, o, n) -> {
+                IsEnabled.fireChanged(o, n);
+            });
             
             StructureChanged = init.addStructureChangedEvent();
 
             VList.this.focusedProperty().addListener((x, o, n) -> {
-                //HasKeyboardFocus.fireChanged(o, n);
+                HasKeyboardFocus.fireChanged(o, n);
             });
             focusedProperty().addListener((x, o, n) -> {
-                System.err.println("focus changed");
+                LOG.debug(() -> "focus changed");
                 if (n) {
                     T selectedModel = VList.this.selected.get();
                     Optional<UIAItem> item = children.stream().map(it -> (UIAItem) it).filter(it -> it.model == selectedModel).findFirst();
@@ -411,7 +433,31 @@ public class VList<T> extends BorderPane {
         @Override
         public IUIAElement getChildFromPoint(Point2D point) {
             // TODO Auto-generated method stub
-            throw new UnsupportedOperationException("Unimplemented method 'getChildFromPoint'");
+            //throw new UnsupportedOperationException("Unimplemented method 'getChildFromPoint'");
+
+            Point2D listLocal = screenToLocal(point);
+
+            Bounds boundsInLocal = getBoundsInLocal();
+
+            Bounds layoutBounds = getLayoutBounds();
+
+            Bounds boundsInParent = getBoundsInParent();
+
+            LOG.debug(() -> "point = " + listLocal);
+            LOG.debug(() -> "boundsInLocal = " + boundsInLocal);
+            LOG.debug(() -> "layoutBounds = " + layoutBounds);
+            LOG.debug(() -> "boundsInParent = " + boundsInParent);
+
+            Bounds vpBounds = viewport.getBoundsInParent();
+            if (vpBounds.contains(listLocal)) {
+                // pick item
+                int index = (int) Math.floor((scrollPos.get() + listLocal.getY()) / itemHeight.get());
+                LOG.debug(() -> "" + index);
+                return (children.size() > index) ? children.get(index) : this;
+            } else {
+                // pick self
+                return this;
+            }
         }
 
     }
@@ -536,7 +582,7 @@ public class VList<T> extends BorderPane {
                 if (lastTick != 0) {
                     double duration = (now - lastTick) / 1000000;
                     if (duration > 20) {
-                        System.err.println("SLOW FRAME: duration: " + duration);
+                        LOG.info(() -> "SLOW FRAME: duration: " + duration);
                     }
                 }
                 lastTick = now;
@@ -680,7 +726,8 @@ public class VList<T> extends BorderPane {
 
     UIAItem getOrCreateUIAItem(T model) {
         UIAItem item = uiaItems.computeIfAbsent(model, m -> {
-            System.err.println("CREATE UIA ITEM FOR " + m);
+            //System.err.println("*** VList.LOG = " + LOG);
+            //LOG.trace(() -> "create UIAItem for " + m);
             UIAItem it = new UIAItem(m);
             uia.children.add(it);
             return it;

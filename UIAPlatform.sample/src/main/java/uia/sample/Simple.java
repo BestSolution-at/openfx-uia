@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -29,7 +29,6 @@ package uia.sample;
 import java.util.Arrays;
 import java.util.List;
 
-import com.sun.glass.ui.uia.HResultException;
 
 //import com.sun.glass.ui.uia.AccessibleMonitor;
 
@@ -91,19 +90,17 @@ public class Simple extends Application {
 
         //new AccessibleMonitor();
 
-        System.err.println("E_JAVAEXCEPTION = " + Integer.toHexString(HResultException.E_JAVAEXCEPTION));
-
         BorderPane root = new BorderPane();
 
-        
+
         root.setPrefSize(800, 600);
 
         List<Sample> samples = Arrays.asList(
             new VListSample(),
             new AllDummyProviders(),
-            new SimpleUIAElement(), 
+            new SimpleUIAElement(),
             new SimpleUIAElementWithProperties(),
-            new ToggleProviderSample(), 
+            new ToggleProviderSample(),
             new CanvasWithVirtualChildren(),
             new SimpleTextProvider(),
             new SimpleTextProviderWithAttributes(),
@@ -158,7 +155,7 @@ public class Simple extends Application {
         nav.getSelectionModel().selectedItemProperty().addListener((obs, ol, ne) -> {
             if (ne != null) {
                 Node sample = ne.getSample();
-                
+
                 title.setText(ne.getName());
                 contentArea.setCenter(sample);
                 desc.setTop(ne.getDescription());
@@ -178,7 +175,7 @@ public class Simple extends Application {
 
         Scene scene = new Scene(root);
         scene.getStylesheets().add(Simple.class.getResource("/sample.css").toExternalForm());
-        
+
         primaryStage.setTitle("Simple UIA samples");
         primaryStage.setScene(scene);
         primaryStage.show();
