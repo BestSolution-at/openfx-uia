@@ -46,7 +46,7 @@ public class InstanceTracker {
   }
 
   private static Map<Long, Instance> instances = new HashMap<>();
-  
+
   private static void withInstance(long pointer, Consumer<Instance> func) {
     synchronized (instances) {
       Instance instance = instances.get(pointer);
@@ -147,7 +147,7 @@ public class InstanceTracker {
           } catch (Exception e) {
             setText(e.getMessage());
           }
-        
+
       }
     };
   }

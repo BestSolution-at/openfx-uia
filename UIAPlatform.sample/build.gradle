@@ -87,6 +87,7 @@ task runWithAgentWithLogging(type: JavaExec) {
     mainClass = 'uia.sample.Simple'
 
     systemProperties "uia.log": true
+    systemProperties "uia.loglevel": 0
     jvmArgs "-javaagent:${getAgentJar()}"
     // jvmArgs "-verbose:jni"
 }
@@ -105,13 +106,14 @@ task runWithAgent(type: JavaExec) {
     mainClass = 'uia.sample.Simple'
 
     systemProperties "uia.log": true
+    systemProperties "uia.loglevel": 1
     jvmArgs "-javaagent:${getAgentJar()}"
     // jvmArgs "-verbose:jni"
 }
 
 task debugWithAgent(type: JavaExec) {
     dependsOn configurations.agent
-    
+
   	group = 'application'
 	description = 'Runs the sample with the glass platfrom configured'
 
@@ -123,6 +125,7 @@ task debugWithAgent(type: JavaExec) {
 	mainClass = 'uia.sample.Simple'
 
     systemProperties "uia.log": true
+
     jvmArgs "-javaagent:${getAgentJar()}"
     jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,address=5005'
 }

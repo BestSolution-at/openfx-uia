@@ -1157,11 +1157,14 @@ public final class WinAccessible extends Accessible {
     public long ElementProviderFromPoint(double x, double y) {
         if (isDisposed()) return 0;
         Node node = (Node)getAttribute(NODE_AT_POINT, new Point2D(x, y));
+        LOG.trace(this, () -> "ElementProviderFromPont(" + x + ", " + y + ") -> " + node);
         return getNativeAccessible(node);
     }
     public Node ElementProviderFromPointAsNode(double x, double y) {
         if (isDisposed()) return null;
-        return (Node)getAttribute(NODE_AT_POINT, new Point2D(x, y));
+        Node node = (Node)getAttribute(NODE_AT_POINT, new Point2D(x, y));
+        LOG.trace(this, () -> "ElementProviderFromPointAsNode(" + x + ", " + y + ") -> " + node);
+        return node;
     }
     
 

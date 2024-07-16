@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -34,6 +34,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 import com.sun.glass.ui.uia.Logger;
+import com.sun.glass.ui.uia.LoggerFactory;
 import com.sun.glass.ui.uia.ProxyAccessible;
 import com.sun.glass.ui.uia.ProxyAccessibleRegistry;
 import com.sun.glass.ui.uia.glass.WinAccessible;
@@ -62,7 +63,7 @@ import javafx.uia.Variant;
 
 public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements NativeIRawElementProviderSimple, NativeIRawElementProviderFragment {
 
-  private static Logger LOG = Logger.create(UIAElementAdapter.class);
+  private final static Logger LOG = LoggerFactory.create(UIAElementAdapter.class);
 
     private class Prop<T> implements IProperty<T> {
         private IPropertyId id;
@@ -154,7 +155,7 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
         public INotificationEvent addNotificationEvent() {
             return new NotificationEvent();
         }
-        
+
         @Override
         public ITextEditTextChangedEvent addTextEditTextChangedEvent() {
             return UIAElementAdapter.this::UiaRaiseTextEditTextChangedEvent;
@@ -217,11 +218,11 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
     }
 
 
-    private void log(IUIAElement element, String msg) {
-        ProxyAccessible proxy = ProxyAccessibleRegistry.getInstance().findAccessible(element);
-        String glass = " (" + (proxy != null ? proxy.getGlassAccessible() : null) + ")";
-        LOG.debug(this, () -> "V: " + element + glass + " - " + msg);
-    }
+    // private void log(IUIAElement element, String msg) {
+    //     ProxyAccessible proxy = ProxyAccessibleRegistry.getInstance().findAccessible(element);
+    //     String glass = " (" + (proxy != null ? proxy.getGlassAccessible() : null) + ")";
+    //     LOG.debug(this, () -> "V: " + element + glass + " - " + msg);
+    // }
 
 
     @Override
@@ -323,7 +324,7 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
         return getParent(cur).flatMap(this::getChildren).flatMap(children -> prev(children, cur));
     }
 
-    
+
     private Optional<Long> getNative(IUIAElement element) {
         return Optional.ofNullable(element).map(el -> {
             ProxyAccessible result = ProxyAccessibleRegistry.getInstance().findFXAccessible(element);
@@ -392,7 +393,7 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
 
     public NavRes DoNavigate(int direction) {
         IUIAElement element = accessible.getUIAElement();
-       
+
         if (element != null) {
             if (isVirtual(element) || isVirtualRoot(element)) {
                 final int NavigateDirection_Parent            = 0;
@@ -405,20 +406,20 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
                     switch (direction) {
                         case NavigateDirection_FirstChild: {
                             Optional<IUIAElement> firstChild = findFirstChild(element);
-                            // log(element, "First Child: " + firstChild);
+                            //log(element, "First Child: " + firstChild);
                             return new UIANavRes(firstChild);
-                        } 
+                        }
                         case NavigateDirection_LastChild: {
                             Optional<IUIAElement> lastChild = findLastChild(element);
-                            // log(element, "Last Child: " + lastChild);
+                            //log(element, "Last Child: " + lastChild);
                             return new UIANavRes(lastChild);
                         }
-                    
-                        case NavigateDirection_Parent: 
+
+                        case NavigateDirection_Parent:
                             if (isVirtualRoot(element)) {
                                 // a virtual root needs to delegate to the glass version
                                 // TODO CHECK THIS MESS!!
-                                log(element, "PARENT: " + accessible + " / glass: " + (accessible!=null?""+accessible.getGlassAccessible():"-"));
+                                //log(element, "PARENT: " + accessible + " / glass: " + (accessible!=null?""+accessible.getGlassAccessible():"-"));
                                 WinAccessible glass = accessible.getGlassAccessible();
                                 if (glass == null) {
                                     glass = accessible.getGlassAccessibleRoot();
@@ -430,13 +431,14 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
                                 Optional<IUIAElement> parent = findParent(element);
                                 if (!parent.isPresent()) {
                                     // Runtime panic
-                                    log(element, "ERROR parent of " + element + " not found!");
+                                    LOG.error(element, () -> "parent of " + element + " not found!");
                                 }
                                 return new UIANavRes(parent);
-                            } 
+                            }
 
                         case NavigateDirection_NextSibling:
                             if (isVirtualRoot(element)) {
+                                // System.err.println("NextSibling on VirtualRoot: " + accessible);
                                 return new NativeNavRes(accessible.getGlassAccessible().Navigate(direction));
                             }
                             Optional<IUIAElement> nextSibling = findNextSibling(element);
@@ -451,7 +453,7 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
                             return new UIANavRes(prevSibling);
 
                         default:
-                            log(element, "DEFAULT FALLTHROUGH!");
+                            LOG.warning(element, () -> "DEFAULT FALLTHROUGH!");
                         return new NativeNavRes(0L);
 
                     }
@@ -468,7 +470,7 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
             return new NativeNavRes(accessible.getGlassAccessible().Navigate(direction));
         }
 
-        log(element, "FALLTHROGH PANIK!! - this should never happen!"); 
+        LOG.error(element, () ->  "FALLTHROGH PANIK!! - this should never happen!");
         Thread.dumpStack();
         return new NativeNavRes(0L);
     }
@@ -476,7 +478,7 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
 
     @Override
     public void SetFocus() {
-        LOG.debug(this, () -> "SetFocus()");
+        LOG.trace(this, () -> "SetFocus()");
         provider.SetFocus();
     }
 
@@ -507,20 +509,20 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
         if (element != null) {
             //String pid = StandardPropertyIds.fromNativeValue(propertyId).map(Object::toString).orElse("" + propertyId);
             //log(element, "GetPropertyValue("+pid+") for " + element);
-            
+
             Prop<?> p = installedProps.get(propertyId);
             if (p != null) {
                 return p.getAsVariant().toWinVariant();
             }
-        
+
             if (StandardPropertyIds.UIA_ProviderDescriptionPropertyId.getNativeValue() == propertyId) {
                 return StandardVariantConverters.BSTR.toVariant("OpenFX-UIA Provider").toWinVariant();
             }
-            
+
         }
         return Variant.vt_empty().toWinVariant();
     }
 
-    
-    
+
+
 }

@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -27,10 +27,11 @@ package com.sun.glass.ui.uia.provider;
 import com.sun.glass.ui.uia.ProxyAccessible;
 import com.sun.glass.ui.uia.ProxyTextRangeProvider;
 import com.sun.glass.ui.uia.InstanceTracker;
+import com.sun.glass.ui.uia.Logger;
+import com.sun.glass.ui.uia.LoggerFactory;
 
 import java.util.Arrays;
 
-import com.sun.glass.ui.uia.Logger;
 
 import com.sun.glass.ui.uia.winapi.Windows;
 
@@ -46,8 +47,8 @@ import javafx.uia.Variant;
 
 public abstract class BaseAdapter<T> {
 
-  private static Logger LOG = Logger.create(BaseAdapter.class);
-    
+  private final static Logger LOG = LoggerFactory.create(BaseAdapter.class);
+
     protected final T provider;
     protected final ProxyAccessible accessible;
 
@@ -63,7 +64,7 @@ public abstract class BaseAdapter<T> {
     }
 
     protected void UiaRaiseAutomationPropertyChangedEvent(IPropertyId propertyId, Variant oldV, Variant newV) {
-        ProxyAccessible.UiaRaiseAutomationPropertyChangedEvent(accessible.getNativeAccessible(), propertyId.getNativeValue(), oldV.toWinVariant(), newV.toWinVariant());       
+        ProxyAccessible.UiaRaiseAutomationPropertyChangedEvent(accessible.getNativeAccessible(), propertyId.getNativeValue(), oldV.toWinVariant(), newV.toWinVariant());
     }
 
     protected void UiaRaiseAutomationEvent(IEventId eventId) {
@@ -102,13 +103,13 @@ public abstract class BaseAdapter<T> {
     protected void UiaRaiseAsyncContentLoadedEvent(AsyncContentLoadedState asyncContentLoadedState, double percentComplete) {
         LOG.debug(this, () -> "UiaRaiseAsyncContentLoadedEvent(" + asyncContentLoadedState + ", " + percentComplete + ")");
         long result = Windows.UiaRaiseAsyncContentLoadedEvent(accessible.getNativeAccessible(), asyncContentLoadedState.getNativeValue(), percentComplete);
-        LOG.debug(this, () -> "UiaRaiseAsyncContentLoadedEvent => 0x" + Long.toHexString(result));       
+        LOG.debug(this, () -> "UiaRaiseAsyncContentLoadedEvent => 0x" + Long.toHexString(result));
     }
 
     protected void UiaRaiseStructureChangedEvent(StructureChangeType structureChangeType, int[] runtimeId) {
         LOG.debug(this, () -> "UiaRaiseStructureChangedEvent(" + structureChangeType + ", " + Arrays.toString(runtimeId) + ")");
         long result = Windows.UiaRaiseStructureChangedEvent(accessible.getNativeAccessible(), structureChangeType.getNativeValue(), runtimeId);
-        LOG.debug(this, () -> "UiaRaiseStructureChangedEvent => 0x" + Long.toHexString(result));   
+        LOG.debug(this, () -> "UiaRaiseStructureChangedEvent => 0x" + Long.toHexString(result));
     }
 
     protected long wrapNative(ITextRangeProvider textRange) {

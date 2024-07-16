@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -33,7 +33,12 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 
+import at.bestsolution.uia.agent.internal.AgentLogger;
+import at.bestsolution.uia.agent.internal.AgentLoggerFactory;
+
 public class LibraryManager {
+
+    private static final AgentLogger LOG = AgentLoggerFactory.create(LibraryManager.class);
 
     static final Path tempDir;
     static final Path extDir;
@@ -46,7 +51,7 @@ public class LibraryManager {
             extDir = Files.createDirectories(tempDir.resolve("lib"));
 
             coreJar = extract("UIAPlatform.core.jar", extDir);
-            
+
             Runtime.getRuntime().addShutdownHook(createCleanup());
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -57,7 +62,7 @@ public class LibraryManager {
         URL source = LibraryManager.class.getResource("/" + file);
         Path target = dir.resolve(file);
         Files.copy(source.openStream(), target);
-        Logger.debug(LibraryManager.class, () -> "Using " + target.toString());
+        LOG.debug(null, () -> "Using " + target.toString());
         return target;
     }
 
@@ -65,7 +70,7 @@ public class LibraryManager {
         Thread cleanup = new Thread(() -> {
             try {
                 //Logger.debug(LibraryManager.class, () -> "deleting " + tempDir + " on shutdown");
-                
+
                 FileVisitor<Path> visitor = new SimpleFileVisitor<Path>() {
                     @Override
                     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {

@@ -33,6 +33,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.security.ProtectionDomain;
 
+import at.bestsolution.uia.agent.internal.AgentLogger;
+import at.bestsolution.uia.agent.internal.AgentLoggerFactory;
 import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.CtMethod;
@@ -41,12 +43,14 @@ import javassist.scopedpool.ScopedClassPoolRepositoryImpl;
 
 public class UIAPlatformAgent {
 
+    private static final AgentLogger LOG = AgentLoggerFactory.create(UIAPlatformAgent.class);
+
     static {
         at.bestsolution.uia.agent.Lib.reportVersionInfo();
     }
     
     public static void premain(String agentArgument, Instrumentation instrumentation) {
-        Logger.debug(UIAPlatformAgent.class, () -> "agent init");
+        LOG.trace(() -> "agent init");
         instrumentation.addTransformer(createTransformer());
 
         // add to ext class loader
@@ -54,6 +58,7 @@ public class UIAPlatformAgent {
             URLClassLoader extClassLoader = findExtClassLoader();
             addURL(extClassLoader, LibraryManager.coreJar.toUri().toURL());
         } catch (Exception e) {
+            LOG.fatal(() -> "Could not add UIAPlatform.core.jar to Ext ClassLoader", e);
             throw new RuntimeException("Could not add UIAPlatform.core.jar to Ext ClassLoader", e);
         }
 
@@ -65,6 +70,7 @@ public class UIAPlatformAgent {
             addUrl.setAccessible(true);
             addUrl.invoke(classLoader, url);
         } catch (Exception e) {
+            LOG.error(() -> "Could not add URL to URLClassLoader", e);
             throw new Exception("Could not add URL to URLClassLoader" , e);
         }
     }
@@ -79,6 +85,7 @@ public class UIAPlatformAgent {
             }
             cur = cur.getParent();
         }
+        LOG.error(() -> "Ext Classloader not found!");
         throw new Exception("Ext ClassLoader not found!");
     }
 
@@ -93,7 +100,7 @@ public class UIAPlatformAgent {
                     ProtectionDomain protectionDomain, byte[] classfileBuffer) throws IllegalClassFormatException {
                         if ("com/sun/glass/ui/win/WinApplication".equals(className)) {
                             try {
-                                Logger.debug(UIAPlatformAgent.class, () -> "instrumenting JavaFX WinApplication#createAccessible");
+                                LOG.debug(() -> "instrumenting JavaFX WinApplication#createAccessible");
                                 ClassPool classPool = scopedClassPoolFactory.create(loader, ClassPool.getDefault(), ScopedClassPoolRepositoryImpl.getInstance());  
                                 // add to ClassPool for compiling
                                 classPool.appendClassPath(LibraryManager.coreJar.toString());
@@ -104,7 +111,7 @@ public class UIAPlatformAgent {
                                 return ctClass.toBytecode();
 
                             } catch (Exception e) {
-                                e.printStackTrace();
+                                LOG.fatal(() -> "Instrumentation failed. openfx-uia not available.", e);
                             }
                         }
                         

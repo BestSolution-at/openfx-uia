@@ -24,42 +24,43 @@
  */
 package com.sun.glass.ui.uia;
 
-import java.util.Arrays;
+import com.sun.glass.ui.uia.Logger.Level;
 
-public class NativeLibrary {
-
-  private static Logger LOG;
-
-  public static void require() {
-
-  }
+public class LoggerNativeBridge {
+  private static final Logger LOG = LoggerFactory.create(LoggerNativeBridge.class);
 
   static {
-    at.bestsolution.uia.core.Lib.reportVersionInfo();
-    at.bestsolution.uia.Lib.reportVersionInfo();
-    try {
-      System.load(LibMan.uiaPlatformDll.toString());
-    } catch (Exception e) {
-      System.err.println("Exception during initialization");
-      e.printStackTrace();
-    }
-    // first initialize native logger
-    LoggerNativeBridge.require();
-    LOG = Logger.create(NativeLibrary.class);
-    reportEnvironment();
+    NativeLibrary.require();
+    initIDs();
   }
 
+  public static void require() {
+    LOG.trace(() -> "require()");
+  }
 
+  private static native void initIDs();
 
+  /* called from native */
+  private static Logger create(String name) {
+    return com.sun.glass.ui.uia.LoggerFactory.create(name);
+  }
 
-  private static void reportEnvironment() {
-		LOG.debug(() -> "Environment: ");
-		Arrays.stream(new String[] {
-			"java.vendor",
-			"java.version",
-			"java.vm.version",
-			"javafx.version",
-			"javafx.runtime.version"
-		}).forEach(prop -> LOG.debug(() -> "\t" + prop + ": " + System.getProperty(prop)));
-	}
+  /* called from native */
+  private static void logNative(Logger logger, int level, String msg, String file, int line, String func) {
+    Logger.LocationData loc = new Logger.LocationData();
+    loc.lang = "C";
+    loc.fileName = file;
+    loc.lineNumber = line;
+    loc.functionName = func;
+    logger.log(null, convertNativeLevel(logger, level), () -> msg, null, loc);
+  }
+
+  private static Level convertNativeLevel(Logger logger, int nativeInt) {
+    if (nativeInt < 0 || nativeInt >= Level.values().length) {
+      logger.warning(() -> "could not convert native loglevel: " + nativeInt + ". using WARNING");
+      return Level.WARNING;
+    }
+    return Level.values()[nativeInt];
+  }
+
 }

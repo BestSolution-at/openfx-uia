@@ -17,7 +17,7 @@ library {
 tasks.withType(CppCompile).configureEach {
     macros.put("BUILDING_DLL", null)
 
-    compilerArgs.add '/std:c++14'
+    compilerArgs.add '/std:c++20'
     compilerArgs.add '/O2'
     compilerArgs.add '/EHsc'
 }

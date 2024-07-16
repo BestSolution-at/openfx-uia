@@ -22,17 +22,17 @@
  * http://www.gnu.org/licenses/gpl.html
  * ----------------------------------------------------------------
  */
-package com.sun.glass.ui.uia;
+package at.bestsolution.uia.core.internal;
 
 import java.util.function.Supplier;
 
-public interface Logger {
+public interface CoreLogger {
 
   static class LocationData {
-    public String lang;
-    public String fileName;
-    public int lineNumber;
-    public String functionName;
+    String lang;
+    String fileName;
+    int lineNumber;
+    String functionName;
   }
 
   public static enum Level {
@@ -124,20 +124,12 @@ public interface Logger {
 
   static LocationData getLocationData(int depth) {
     LocationData data = new LocationData();
-    StackTraceElement[] frames = Thread.currentThread().getStackTrace();
-    StackTraceElement callFrame = frames[2 + depth];
+    StackTraceElement callFrame = Thread.currentThread().getStackTrace()[2 + depth];
     data.lang = "J";
     data.functionName = callFrame.getClassName() + "." + callFrame.getMethodName();
     data.fileName = callFrame.getFileName();
     data.lineNumber = callFrame.getLineNumber();
     return data;
-  }
-
-  static Logger create(Class<?> cls) {
-    return LoggerFactory.create(cls);
-  }
-  static Logger create(String name) {
-    return LoggerFactory.create(name);
   }
 
 }

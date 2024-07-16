@@ -6,14 +6,17 @@ import java.util.Optional;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
+import com.sun.glass.ui.uia.Logger;
+import com.sun.glass.ui.uia.LoggerFactory;
+
 public class Lib {
 
-    private static boolean LOG = Boolean.getBoolean("uia.log");
+    private static Logger log = LoggerFactory.create(Lib.class);
 
     public final static String NAME = "UIAPlatform";
     public final static String GIT_HASH;
     public final static String GIT_VERSION;
-    
+
     static {
       Optional<Manifest> manifest = readManifest(Lib.class);
       GIT_HASH = manifest.map(m -> m.getMainAttributes().getValue("Git-Hash")).orElse("<unknown>");
@@ -29,18 +32,13 @@ public class Lib {
         return Optional.of(manifest);
       }
     } catch (Exception e) {
-      if (LOG) {
-        System.out.println("error reading manifest");
-        e.printStackTrace(System.out);
-      }
+      log.error(() -> "error reading manifest", e);
     }
     return Optional.empty();
   }
 
   public static void reportVersionInfo() {
-    if (LOG) {
-      System.out.println(NAME + ": Git-Hash: " + GIT_HASH);
-      System.out.println(NAME + ": Git-Version: " + GIT_VERSION);
-    }
+    log.info(NAME, () -> "Git-Hash: " + GIT_HASH);
+    log.info(NAME, () -> "Git-Version: " + GIT_VERSION);
   }
 }

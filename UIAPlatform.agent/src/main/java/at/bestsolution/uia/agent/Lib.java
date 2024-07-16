@@ -6,9 +6,12 @@ import java.util.Optional;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
+import at.bestsolution.uia.agent.internal.AgentLogger;
+import at.bestsolution.uia.agent.internal.AgentLoggerFactory;
+
 public class Lib {
 
-    private static boolean LOG = Boolean.getBoolean("uia.log");
+    private static final AgentLogger LOG = AgentLoggerFactory.create(Lib.class);
 
     public final static String NAME = "UIAPlatform.agent";
     public final static String GIT_HASH;
@@ -29,18 +32,14 @@ public class Lib {
         return Optional.of(manifest);
       }
     } catch (Exception e) {
-      if (LOG) {
-        System.out.println("error reading manifest");
-        e.printStackTrace(System.out);
-      }
+      LOG.error(() -> "error reading manifest", e);
     }
     return Optional.empty();
   }
 
   public static void reportVersionInfo() {
-    if (LOG) {
-      System.out.println(NAME + ": Git-Hash: " + GIT_HASH);
-      System.out.println(NAME + ": Git-Version: " + GIT_VERSION);
-    }
+    LOG.info(NAME, () -> "Git-Hash: " + GIT_HASH);
+    LOG.info(NAME, () -> "Git-Version: " + GIT_VERSION);
   }
+  
 }

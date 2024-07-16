@@ -1,3 +1,27 @@
+/*
+ * -----------------------------------------------------------------
+ * Copyright (c) 2021 BestSolution.at EDV Systemhaus GmbH
+ * All Rights Reserved.
+ *
+ * BestSolution.at MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE
+ * SUITABILITY OF THE SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE  OR NON - INFRINGEMENT.
+ * BestSolution.at SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY
+ * LICENSEE AS A RESULT OF USING, MODIFYING OR DISTRIBUTING THIS
+ * SOFTWARE OR ITS DERIVATIVES.
+ *
+ * This software is released under the terms of the
+ *
+ *                  "GNU General Public License, Version 2 
+ *                         with classpath exception"
+ *
+ * and may only be distributed and used under the terms of the
+ * mentioned license. You should have received a copy of the license
+ * along with this software product, if not you can download it from
+ * http://www.gnu.org/licenses/gpl.html
+ * ----------------------------------------------------------------
+ */
 package at.bestsolution.uia.core;
 
 import java.io.InputStream;
@@ -6,9 +30,13 @@ import java.util.Optional;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
+import at.bestsolution.uia.core.internal.CoreLogger;
+import at.bestsolution.uia.core.internal.CoreLoggerFactory;
+
+
 public class Lib {
 
-    private static boolean LOG = Boolean.getBoolean("uia.log");
+    private static final CoreLogger LOG = CoreLoggerFactory.create(Lib.class);
 
     public final static String NAME = "UIAPlatform.core";
     public final static String GIT_HASH;
@@ -29,18 +57,14 @@ public class Lib {
         return Optional.of(manifest);
       }
     } catch (Exception e) {
-      if (LOG) {
-        System.out.println("error reading manifest");
-        e.printStackTrace(System.out);
-      }
+      LOG.error(() -> "error reading manifest", e);
     }
     return Optional.empty();
   }
 
   public static void reportVersionInfo() {
-    if (LOG) {
-      System.out.println(NAME + ": Git-Hash: " + GIT_HASH);
-      System.out.println(NAME + ": Git-Version: " + GIT_VERSION);
-    }
+    LOG.info(NAME, () -> "Git-Hash: " + GIT_HASH);
+    LOG.info(NAME, () -> "Git-Version: " + GIT_VERSION);
   }
+
 }

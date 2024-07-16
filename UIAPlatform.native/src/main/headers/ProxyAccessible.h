@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -35,7 +35,7 @@
 #pragma warning( push )
 #pragma warning( disable : 4584 ) // disables base-class 'ITextProvider' is already a base-class of 'ITextProvider2' and similar warnings
 
-class ProxyAccessible : 
+class ProxyAccessible :
     public IRawElementProviderSimple,
     public IRawElementProviderFragment,
     public IRawElementProviderFragmentRoot,
@@ -271,9 +271,9 @@ public:
 
 private:
     virtual ~ProxyAccessible();
+    Logger m_log;
     ULONG m_refCount;
     jobject m_jAccessible;  // The GlobalRef Java side object
-    Logger* LOG;
 };
 
 #pragma warning( pop )
