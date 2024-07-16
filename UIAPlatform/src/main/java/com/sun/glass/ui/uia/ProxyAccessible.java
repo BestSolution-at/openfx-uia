@@ -28,6 +28,7 @@ import java.lang.reflect.Method;
 import java.security.AccessControlContext;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
@@ -102,7 +103,17 @@ public class ProxyAccessible extends Accessible {
         if (uiaElement != null && uiaElement instanceof IUIAVirtualRootElement) {
             IUIAVirtualRootElement rootElement = (IUIAVirtualRootElement) uiaElement;
             IUIAElement focusDelegate = rootElement.getFocus();
-            return ProxyAccessibleRegistry.getInstance().getVirtualAccessible(this, focusDelegate);
+            if (focusDelegate == null) {
+                focusDelegate = rootElement;
+            }
+
+            ProxyAccessible fxDelegate = ProxyAccessibleRegistry.getInstance().findFXAccessible(focusDelegate);
+            if (fxDelegate != null) {
+                return fxDelegate;
+            } else {
+                return ProxyAccessibleRegistry.getInstance().getVirtualAccessible(this, focusDelegate);
+            }
+            
         }
         return null;
     }
@@ -412,7 +423,7 @@ public class ProxyAccessible extends Accessible {
         // }
         // return "ProxyAccessible " + num + " [" + getNativeAccessible()+ "]" + " [" + glassStr  + ", " + glassRoot + ", " + uiaElement + "]";
 
-        return "ProxyAccessible " + num + " [" + getNativeAccessible()+ "] ("+uiaElement+")";
+        return "ProxyAccessible " + num + " [" + getNativeAccessible()+ "] (uia="+uiaElement+") (glass="+glass+")";
     }
 
     public WinAccessible getGlassAccessible() {
@@ -496,8 +507,41 @@ public class ProxyAccessible extends Accessible {
             ProxyAccessible accessible = (ProxyAccessible) getter.invoke(node);
             return accessible;
         } catch (Exception e) {
-            LOG.error(ProxyAccessible.class, () -> "Failed to get Accessible! " + node, e);
+            LOG.error(() -> "Failed to get Accessible! " + node, e);
             throw new RuntimeException("Failed to get Accessible! " + node , e);
+        }
+    }
+
+    class VirtualRoot {
+        ProxyAccessible accessible;
+        IUIAVirtualRootElement element;
+        VirtualRoot(ProxyAccessible accessible,
+        IUIAVirtualRootElement element) {
+            this.accessible = accessible;
+            this.element = element;
+        }
+    }
+
+    class Tuple<A,B> {
+        A a;
+        B b;
+        Tuple(A a,
+        B b) {
+            this.a = a;
+            this.b = b;
+        }
+    }
+
+    private Optional<Tuple<ProxyAccessible, IUIAVirtualRootElement>> findVirtualRoot(Node node) {
+        if (node == null) {
+            return Optional.empty();
+        }
+        ProxyAccessible accessible = getNodeAccessible(node);
+        IUIAElement element = accessible.getUIAElement();
+        if (element instanceof IUIAVirtualRootElement) {
+            return Optional.of(new Tuple<>(accessible, (IUIAVirtualRootElement) element));
+        } else {
+            return findVirtualRoot(node.getParent());
         }
     }
 
@@ -508,23 +552,27 @@ public class ProxyAccessible extends Accessible {
         return guardLong(() -> {
             // glass should never be null, since this query is only executed at Scene Level
             Node node = glass.ElementProviderFromPointAsNode(x, y);
-            ProxyAccessible accessible = getNodeAccessible(node);
-            IUIAElement element = accessible.getUIAElement();
-            if (element instanceof IUIAVirtualRootElement) {
-                // we deal with a virtual root - so we need to pick into the virtual structure...
-                IUIAVirtualRootElement virtualRoot = (IUIAVirtualRootElement) element;
-                IUIAElement pickedChild = virtualRoot.getChildFromPoint(new Point2D(x, y));
-                if (pickedChild != null && pickedChild != virtualRoot) {
+
+            // we deal with a virtual root - so we need to pick into the virtual structure...
+            Optional<Tuple<ProxyAccessible, IUIAVirtualRootElement>> vRoot = findVirtualRoot(node);
+            if (vRoot.isPresent()) {
+                ProxyAccessible accessible = vRoot.get().a;
+                IUIAVirtualRootElement virtualRoot = vRoot.get().b;
+
+                IUIAElement picked = virtualRoot.getChildFromPoint(new Point2D(x, y));
+                if (picked == virtualRoot) {
+                    return accessible.getNativeAccessible();
+                } else if (picked != null) {
                     // now we have the IUIAElement, but it may not have been initialized yet
                     // since all children of a virtual root have the virtual root itself as glassRoot this should work
-                    ProxyAccessible pickedAccessible = ProxyAccessibleRegistry.getInstance().getVirtualAccessible(accessible, pickedChild);
-                    return pickedAccessible.getNativeAccessible();
+                    ProxyAccessible target = ProxyAccessibleRegistry.getInstance().getVirtualAccessible(accessible, picked);
+                    return target.getNativeAccessible();
                 } else {
-                    // if we pick null, we return the root itself
-                    return getNativeAccessible(node);
+                    // we do not allow any javafx accessibles to be reported under IUIAVirtualRootElements
+                    return 0;
                 }
             } else {
-                // we return the javafx node
+                // for all other javafx controlled accessibles we just return it
                 return getNativeAccessible(node);
             }
         });
@@ -533,8 +581,9 @@ public class ProxyAccessible extends Accessible {
         // Our only root is the scene itself, so GetFocus needs to be answered by the scene
         return guardLong(() -> {
             checkGlass();
-            System.err.println("FragmentRoot_GetFocus()");
-            return glass.GetFocus();
+            long result = glass.GetFocus();
+            LOG.trace(this, () -> "IRawElementProviderFragmentRoot_GetFocus() -> " + result);
+            return result;
         });
     }
     /***********************************************/
