@@ -207,7 +207,7 @@ For an element to appear in the content view, both the <strong>IsContentElement<
 	UIA_ScrollHorizontallyScrollablePropertyId(30057),
 	/** Identifies the <strong>VerticallyScrollable</strong> property of the Scroll control pattern.  This property indicates whether the automation element can scroll vertically.  Variant type: <strong>VT_BOOL</strong> Default value: <strong>FALSE</strong> */
 	UIA_ScrollVerticallyScrollablePropertyId(30058),
-	/** Identifies the <strong>IsSelectionRequired</strong> property of the Selection control pattern. This property indicates whether the automation element requires at least one child item to be selected. Variant type: <strong>VT_BOOL</strong> Default value: <strong>FALSE</strong> */
+    /** Identifies the <strong>Selection</strong> property of the Selection control pattern. This property is a collection of the selected child elements, and is expressed as an IUIAutomationElementArray pointer. Variant type: <strong>VT_UNKNOWN | VT_ARRAY</strong> Default value: <strong>empty array</strong> **/
 	UIA_SelectionSelectionPropertyId(30059),
 	/** Identifies the <strong>CanSelectMultiple</strong> property of the Selection control pattern. This property indicates whether the automation element allows more than one child element to be selected concurrently. Variant type: <strong>VT_BOOL</strong> Default value: <strong>FALSE</strong> */
 	UIA_SelectionCanSelectMultiplePropertyId(30060),
