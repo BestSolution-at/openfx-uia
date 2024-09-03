@@ -13,6 +13,10 @@ java {
 }
 
 jar {
+    manifest {
+        attributes('Git-Hash':"${gitHash}")
+        attributes('Git-Version': "${gitVersion}")
+    }
     from sourceSets.main.output
 }
 
@@ -56,7 +60,7 @@ sourceSets {
 task phatJar(type: Jar) {
     dependsOn configurations.includedJars
 
-    baseName "launcher"
+    archiveBaseName = "launcher"
     from sourceSets.launcher.output
     from configurations.includedJars.files
     //from configurations.runtimeClasspath.files
@@ -80,9 +84,10 @@ task runWithAgentWithLogging(type: JavaExec) {
     }
 
     classpath sourceSets.main.runtimeClasspath
-    main = 'uia.sample.Simple'
+    mainClass = 'uia.sample.Simple'
 
     systemProperties "uia.log": true
+    systemProperties "uia.loglevel": 0
     jvmArgs "-javaagent:${getAgentJar()}"
     // jvmArgs "-verbose:jni"
 }
@@ -98,16 +103,17 @@ task runWithAgent(type: JavaExec) {
     }
 
     classpath sourceSets.main.runtimeClasspath
-    main = 'uia.sample.Simple'
+    mainClass = 'uia.sample.Simple'
 
     systemProperties "uia.log": true
+    systemProperties "uia.loglevel": 1
     jvmArgs "-javaagent:${getAgentJar()}"
     // jvmArgs "-verbose:jni"
 }
 
 task debugWithAgent(type: JavaExec) {
     dependsOn configurations.agent
-    
+
   	group = 'application'
 	description = 'Runs the sample with the glass platfrom configured'
 
@@ -116,9 +122,10 @@ task debugWithAgent(type: JavaExec) {
     }
 
 	classpath = sourceSets.main.runtimeClasspath
-	main = 'uia.sample.Simple'
+	mainClass = 'uia.sample.Simple'
 
     systemProperties "uia.log": true
+
     jvmArgs "-javaagent:${getAgentJar()}"
     jvmArgs '-agentlib:jdwp=transport=dt_socket,server=y,address=5005'
 }
@@ -143,7 +150,7 @@ fileTree("${project.projectDir}/src/main/java/uia/issues")
         }
 
         classpath sourceSets.main.runtimeClasspath
-        main = fullClassName
+        mainClass = fullClassName
 
         systemProperties "uia.log": true
         jvmArgs "-javaagent:${getAgentJar()}"
@@ -165,7 +172,7 @@ fileTree("${project.projectDir}/src/main/java/uia/issues")
 //   }
 
 //   classpath sourceSets.main.runtimeClasspath
-//   main = 'uia.sample.TestUiaTextArea'
+//   mainClass = 'uia.sample.TestUiaTextArea'
 
 //   systemProperties "uia.log": true
 //   jvmArgs "-javaagent:${getAgentJar()}"
@@ -188,7 +195,7 @@ fileTree("${project.projectDir}/src/main/java/uia/issues")
 //   }
 
 //   classpath sourceSets.main.runtimeClasspath
-//   main = 'uia.sample.samples.notepad.TextAst'
+//   mainClass = 'uia.sample.samples.notepad.TextAst'
 
 //   systemProperties "uia.log": true
 //   jvmArgs "-javaagent:${getAgentJar()}"
@@ -210,7 +217,7 @@ task runAlert(type: JavaExec) {
   }
 
   classpath sourceSets.main.runtimeClasspath
-  main = 'uia.sample.AlertSample'
+  mainClass = 'uia.sample.AlertSample'
 
   systemProperties "uia.log": true
   jvmArgs "-javaagent:${getAgentJar()}"

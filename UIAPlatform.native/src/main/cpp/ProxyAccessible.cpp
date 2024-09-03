@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -231,17 +231,19 @@ static HRESULT PrintAllIUnknowRefCount(SAFEARRAY* array) {
 }
 
 ProxyAccessible::ProxyAccessible(JNIEnv* env, jobject jAccessible)
-    : m_refCount(1) {
+    : m_refCount(1), m_log("ProxyAccessible") {
     m_jAccessible = env->NewGlobalRef(jAccessible);
     GlassCounter::IncrementAccessibility();
-    this->LOG = Logger::create(env, "native.ProxyAccessible");
+
+    m_log.trace() << "ProxyAccessible created." << std::endl;
 }
 
 ProxyAccessible::~ProxyAccessible() {
     JNIEnv* env = GetEnv();
     if (env) env->DeleteGlobalRef(m_jAccessible);
     GlassCounter::DecrementAccessibility();
-    delete this->LOG;
+
+    m_log.trace() << "ProxyAccessible destroyed." << std::endl;
 }
 
 jobject ProxyAccessible::get_jobject() {
@@ -453,7 +455,7 @@ IFACEMETHODIMP ProxyAccessible::GetPropertyValue(PROPERTYID propertyId, VARIANT*
       std::cerr << "[HR FAIL] The following HR FAIL happened during GetPropertyValue(propertyId = " << propertyId << ") call (controlTypeId=" << controlTypeId << "):" << std::endl;
     } catch(...) {
     }
-    
+
     throw hr;
   }
   IMPL_END
@@ -1313,7 +1315,7 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1initIDs
     if (env->ExceptionCheck()) return;
     mid_IStylesProvider_get_StyleName = env->GetMethodID(jClass, "IStylesProvider_get_StyleName", "()Ljava/lang/String;");
     if (env->ExceptionCheck()) return;
-    
+
     /* Variant */
     // JniUtil::initIDs(env);
     jni::ids::initIDs(env);
@@ -1419,6 +1421,3 @@ JNIEXPORT jboolean JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible_UiaClientsA
 {
     return UiaClientsAreListening() ? JNI_TRUE : JNI_FALSE;
 }
-
-
-

@@ -46,6 +46,7 @@ import com.sun.glass.ui.Accessible;
 import com.sun.glass.ui.View;
 import com.sun.glass.ui.uia.Logger;
 import com.sun.glass.ui.uia.ProxyAccessible;
+import com.sun.glass.ui.uia.ProxyAccessibleRegistry;
 
 import static javafx.scene.AccessibleAttribute.*;
 import com.sun.javafx.scene.NodeHelper;
@@ -271,6 +272,10 @@ public final class WinAccessible extends Accessible {
         this.id = idCount++;
     }
 
+    public long getPeer() {
+        return peer;
+    }
+
     @Override
     public void dispose() {
         super.dispose();
@@ -298,7 +303,15 @@ public final class WinAccessible extends Accessible {
                     // This is a Scene
                     long focus = GetFocus();
                     if (focus != 0) {
-                        UiaRaiseAutomationEvent(focus, UIA_AutomationFocusChangedEventId);
+                        ProxyAccessible p = ProxyAccessibleRegistry.getInstance().getByNative(focus);
+                        LOG.debug(this, () -> "focus target: " + p);
+                        ProxyAccessible focusDelegate = p.getFocusDelegate();
+                        if (focusDelegate != null) {
+                            LOG.debug(this, () -> "focus delegate: " + focusDelegate);
+                            UiaRaiseAutomationEvent(focusDelegate.getNativeAccessible(), UIA_AutomationFocusChangedEventId);
+                        } else {
+                            UiaRaiseAutomationEvent(focus, UIA_AutomationFocusChangedEventId);
+                        }
                     }
                 } else {
                     // This is a Scene.transientFocusContainer
@@ -1144,11 +1157,14 @@ public final class WinAccessible extends Accessible {
     public long ElementProviderFromPoint(double x, double y) {
         if (isDisposed()) return 0;
         Node node = (Node)getAttribute(NODE_AT_POINT, new Point2D(x, y));
+        LOG.trace(this, () -> "ElementProviderFromPont(" + x + ", " + y + ") -> " + node);
         return getNativeAccessible(node);
     }
     public Node ElementProviderFromPointAsNode(double x, double y) {
         if (isDisposed()) return null;
-        return (Node)getAttribute(NODE_AT_POINT, new Point2D(x, y));
+        Node node = (Node)getAttribute(NODE_AT_POINT, new Point2D(x, y));
+        LOG.trace(this, () -> "ElementProviderFromPointAsNode(" + x + ", " + y + ") -> " + node);
+        return node;
     }
     
 

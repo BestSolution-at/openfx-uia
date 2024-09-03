@@ -1,3 +1,16 @@
 allprojects {
     group = 'at.bestsolution.openfx-uia'
 }
+
+def getGitHash() {
+    return "git rev-parse HEAD".execute().text.trim()
+}
+
+def getGitVersionTag() {
+    return "git describe --tags --dirty".execute().text.trim()
+}
+
+ext {
+    gitHash = getGitHash()
+    gitVersion = getGitVersionTag()
+}

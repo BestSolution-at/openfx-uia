@@ -11,13 +11,20 @@ jmethodID InstanceTracker::mid_release;
 jmethodID InstanceTracker::mid_debug;
 
 
-Logger* InstanceTracker::LOG;
-
 extern "C" JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_InstanceTracker__1initIDs
   (JNIEnv *env, jclass jClass)
 {
   InstanceTracker::_init(env, jClass);
 }
+
+InstanceTracker::InstanceTracker() : m_log("InstanceTracker") {
+
+}
+
+InstanceTracker::~InstanceTracker() {
+
+}
+
 
 void InstanceTracker::_init(JNIEnv* env, jclass jClass) {
   cls = (jclass) env->NewGlobalRef(jClass);
@@ -39,13 +46,12 @@ void InstanceTracker::_init(JNIEnv* env, jclass jClass) {
   mid_debug = env->GetStaticMethodID(jClass, "debug", "(J)V");
   if (env->ExceptionCheck()) return;
 
-  LOG = Logger::create(env, "native.InstanceTracker");
 }
 
 void InstanceTracker::debug(void* pointer) {
   GetEnv()->CallVoidMethod(cls, mid_debug, (jlong) pointer);
   if (GetEnv()->ExceptionOccurred()) {
-    LOG->errorf("InstanceTracker::debug failed");
+    m_log.error() << "InstanceTracker::debug failed" << std::endl;
     GetEnv()->ExceptionDescribe();
   }
 }
@@ -53,7 +59,7 @@ void InstanceTracker::debug(void* pointer) {
 void InstanceTracker::create(void* pointer) {
   GetEnv()->CallVoidMethod(cls, mid_create, (jlong) pointer);
   if (GetEnv()->ExceptionOccurred()) {
-    LOG->errorf("InstanceTracker::create failed");
+    m_log.error() << "InstanceTracker::create failed" << std::endl;
     GetEnv()->ExceptionDescribe();
   }
 }
@@ -61,7 +67,7 @@ void InstanceTracker::create(void* pointer) {
 void InstanceTracker::destroy(void* pointer) {
   GetEnv()->CallVoidMethod(cls, mid_destroy, (jlong) pointer);
   if (GetEnv()->ExceptionOccurred()) {
-    LOG->errorf("InstanceTracker::destroy failed");
+    m_log.error() << "InstanceTracker::destroy failed" << std::endl;
     GetEnv()->ExceptionDescribe();
   }
 }
@@ -71,7 +77,7 @@ void InstanceTracker::setType(void* pointer, const char* type) {
   GetEnv()->CallVoidMethod(cls, mid_setType, (jlong) pointer, jtype);
   // GetEnv()->ReleaseStringUTFChars(jtype, type);
   if (GetEnv()->ExceptionOccurred()) {
-    LOG->errorf("InstanceTracker::setType failed");
+    m_log.error() << "InstanceTracker::setType failed" << std::endl;
     GetEnv()->ExceptionDescribe();
   }
 }
@@ -81,7 +87,7 @@ void InstanceTracker::setReason(void* pointer, const char* reason) {
   GetEnv()->CallVoidMethod(cls, mid_create, (jlong) pointer, jreason);
   // GetEnv()->ReleaseStringUTFChars(jreason, reason);
   if (GetEnv()->ExceptionOccurred()) {
-    LOG->errorf("InstanceTracker::setReason failed");
+    m_log.error() << "InstanceTracker::setReason failed" << std::endl;
     GetEnv()->ExceptionDescribe();
   }
 }
@@ -89,7 +95,7 @@ void InstanceTracker::setReason(void* pointer, const char* reason) {
 void InstanceTracker::setJava(void* pointer, jobject java) {
   GetEnv()->CallVoidMethod(cls, mid_setJava, (jlong) pointer, java);
   if (GetEnv()->ExceptionOccurred()) {
-    LOG->errorf("InstanceTracker::setJava failed");
+    m_log.error() << "InstanceTracker::setJava failed" << std::endl;
     GetEnv()->ExceptionDescribe();
   }
 }
@@ -97,7 +103,7 @@ void InstanceTracker::setJava(void* pointer, jobject java) {
 void InstanceTracker::addRef(void* pointer) {
   GetEnv()->CallVoidMethod(cls, mid_addRef, (jlong) pointer);
   if (GetEnv()->ExceptionOccurred()) {
-    LOG->errorf("InstanceTracker::addRef failed");
+    m_log.error() << "InstanceTracker::addRef failed" << std::endl;
     GetEnv()->ExceptionDescribe();
   }
 }
@@ -105,7 +111,7 @@ void InstanceTracker::addRef(void* pointer) {
 void InstanceTracker::release(void* pointer) {
   GetEnv()->CallVoidMethod(cls, mid_release, (jlong) pointer);
   if (GetEnv()->ExceptionOccurred()) {
-    LOG->errorf("InstanceTracker::release failed");
+    m_log.error() << "InstanceTracker::release failed" << std::endl;
     GetEnv()->ExceptionDescribe();
   }
 }

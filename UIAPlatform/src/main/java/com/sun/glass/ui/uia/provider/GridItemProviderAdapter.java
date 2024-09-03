@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -27,6 +27,7 @@ package com.sun.glass.ui.uia.provider;
 import java.util.Optional;
 
 import com.sun.glass.ui.uia.Logger;
+import com.sun.glass.ui.uia.LoggerFactory;
 import com.sun.glass.ui.uia.ProxyAccessible;
 import com.sun.glass.ui.uia.ProxyAccessibleRegistry;
 
@@ -35,7 +36,7 @@ import javafx.uia.IUIAElement;
 
 public class GridItemProviderAdapter extends BaseAdapter<IGridItemProvider> implements NativeIGridItemProvider {
 
-  private static Logger LOG = Logger.create(GridItemProviderAdapter.class);
+  private final static Logger LOG = LoggerFactory.create(GridItemProviderAdapter.class);
 
     public GridItemProviderAdapter(ProxyAccessible accessible, IGridItemProvider provider) {
         super(accessible, provider);

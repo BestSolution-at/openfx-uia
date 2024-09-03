@@ -36,6 +36,15 @@ public interface IUIAVirtualRootElement extends IUIAElement {
     
     /**
      * 
+     * @return the element that has the input focus or null
+     */
+    default IUIAElement getFocus() {
+        return null;
+    }
+
+
+    /**
+     * 
      * @return
      *   the virtual children of this element.
      *   <p>Note: if an element has children its JavaFX children are ignored.</p>

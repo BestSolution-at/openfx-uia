@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -66,9 +66,9 @@ ProxyTextRangeProvider::ProxyTextRangeProvider(JNIEnv* env, jobject jTextRangePr
   m_glassAccessible = glassAccessible;
   m_glassAccessible->AddRef();
 
-  InstanceTracker::create(this);
-  InstanceTracker::setType(this, "ProxyTextRangeProvider");
-  InstanceTracker::setJava(this, jTextRangeProvider);
+  InstanceTracker::Get().create(this);
+  InstanceTracker::Get().setType(this, "ProxyTextRangeProvider");
+  InstanceTracker::Get().setJava(this, jTextRangeProvider);
 }
 
 ProxyTextRangeProvider::~ProxyTextRangeProvider()
@@ -80,7 +80,7 @@ ProxyTextRangeProvider::~ProxyTextRangeProvider()
   if (SUCCEEDED(hr)) {
     env->DeleteGlobalRef(m_jTextRangeProvider);
     m_glassAccessible->Release();
-    InstanceTracker::destroy(this);
+    InstanceTracker::Get().destroy(this);
   } else {
     print_hr(hr);
   }
@@ -94,12 +94,12 @@ jobject ProxyTextRangeProvider::get_jobject() {
 /*                  IUnknown                   */
 /***********************************************/
 IFACEMETHODIMP_(ULONG) ProxyTextRangeProvider::AddRef() {
-  InstanceTracker::addRef(this);
+  InstanceTracker::Get().addRef(this);
   return InterlockedIncrement(&m_refCount);
 }
 
 IFACEMETHODIMP_(ULONG) ProxyTextRangeProvider::Release() {
-  InstanceTracker::release(this);
+  InstanceTracker::Get().release(this);
   long val = InterlockedDecrement(&m_refCount);
   if (val == 0) {
     JNIEnv* env = GetEnv();
@@ -252,7 +252,7 @@ extern "C" JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyTextRangeProvid
     if (env->ExceptionCheck()) return;
     mid_GetChildren = env->GetMethodID(jClass, "GetChildren", "()[J");
     if (env->ExceptionCheck()) return;
-    
+
     mid_ShowContextMenu = env->GetMethodID(jClass, "ShowContextMenu", "()V");
     if (env->ExceptionCheck()) return;
 

@@ -76,6 +76,16 @@ public class ProxyAccessibleRegistry {
         return virtualAccessibles.computeIfAbsent(element, el -> new ProxyAccessible(context, el));
     }
 
+    public boolean ensureExists(ProxyAccessible context, IUIAElement element) {
+        boolean virtual = virtualAccessibles.containsKey(element);
+        boolean fx = fxAccessibles.containsKey(element);
+        boolean createVirtual = !virtual && !fx;
+        if (createVirtual) {
+            getVirtualAccessible(context, element);
+        }
+        return createVirtual;
+    }
+
     public ProxyAccessible findVirtualAccessible(IUIAElement element) {
         return virtualAccessibles.get(element);
     }

@@ -91,3 +91,10 @@ For how to use UIA look at the Microsoft documentation (here is a link to the [C
 
  # Development Notes
  When launching via gradle the `--no-daemon` flag helps with the initial focus of the launched application. If omitted it behaves differently compared to starting by double clicking an icon.
+
+
+ # Dev environment
+
+ ## jdk
+`winget install Azul.ZuluFX.8.JDK`
+`$env:JDK8FX="C:\Program Files\Zulu\zulu-8"`

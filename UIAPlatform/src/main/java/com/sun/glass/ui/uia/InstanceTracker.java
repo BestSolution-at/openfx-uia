@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -47,7 +46,7 @@ public class InstanceTracker {
   }
 
   private static Map<Long, Instance> instances = new HashMap<>();
-  
+
   private static void withInstance(long pointer, Consumer<Instance> func) {
     synchronized (instances) {
       Instance instance = instances.get(pointer);
@@ -88,12 +87,13 @@ public class InstanceTracker {
   public static void destroy(long pointer) {
     synchronized (instances) {
       instances.get(pointer).destroyed = true;
-      Instance el = instances.get(pointer);
-      LOG.debug("-", () -> "DESTROY " + el.java + " (" + el.reason + ")");
+      // Instance el = instances.get(pointer);
+      // LOG.debug("-", () -> "DESTROY " + el.java + " (" + el.reason + ")");
     }
     Platform.runLater(InstanceTracker::update);
 
-    LOG.debug("-", () -> "Report: \n" + instances.values().stream().filter(v -> v.destroyed == false).map(el -> " * " + el.type + "(0x" + Long.toHexString(el.pointer) + ")" +  " has " + el.refCount + " refs, reason=" + el.reason + "   " + el.java).collect(Collectors.joining("\n")));
+    // long active = instances.values().stream().filter(instance -> !instance.destroyed).count();
+    // LOG.debug("-", () -> "Report: (" + active + " alive instances) \n" + instances.values().stream().filter(v -> v.destroyed == false).map(el -> " * " + el.type + "(0x" + Long.toHexString(el.pointer) + ")" +  " has " + el.refCount + " refs, reason=" + el.reason + "   " + el.java).collect(Collectors.joining("\n")));
   }
 
   public static void setType(long pointer, String type) {
@@ -114,7 +114,7 @@ public class InstanceTracker {
   public static void addRef(long pointer) {
     withInstance(pointer, instance -> {
       instance.refCount += 1;
-      LOG.debug("-", () -> "ADD_REF " + instance.refCount + ", " + instance.java + " (" + instance.reason + ")");
+      // LOG.debug("-", () -> "ADD_REF " + instance.refCount + ", " + instance.java + " (" + instance.reason + ")");
     });
     Platform.runLater(InstanceTracker::update);
   }
@@ -122,7 +122,7 @@ public class InstanceTracker {
   public static void release(long pointer) {
     withInstance(pointer, instance -> {
       instance.refCount -= 1;
-      LOG.debug("-", () -> "RELEASE " + instance.refCount + ", " + instance.java + " (" + instance.reason + ")");
+      // LOG.debug("-", () -> "RELEASE " + instance.refCount + ", " + instance.java + " (" + instance.reason + ")");
     });
     Platform.runLater(InstanceTracker::update);
   }
@@ -147,7 +147,7 @@ public class InstanceTracker {
           } catch (Exception e) {
             setText(e.getMessage());
           }
-        
+
       }
     };
   }

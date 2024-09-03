@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -53,7 +53,7 @@ import static com.sun.glass.ui.uia.Util.*;
 
 public class ProxyTextRangeProvider {
 
-  private static Logger LOG = Logger.create(ProxyTextRangeProvider.class);
+  private static final Logger LOG = LoggerFactory.create(ProxyTextRangeProvider.class);
 
     public static class TextRangeProviderException extends HResultException {
       String msg;
@@ -62,7 +62,7 @@ public class ProxyTextRangeProvider {
         this.msg = msg;
       }
     }
-    
+
     private native static void _initIDs();
     static {
         _initIDs();
@@ -85,7 +85,7 @@ public class ProxyTextRangeProvider {
     private static int idCount = 1;
     private int id;
 
-   
+
     private Map<ITextAttributeId, Supplier<TextAttributeValue<Object>>> attribs = new HashMap<>();
     private Map<ITextAttributeId, IVariantConverter<Object>> converters = new HashMap<>();
     private Map<ITextAttributeId, javafx.uia.FindAttribute<Object>> findAttributes = new HashMap<>();
@@ -95,7 +95,7 @@ public class ProxyTextRangeProvider {
 
         @Override
         public <T> ITextAttribute<T> addAttribute(ITextAttributeId id, Supplier<TextAttributeValue<T>> getter, IVariantConverter<T> converter, javafx.uia.FindAttribute<T> findAttribute) {
-            
+
             attribs.put(id, (Supplier<TextAttributeValue<Object>>) (Supplier<?>)getter);
             converters.put(id, (IVariantConverter<Object>) converter);
             if (findAttribute != null) {
@@ -103,7 +103,7 @@ public class ProxyTextRangeProvider {
             }
             return null;
         }
-        
+
     };
 
     private ProxyTextRangeProvider(ProxyAccessible accessible, WinTextRangeProvider glassImpl) {
@@ -127,7 +127,7 @@ public class ProxyTextRangeProvider {
         peer = _createTextRangeProvider(accessible.getNativeAccessible());
         id = idCount++;
 
-        LOG.debug(this, () -> "created. (uia) acc=" + accessible);
+        // LOG.debug(this, () -> "created. (uia) acc=" + accessible);
 
         uiaImpl.initialize(support);
     }
@@ -203,13 +203,13 @@ public class ProxyTextRangeProvider {
             } else {
               throw new TextRangeProviderException("provider missing");
             }
-  
-  
+
+
             /* Note: Currently Clone() natively does not call AddRef() on the returned object.
             * This mean JFX does not keep a reference to this object, consequently it does not
             * need to free it.
             */
-            
+
           });
 
         });
@@ -481,7 +481,7 @@ public class ProxyTextRangeProvider {
           } else {
             throw new TextRangeProviderException("provider missing");
           }
-           
+
         });
     }
 

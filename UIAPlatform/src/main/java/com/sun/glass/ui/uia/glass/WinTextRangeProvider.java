@@ -27,13 +27,16 @@ package com.sun.glass.ui.uia.glass;
 
 import static javafx.scene.AccessibleAttribute.*;
 import java.text.BreakIterator;
+
+import com.sun.glass.ui.uia.Logger;
+import com.sun.glass.ui.uia.LoggerFactory;
+
 import javafx.geometry.Bounds;
 import javafx.scene.AccessibleAction;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 
-import com.sun.glass.ui.uia.Logger;
 
 /*
  * This class is the Java peer for GlassTextRangeProvider.
@@ -42,7 +45,7 @@ import com.sun.glass.ui.uia.Logger;
 @SuppressWarnings("restriction")
 public class WinTextRangeProvider {
 
-  private static Logger LOG = Logger.create(WinTextRangeProvider.class);
+  private static Logger LOG = LoggerFactory.create(WinTextRangeProvider.class);
 
     // private native static void _initIDs();
     // static {

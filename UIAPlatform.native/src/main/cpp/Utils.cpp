@@ -27,145 +27,24 @@
 
 #include "com_sun_glass_events_KeyEvent.h"
 
- /*
-  * Initialize the Java VM instance variable when the library is
-  * first loaded
-  */
-static JavaVM* jvm;
+#include "jni/JNIBridge.h"
 
+
+// compat layer
+static JavaVM* jvm;
 JavaIDs javaIDs;
 
-JavaVM* GetJVM()
-{
-    return jvm;
+JavaVM* GetJVM() {
+    return uia::jni::JNIBridge::GetVM();
 }
-
-JNIEnv* GetEnv()
-{
-    void* env;
-    jvm->GetEnv(&env, JNI_VERSION_1_2);
-    return (JNIEnv*)env;
+JNIEnv* GetEnv() {
+    return uia::jni::JNIBridge::GetEnv();
 }
-
 HRESULT GetEnv(JNIEnv** pResult) {
   JNIEnv* env;
-  jint rc = jvm->GetEnv((void**) &env, JNI_VERSION_1_2);
+  jint rc = uia::jni::JNIBridge::GetVM()->GetEnv((void**) &env, JNI_VERSION_1_2);
   if (0 != rc) return E_FAIL;
   if (env == NULL) return E_FAIL;
   *pResult = env;
   return S_OK;
 }
-
-jboolean CheckAndClearException(JNIEnv* env)
-{
-    jthrowable t = env->ExceptionOccurred();
-    if (!t) {
-        return JNI_FALSE;
-    }
-    fprintf(stderr, "CheckAndClearException[\n");
-    env->ExceptionDescribe();
-    fprintf(stderr, "]\n");
-    env->ExceptionClear();
-
-    
-    // output exception
-    jclass tc = env->FindClass("java/lang/Throwable");
-    if (env->ExceptionOccurred()) {
-        env->ExceptionDescribe();
-        env->ExceptionClear();
-        fprintf(stderr, "FAIL_A\n");
-        return JNI_TRUE;
-    }
-    jmethodID printMID = env->GetMethodID(tc, "printStackTrace", "()V");
-    if (env->ExceptionOccurred()) {
-        env->ExceptionDescribe();
-        env->ExceptionClear();
-        fprintf(stderr, "FAIL_B\n");
-        return JNI_TRUE;
-    }
-    fprintf(stderr, "CheckAndClearException[\n");
-    env->CallVoidMethod(t, printMID);
-    fprintf(stderr, "]\n");
-    if (env->ExceptionOccurred()) {
-        env->ExceptionDescribe();
-        env->ExceptionClear();
-        fprintf(stderr, "FAIL_C\n");
-        return JNI_TRUE;
-    }
-    // ------
-
-
-    jclass cls = env->FindClass("com/sun/glass/ui/Application");
-    if (env->ExceptionOccurred()) {
-        env->ExceptionDescribe();
-        env->ExceptionClear();
-        fprintf(stderr, "FAIL_D\n");
-        return JNI_TRUE;
-    }
-    env->CallStaticVoidMethod(cls, javaIDs.Application.reportExceptionMID, t);
-    if (env->ExceptionOccurred()) {
-        env->ExceptionDescribe();
-        env->ExceptionClear();
-        fprintf(stderr, "FAIL_E\n");
-        return JNI_TRUE;
-    }
-    env->DeleteLocalRef(cls);
-
-    return JNI_TRUE;
-}
-
-jint GetModifiers()
-{
-    jint modifiers = 0;
-    if (HIBYTE(::GetKeyState(VK_CONTROL)) != 0) {
-        modifiers |= com_sun_glass_events_KeyEvent_MODIFIER_CONTROL;
-    }
-    if (HIBYTE(::GetKeyState(VK_SHIFT)) != 0) {
-        modifiers |= com_sun_glass_events_KeyEvent_MODIFIER_SHIFT;
-    }
-    if (HIBYTE(::GetKeyState(VK_MENU)) != 0) {
-        modifiers |= com_sun_glass_events_KeyEvent_MODIFIER_ALT;
-    }
-    if (HIBYTE(::GetKeyState(VK_LWIN)) != 0) {
-        modifiers |= com_sun_glass_events_KeyEvent_MODIFIER_WINDOWS;
-    }
-    if (HIBYTE(::GetKeyState(VK_RWIN)) != 0) {
-        modifiers |= com_sun_glass_events_KeyEvent_MODIFIER_WINDOWS;
-    }
-    if (HIBYTE(::GetKeyState(VK_MBUTTON)) != 0) {
-        modifiers |= com_sun_glass_events_KeyEvent_MODIFIER_BUTTON_MIDDLE;
-    }
-    if (HIBYTE(::GetKeyState(VK_RBUTTON)) != 0) {
-        modifiers |= com_sun_glass_events_KeyEvent_MODIFIER_BUTTON_SECONDARY;
-    }
-    if (HIBYTE(::GetKeyState(VK_LBUTTON)) != 0) {
-        modifiers |= com_sun_glass_events_KeyEvent_MODIFIER_BUTTON_PRIMARY;
-    }
-    /* 
-    
-    XXX not in openjfx8
-
-    if (HIBYTE(::GetKeyState(VK_XBUTTON1)) != 0) {
-        modifiers |= com_sun_glass_events_KeyEvent_MODIFIER_BUTTON_BACK;
-    }
-    if (HIBYTE(::GetKeyState(VK_XBUTTON2)) != 0) {
-        modifiers |= com_sun_glass_events_KeyEvent_MODIFIER_BUTTON_FORWARD;
-    }*/
-
-    return modifiers;
-}
-
-extern "C" {
-
-#ifdef STATIC_BUILD
-    JNIEXPORT jint JNICALL JNI_OnLoad_glass(JavaVM* vm, void* reserved)
-#else
-    JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved)
-#endif
-    {
-        memset(&javaIDs, 0, sizeof(javaIDs));
-        jvm = vm;
-        return JNI_VERSION_1_2;
-    }
-
-} // extern "C"

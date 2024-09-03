@@ -1,27 +1,37 @@
-#ifndef _INSTANCE_TRACKER_
-#define _INSTANCE_TRACKER_
+#pragma once
 
 #include "common.h"
 #include "Logger.h"
 
 class InstanceTracker {
 
+private:
+  InstanceTracker();
+  ~InstanceTracker();
 public:
+  InstanceTracker(const InstanceTracker&) = delete;
+  InstanceTracker& operator =(const InstanceTracker&) = delete;
+
+  static auto& Get() {
+    static InstanceTracker instance;
+    return instance;
+  }
+
+public:
+  void create(void* pointer);
+  void destroy(void *pointer);
+  void setType(void* pointer, const char* type);
+  void setReason(void* pointer, const char* reason);
+  void setJava(void* pointer, jobject java);
+  void addRef(void* pointer);
+  void release(void* pointer);
+
+  void debug(void* pointer);
 
   static void _init(JNIEnv* env, jclass cls);
 
-  static void create(void* pointer);
-  static void destroy(void *pointer);
-  static void setType(void* pointer, const char* type);
-  static void setReason(void* pointer, const char* reason);
-  static void setJava(void* pointer, jobject java);
-  static void addRef(void* pointer);
-  static void release(void* pointer);
-
-  static void debug(void* pointer);
-
 private:
-  static Logger* LOG;
+  Logger m_log;
 
   static jclass cls;
   static jmethodID mid_create;
@@ -32,6 +42,5 @@ private:
   static jmethodID mid_addRef;
   static jmethodID mid_release;
   static jmethodID mid_debug;
-};
 
-#endif //_INSTANCE_TRACKER_
+};

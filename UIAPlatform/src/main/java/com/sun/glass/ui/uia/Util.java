@@ -33,7 +33,7 @@ import java.util.function.Supplier;
 
 public class Util {
 
-    private static Logger LOG = Logger.create(Util.class);
+    private static final Logger LOG = LoggerFactory.create(Util.class);
 
     private Util() {
 
