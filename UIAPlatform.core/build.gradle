@@ -1,5 +1,6 @@
 plugins {
     id "java-library"
+    id "biz.aQute.bnd.builder"
 }
 
 repositories {
@@ -23,6 +24,13 @@ dependencies {
 }
 
 jar {
+    bundle {
+        bnd('Bundle-SymbolicName': 'at.bestsolution.uia.UIAPlatform.core')
+        bnd('Bundle-Version': "${semVersion}")
+        bnd('Bundle-Vendor': "Bestsolution")
+        bnd('-exportcontents': 'com.sun.glass.ui.uia.*,at.bestsolution.uia.core')
+        bnd('-removeheaders':'Bnd-LastModified,Created-By,Tool')
+    }
     manifest {
         attributes('Git-Hash':"${gitHash}")
         attributes('Git-Version': "${gitVersion}")

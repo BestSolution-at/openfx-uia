@@ -10,7 +10,30 @@ def getGitVersionTag() {
     return "git describe --tags --dirty".execute().text.trim()
 }
 
+def getOsgiSemanticVersion(gitVersion) {
+    // syntax: <major> [ ‘.’ <minor> [ ‘.’ <micro> [ ‘.’ <qualifier> ]]]
+    // our version tag is 'r<major>.<minor>.<micro>-<modifier>'
+    // git describe returns 'r1.1.4-6-gbb72de2-dirty'
+    // for qualifier we use the our modifier and git describe part 'rc1-6-gbb72de2-dirty'
+    def m;
+    if ((m = gitVersion =~ /^r(\d+)[.](\d+)[.](\d+)(?:-((?:m|rc)\d+))?(?:-(.+))?$/)) {
+        def major = m.group(1)
+        def minor = m.group(2)
+        def micro = m.group(3)
+        def mod = m.group(4)
+        def desc = m.group(5)
+        def q = [mod, desc].grep {it != null}.join('-')
+        def qualifier = q == null ? "" : ".${q}"
+        return "${major}.${minor}.${micro}${qualifier}"
+    } else {
+        throw new Exception("Could not determine project version")
+    }
+}
+
 ext {
     gitHash = getGitHash()
     gitVersion = getGitVersionTag()
+    semVersion = getOsgiSemanticVersion(gitVersion)
 }
+
+project.version = semVersion

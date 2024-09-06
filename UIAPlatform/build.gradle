@@ -1,6 +1,8 @@
 plugins {
     id "java-library"
     id "org.sonarqube" version "3.2.0"
+
+    id "biz.aQute.bnd.builder"
 }
 
 sonarqube {
@@ -60,7 +62,15 @@ task writeServiceFiles() {
 jar {
     dependsOn configurations.debugDll
     from configurations.debugDll.files
-    
+
+    bundle {
+        bnd('Bundle-SymbolicName': 'at.bestsolution.uia.UIAPlatform')
+        bnd('Bundle-Version': "${semVersion}")
+        bnd('Bundle-Vendor': "Bestsolution")
+        bnd('-exportcontents': "javafx.uia.*,at.bestsolution.uia")
+        bnd('-removeheaders':'Bnd-LastModified,Created-By,Tool')
+    }
+
     manifest {
         attributes('Git-Hash':"${gitHash}")
         attributes('Git-Version': "${gitVersion}")
