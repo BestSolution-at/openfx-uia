@@ -1,6 +1,6 @@
 # OpenFX-UIA Changelog
 
-## Release 1.2.0 (TBD)
+## Release 1.2.0 (2024-09-09)
 
 ### Changes
 
