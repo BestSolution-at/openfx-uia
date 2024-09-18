@@ -119,6 +119,5 @@ void Logger::initIDs(JNIEnv* env, jclass jClass) {
 
 extern "C" JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_LoggerNativeBridge_initIDs
   (JNIEnv *env, jclass jClass) {
-    std::cerr << "LoggerNativeBridge->initIDs from java" << std::endl;
     Logger::initIDs(env, jClass);
 }
