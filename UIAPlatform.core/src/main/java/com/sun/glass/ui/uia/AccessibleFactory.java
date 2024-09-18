@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -26,16 +26,25 @@ package com.sun.glass.ui.uia;
 
 import com.sun.glass.ui.Accessible;
 
+import at.bestsolution.uia.core.internal.CoreLogger;
+import at.bestsolution.uia.core.internal.CoreLoggerFactory;
+
 import java.util.ServiceLoader;
 import java.util.Optional;
 import java.util.Iterator;
 
 @SuppressWarnings("restriction")
 public class AccessibleFactory {
-    
+
+    private static CoreLogger log = CoreLoggerFactory.create(AccessibleFactory.class);
+
     public static Accessible createAccessible() {
         Optional<IAccessibleFactory> service = findFirst(ServiceLoader.load(IAccessibleFactory.class));
-        return service.map(IAccessibleFactory::createAccessible).orElse(null);
+        Accessible result = service.map(IAccessibleFactory::createAccessible).orElse(null);
+        if (result == null) {
+            log.fatal(() -> "Could not create accessible. openjfx-uia will not work. Is UIAPlatform.jar on the classpath?");
+        }
+        return result;
     }
 
     private static <S> Optional<S> findFirst(ServiceLoader<S> loader) {
