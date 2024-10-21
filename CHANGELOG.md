@@ -1,5 +1,11 @@
 # OpenFX-UIA Changelog
 
+## Release 1.2.1 (2024-10-21)
+
+### Changes
+
+- `IUIAVirtualRootElement` children are now forcefully created.
+
 ## Release 1.2.0 (2024-09-09)
 
 ### Changes
