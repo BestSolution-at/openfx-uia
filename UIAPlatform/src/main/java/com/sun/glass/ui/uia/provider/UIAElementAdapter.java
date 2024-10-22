@@ -207,10 +207,32 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
             }
         }
 
-        LOG.debug(this, () -> "Element init " + element);
+        LOG.trace(this, () -> "Element init " + element);
         for (ProviderInstance<?, ?> p : adapters) {
-            LOG.debug(this, () -> " * " + p.descriptor.javaType);
+            LOG.trace(this, () -> " * " + p.descriptor.javaType);
         }
+
+        // force children into existence !?
+        if (element instanceof IUIAVirtualRootElement) {
+            LOG.debug(() -> "begin init children");
+            long begin = System.currentTimeMillis();
+            IUIAVirtualRootElement root = (IUIAVirtualRootElement) element;
+            initChildren(accessible, root.getChildren());
+            long duration = System.currentTimeMillis() - begin;
+            LOG.debug(() -> "end init children " + duration + "ms");
+        }
+
+        getChildren(element).ifPresent(children -> ProxyAccessibleRegistry.getInstance().ensureExists(accessible, children));
+    }
+
+    private void initChildren(ProxyAccessible context, List<IUIAElement> children) {
+        children.forEach(child -> {
+            ProxyAccessibleRegistry.getInstance().ensureExists(accessible, child);
+            if (child instanceof IUIAVirtualElement) {
+                IUIAVirtualElement v = (IUIAVirtualElement) child;
+                initChildren(context, v.getChildren());
+            }
+        });
     }
 
     public IUIAElement.UIAElementContext getContext() {
