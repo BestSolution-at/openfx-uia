@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -37,7 +37,7 @@ public class ProxyAccessibleRegistry {
     private static class LazyHolder {
         final static ProxyAccessibleRegistry INSTANCE = new ProxyAccessibleRegistry();
     }
-    
+
     // TODO dispose = ?
     private Map<IUIAElement, ProxyAccessible> fxAccessibles = new HashMap<>();
     // TODO management & dispose
@@ -74,6 +74,10 @@ public class ProxyAccessibleRegistry {
 
     public ProxyAccessible getVirtualAccessible(ProxyAccessible context, IUIAElement element) {
         return virtualAccessibles.computeIfAbsent(element, el -> new ProxyAccessible(context, el));
+    }
+
+    public void ensureExists(ProxyAccessible context, List<IUIAElement> elements) {
+        elements.forEach(element -> ensureExists(context, element));
     }
 
     public boolean ensureExists(ProxyAccessible context, IUIAElement element) {
