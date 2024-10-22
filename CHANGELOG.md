@@ -1,5 +1,11 @@
 # OpenFX-UIA Changelog
 
+## Release 1.2.2 (2024-10-22)
+
+### Changes
+
+- fix missing commit for previous release
+
 ## Release 1.2.1 (2024-10-21)
 
 ### Changes
