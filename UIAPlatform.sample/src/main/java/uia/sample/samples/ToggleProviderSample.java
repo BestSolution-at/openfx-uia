@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -24,6 +24,11 @@
  */
 package uia.sample.samples;
 
+import at.bestsolution.uia.javafx.uia.ControlType;
+import at.bestsolution.uia.javafx.uia.IToggleProvider;
+import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.javafx.uia.ToggleState;
+import at.bestsolution.uia.javafx.uia.UIA;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
@@ -34,11 +39,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
-import javafx.uia.ControlType;
-import javafx.uia.IToggleProvider;
-import javafx.uia.IUIAElement;
-import javafx.uia.ToggleState;
-import javafx.uia.UIA;
 import uia.sample.Sample;
 
 public class ToggleProviderSample implements Sample {
@@ -137,7 +137,7 @@ public class ToggleProviderSample implements Sample {
     public Node getControls() {
         return control;
     }
-    
+
 
 
 }

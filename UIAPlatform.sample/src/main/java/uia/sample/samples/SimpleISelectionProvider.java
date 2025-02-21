@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -28,6 +28,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import at.bestsolution.uia.javafx.uia.ISelectionItemProvider;
+import at.bestsolution.uia.javafx.uia.ISelectionProvider;
+import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.javafx.uia.IUIAVirtualElement;
+import at.bestsolution.uia.javafx.uia.IUIAVirtualRootElement;
+import at.bestsolution.uia.javafx.uia.UIA;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
@@ -44,12 +50,6 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import javafx.uia.ISelectionItemProvider;
-import javafx.uia.ISelectionProvider;
-import javafx.uia.IUIAElement;
-import javafx.uia.IUIAVirtualElement;
-import javafx.uia.IUIAVirtualRootElement;
-import javafx.uia.UIA;
 import uia.sample.Sample;
 
 public class SimpleISelectionProvider implements Sample {
@@ -110,9 +110,9 @@ public class SimpleISelectionProvider implements Sample {
     List<IUIAElement> old = new ArrayList<>();
 
     class UIAElement implements IUIAVirtualRootElement, ISelectionProvider {
-        
+
         Pane node;
-        
+
         public UIAElement() {
             canSelectMultiple.addListener((obs, oldValue, newValue) -> {
                 withContext(SelectionProviderContext.class, ctx -> {
@@ -139,7 +139,7 @@ public class SimpleISelectionProvider implements Sample {
         public void SetFocus() {
             node.requestFocus();
         }
-        
+
         @Override
         public List<IUIAElement> getChildren() {
             return items;
@@ -223,9 +223,9 @@ public class SimpleISelectionProvider implements Sample {
     public SimpleISelectionProvider() {
         desc = new Label("Basic usage of ISelectionProvider & ISelectionItemProvider.");
         desc.setWrapText(true);
-        
+
         host = new Pane();
-        
+
         UIAElement uiaEl = new UIAElement();
         VBox pane0 = new VBox() {
             {
@@ -277,7 +277,7 @@ public class SimpleISelectionProvider implements Sample {
 
     }
 
-  
+
 
     @Override
     public String getName() {
@@ -298,7 +298,7 @@ public class SimpleISelectionProvider implements Sample {
     public Node getControls() {
         return ctrl;
     }
-    
+
 
 
 }

@@ -7,6 +7,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import at.bestsolution.uia.javafx.uia.UIA;
 import javafx.application.Platform;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -27,7 +28,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
-import javafx.uia.UIA;
 import uia.sample.Sample;
 import uia.sample.samples.model.BaseModel;
 import uia.sample.samples.model.TextSupport.Glyph;
@@ -439,13 +439,13 @@ public class DocumentModelSample implements Sample {
             double x = evt.getX();
             double y = evt.getY();
         /*
-            return doc.streamGlyphs().filter(g -> 
+            return doc.streamGlyphs().filter(g ->
                 g.y <= y && g.y + g.h > y &&
                 g.x <= x && g.x + g.w > x)
                 .findFirst();
 */
             Iterator<Glyph> it = doc.streamGlyphs().iterator();
-           
+
             while (it.hasNext()) {
                 Glyph cur = it.next();
                 double left = cur.x;
@@ -456,7 +456,7 @@ public class DocumentModelSample implements Sample {
 
                     if (left <= x && middle > x) {
                         return Optional.of(cur);
-                    } 
+                    }
 
                     if (middle <= x && right > x) {
                         if (it.hasNext()) {
@@ -500,23 +500,23 @@ public class DocumentModelSample implements Sample {
             final double height = getHeight();
 
             g2D.clearRect(0, 0, width, height);// reset/clean canvas
-            
+
             doc.render(g2D);
 
             drawFocusBorder(g2D);
 
-            
 
-           
+
+
 
             g2D.setFill(Color.rgb(1, 0, 0, 0.2));
             doc.streamGlyphs().forEach(g -> {
                 //g2D.fillRect(g.x, g.y, g.w, g.h);
             });
 
-          
+
             drawSelection(g2D);
-           
+
 
             drawCaret(g2D);
         }
@@ -571,8 +571,8 @@ public class DocumentModelSample implements Sample {
 
             List<Bounds> perGlyph = selected.get().map(g -> new BoundingBox(g.x, g.y, g.w, g.h)).collect(Collectors.toList());
             List<Bounds> merged = BaseModel.merge(perGlyph);
-            
-  
+
+
             gc.setFill(Color.BLUE);
             merged.forEach(m -> {
                 gc.fillRect(m.getMinX(), m.getMinY(), m.getWidth(), m.getHeight());

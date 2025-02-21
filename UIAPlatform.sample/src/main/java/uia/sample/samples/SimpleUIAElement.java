@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -24,12 +24,12 @@
  */
 package uia.sample.samples;
 
+import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.javafx.uia.UIA;
 import javafx.geometry.Bounds;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.uia.IUIAElement;
-import javafx.uia.UIA;
 import uia.sample.Sample;
 
 public class SimpleUIAElement implements Sample {
@@ -41,11 +41,11 @@ public class SimpleUIAElement implements Sample {
             public Bounds getBounds() {
                 return content.localToScreen(content.getBoundsInLocal());
             }
-    
+
             @Override
             public void SetFocus() {
             }
-     
+
         };
 
         @Override
@@ -87,7 +87,7 @@ public class SimpleUIAElement implements Sample {
     public Node getControls() {
         return null;
     }
-    
+
 
 
 }

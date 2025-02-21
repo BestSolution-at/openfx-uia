@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -27,6 +27,14 @@ package uia.sample.samples;
 import java.text.BreakIterator;
 import java.util.function.Supplier;
 
+import at.bestsolution.uia.javafx.uia.ControlType;
+import at.bestsolution.uia.javafx.uia.ITextProvider;
+import at.bestsolution.uia.javafx.uia.ITextRangeProvider;
+import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.javafx.uia.SupportedTextSelection;
+import at.bestsolution.uia.javafx.uia.TextPatternRangeEndpoint;
+import at.bestsolution.uia.javafx.uia.TextUnit;
+import at.bestsolution.uia.javafx.uia.UIA;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.AccessibleAttribute;
@@ -34,17 +42,9 @@ import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
-import javafx.uia.ControlType;
-import javafx.uia.ITextProvider;
-import javafx.uia.ITextRangeProvider;
-import javafx.uia.IUIAElement;
-import javafx.uia.SupportedTextSelection;
-import javafx.uia.TextPatternRangeEndpoint;
-import javafx.uia.TextUnit;
-import javafx.uia.UIA;
 import uia.sample.Sample;
 
-public class SimpleTextProvider implements Sample { 
+public class SimpleTextProvider implements Sample {
 
     class TextHelper {
 
@@ -184,7 +184,7 @@ public class SimpleTextProvider implements Sample {
             String text = helper.getText();
             if (text == null) return null;
             int length = text.length();
-    
+
             /* Narrator will not focus an empty text control if the bounds are NULL */
             if (length == 0) return new Bounds[0];
             int endOffset = end;
@@ -224,7 +224,7 @@ public class SimpleTextProvider implements Sample {
             if (text == null) return 0;
             int length = text.length();
             if (length == 0) return 0;
-    
+
             int actualCount = 0;
             switch (unit) {
                 case Character: {
@@ -315,7 +315,7 @@ public class SimpleTextProvider implements Sample {
                     return 0;
                 }
             }
-    
+
             /* Always ensure range consistency */
             start = Math.max(0, Math.min(start, length));
             end = Math.max(start, Math.min(end, length));
@@ -327,7 +327,7 @@ public class SimpleTextProvider implements Sample {
             String text = helper.getText();
             if (text == null) return;
             int length = text.length();
-    
+
             int offset = targetEndpoint == TextPatternRangeEndpoint.Start ? cast(targetRange).start : cast(targetRange).end;
             if (endpoint == TextPatternRangeEndpoint.Start) {
                 start = offset;
@@ -337,7 +337,7 @@ public class SimpleTextProvider implements Sample {
             if (start > end) {
                 start = end = offset;
             }
-    
+
             /* Always ensure range consistency */
             start = Math.max(0, Math.min(start, length));
             end = Math.max(start, Math.min(end, length));
@@ -349,7 +349,7 @@ public class SimpleTextProvider implements Sample {
             String text = helper.getText();
             if (text == null) return 0;
             int length = text.length();
-    
+
             int actualCount = 0;
             int offset = endpoint == TextPatternRangeEndpoint.Start ? start : end;
             switch (unit) {
@@ -442,7 +442,7 @@ public class SimpleTextProvider implements Sample {
             if (start > end) {
                 start = end = offset;
             }
-    
+
             /* Always ensure range consistency */
             start = Math.max(0, Math.min(start, length));
             end = Math.max(start, Math.min(end, length));
@@ -451,12 +451,12 @@ public class SimpleTextProvider implements Sample {
 
         @Override
         public void RemoveFromSelection() {
-            
+
         }
 
         @Override
         public void ScrollIntoView(boolean alignToTop) {
-            
+
         }
 
         @Override
@@ -520,19 +520,19 @@ public class SimpleTextProvider implements Sample {
 
         @Override
         public void SetFocus() {
-            field.requestFocus();            
+            field.requestFocus();
         }
 
     }
     BorderPane area;
     public SimpleTextProvider() {
 
-        
+
 
         field = new TextField("Hello UIA World") {
             @Override
             public Object queryAccessibleAttribute(AccessibleAttribute attribute, Object... parameters) {
-                
+
                 if (UIA.isUIAQuery(attribute, parameters)) {
                     return element;
                 }
@@ -556,7 +556,7 @@ public class SimpleTextProvider implements Sample {
 
     @Override
     public Node getDescription() {
-       
+
         return desc;
     }
 

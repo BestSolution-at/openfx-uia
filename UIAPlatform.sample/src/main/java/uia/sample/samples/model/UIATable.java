@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -24,11 +24,11 @@
  */
 package uia.sample.samples.model;
 
-import javafx.uia.ControlType;
-import javafx.uia.IInitContext;
-import javafx.uia.ITableProvider;
-import javafx.uia.IUIAElement;
-import javafx.uia.RowOrColumnMajor;
+import at.bestsolution.uia.javafx.uia.ControlType;
+import at.bestsolution.uia.javafx.uia.IInitContext;
+import at.bestsolution.uia.javafx.uia.ITableProvider;
+import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.javafx.uia.RowOrColumnMajor;
 
 public class UIATable extends UIAGrid implements ITableProvider {
 

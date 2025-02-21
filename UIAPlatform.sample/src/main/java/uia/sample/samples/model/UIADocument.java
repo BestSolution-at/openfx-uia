@@ -1,16 +1,16 @@
 package uia.sample.samples.model;
 
+import at.bestsolution.uia.javafx.uia.ControlType;
+import at.bestsolution.uia.javafx.uia.IInitContext;
+import at.bestsolution.uia.javafx.uia.IProperty;
+import at.bestsolution.uia.javafx.uia.ITextProvider2;
+import at.bestsolution.uia.javafx.uia.ITextRangeProvider;
+import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.javafx.uia.StandardPropertyIds;
+import at.bestsolution.uia.javafx.uia.StandardVariantConverters;
+import at.bestsolution.uia.javafx.uia.SupportedTextSelection;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
-import javafx.uia.ControlType;
-import javafx.uia.IInitContext;
-import javafx.uia.IProperty;
-import javafx.uia.ITextProvider2;
-import javafx.uia.ITextRangeProvider;
-import javafx.uia.IUIAElement;
-import javafx.uia.StandardPropertyIds;
-import javafx.uia.StandardVariantConverters;
-import javafx.uia.SupportedTextSelection;
 import uia.sample.samples.DocumentModelSample.EditorPane;
 
 public class UIADocument extends UIACanvas implements /*ITextProvider,*/ ITextProvider2 {
@@ -75,7 +75,7 @@ public class UIADocument extends UIACanvas implements /*ITextProvider,*/ ITextPr
         return SupportedTextSelection.Single;
     }
 
-  
+
 
 
     @Override
@@ -142,11 +142,11 @@ public class UIADocument extends UIACanvas implements /*ITextProvider,*/ ITextPr
 
     @Override
     public ITextRangeProvider RangeFromAnnotation(IUIAElement annotationElement) {
-      
+
         return null;
     }
 
-    
+
     ITextRangeProvider rangeOf(int begin, int end) {
         return new UIATextRange(this, begin, end);
     }

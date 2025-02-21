@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -27,10 +27,10 @@ package uia.sample.samples.model;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import at.bestsolution.uia.javafx.uia.IGridProvider;
+import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.javafx.uia.IUIAVirtualElement;
 import javafx.geometry.Bounds;
-import javafx.uia.IGridProvider;
-import javafx.uia.IUIAElement;
-import javafx.uia.IUIAVirtualElement;
 
 public class UIAGrid extends Grid implements /*IUIAElement,*/ IUIAVirtualElement, IGridProvider {
 

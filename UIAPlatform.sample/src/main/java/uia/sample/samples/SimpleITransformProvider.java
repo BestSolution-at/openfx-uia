@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -24,6 +24,9 @@
  */
 package uia.sample.samples;
 
+import at.bestsolution.uia.javafx.uia.ITransformProvider;
+import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.javafx.uia.UIA;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.BooleanProperty;
@@ -37,9 +40,6 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import javafx.uia.ITransformProvider;
-import javafx.uia.IUIAElement;
-import javafx.uia.UIA;
 import uia.sample.Sample;
 
 public class SimpleITransformProvider implements Sample {
@@ -47,7 +47,7 @@ public class SimpleITransformProvider implements Sample {
     private BooleanProperty canMove = new SimpleBooleanProperty(true);
     private BooleanProperty canResize = new SimpleBooleanProperty(true);
     private BooleanProperty canRotate = new SimpleBooleanProperty(true);
-    
+
     class UIATransform implements IUIAElement, ITransformProvider {
 
         final Pane node;
@@ -95,7 +95,7 @@ public class SimpleITransformProvider implements Sample {
                 Point2D move = node.getParent().screenToLocal(x, y);
                 node.relocate(move.getX(), move.getY());
             }
-            
+
         }
 
         @Override
@@ -135,7 +135,7 @@ public class SimpleITransformProvider implements Sample {
     public SimpleITransformProvider() {
         desc = new Label("Basic usage of ITransformProvider.");
         desc.setWrapText(true);
-        
+
         host = new Pane();
 
         BorderPane pane0 = new BorderPane() {
@@ -150,15 +150,15 @@ public class SimpleITransformProvider implements Sample {
         };
         pane0.setStyle("-fx-border-width: 1px; -fx-border-color: red;");
 
-       
-        
+
+
         StringBinding bLbl = Bindings.createStringBinding(() -> {
             return "canMove: " + canMove.get() + "\ncanResize: " + canResize.get() + "\ncanRotate: " + canRotate.get();
         }, canMove, canResize, canRotate);
-        
+
         Label lblState = new Label();
         lblState.textProperty().bind(bLbl);
-        
+
         pane0.setCenter(lblState);
         pane0.setManaged(false);
 
@@ -182,10 +182,10 @@ public class SimpleITransformProvider implements Sample {
         rotate.selectedProperty().bindBidirectional(canRotate);
         ctrl.getChildren().add(rotate);
 
-        
+
     }
 
-  
+
 
     @Override
     public String getName() {
@@ -206,7 +206,7 @@ public class SimpleITransformProvider implements Sample {
     public Node getControls() {
         return ctrl;
     }
-    
+
 
 
 }

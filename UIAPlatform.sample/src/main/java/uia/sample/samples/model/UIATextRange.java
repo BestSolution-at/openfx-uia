@@ -5,18 +5,18 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import at.bestsolution.uia.javafx.uia.ITextAttributeSupport;
+import at.bestsolution.uia.javafx.uia.ITextRangeProvider;
+import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.javafx.uia.TextPatternRangeEndpoint;
+import at.bestsolution.uia.javafx.uia.TextUnit;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
-import javafx.uia.ITextAttributeSupport;
-import javafx.uia.ITextRangeProvider;
-import javafx.uia.IUIAElement;
-import javafx.uia.TextPatternRangeEndpoint;
-import javafx.uia.TextUnit;
 
 public class UIATextRange implements ITextRangeProvider {
 
 
-    
+
 
         @Override
         public void initialize(ITextAttributeSupport context) {
@@ -129,7 +129,7 @@ public class UIATextRange implements ITextRangeProvider {
         //         return TextAttributeValue.mixed();
         //     }
         // }
-        
+
         // private <T> TextAttributeValue<T> toSingleValue(Set<T> found) {
         //     if (found.size() == 1) {
         //         T result = found.iterator().next();
@@ -266,7 +266,7 @@ public class UIATextRange implements ITextRangeProvider {
         public Bounds[] GetBoundingRectangles() {
 
             if (start == end) {
-               
+
                 Optional<Bounds> glyph = root.streamGlyphs().filter(g -> g.index == start)
                 .map(g -> new BoundingBox(g.x, g.y, g.w, g.h))
                 .map(root.canvas::localToScreen)
@@ -330,7 +330,7 @@ public class UIATextRange implements ITextRangeProvider {
             if (text == null) return 0;
             int length = text.length();
             if (length == 0) return 0;
-    
+
             int actualCount = 0;
             switch (unit) {
                 case Character: {
@@ -421,7 +421,7 @@ public class UIATextRange implements ITextRangeProvider {
                     return 0;
                 }
             }
-    
+
             /* Always ensure range consistency */
             start = Math.max(0, Math.min(start, length));
             end = Math.max(start, Math.min(end, length));
@@ -434,7 +434,7 @@ public class UIATextRange implements ITextRangeProvider {
             String text = root.getContent();
             if (text == null) return;
             int length = text.length();
-    
+
             int offset = targetEndpoint == TextPatternRangeEndpoint.Start ? cast(targetRange).start : cast(targetRange).end;
             if (endpoint == TextPatternRangeEndpoint.Start) {
                 start = offset;
@@ -444,7 +444,7 @@ public class UIATextRange implements ITextRangeProvider {
             if (start > end) {
                 start = end = offset;
             }
-    
+
             /* Always ensure range consistency */
             start = Math.max(0, Math.min(start, length));
             end = Math.max(start, Math.min(end, length));
@@ -456,7 +456,7 @@ public class UIATextRange implements ITextRangeProvider {
             String text = root.getContent();
             if (text == null) return 0;
             int length = text.length();
-    
+
             int actualCount = 0;
             int offset = endpoint == TextPatternRangeEndpoint.Start ? start : end;
             switch (unit) {
@@ -559,12 +559,12 @@ public class UIATextRange implements ITextRangeProvider {
 
         @Override
         public void RemoveFromSelection() {
-            
+
         }
 
         @Override
         public void ScrollIntoView(boolean alignToTop) {
-            
+
         }
 
         @Override

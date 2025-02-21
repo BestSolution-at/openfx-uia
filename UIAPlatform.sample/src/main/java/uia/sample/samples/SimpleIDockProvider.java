@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -26,6 +26,11 @@ package uia.sample.samples;
 
 import java.util.function.Function;
 
+import at.bestsolution.uia.javafx.uia.DockPosition;
+import at.bestsolution.uia.javafx.uia.IDockProvider;
+import at.bestsolution.uia.javafx.uia.IProperty;
+import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.javafx.uia.UIA;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
@@ -40,17 +45,12 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
-import javafx.uia.DockPosition;
-import javafx.uia.IDockProvider;
-import javafx.uia.IProperty;
-import javafx.uia.IUIAElement;
-import javafx.uia.UIA;
 import uia.sample.Sample;
 
 public class SimpleIDockProvider implements Sample {
 
     private ObjectProperty<DockPosition> dockPosition = new SimpleObjectProperty<>(DockPosition.None);
-    
+
     class UIADock implements IUIAElement, IDockProvider {
 
         final Pane node;
@@ -102,7 +102,7 @@ public class SimpleIDockProvider implements Sample {
     public SimpleIDockProvider() {
         desc = new Label("Basic usage of IDockProvider.");
         desc.setWrapText(true);
-        
+
         host = new Pane() {
             @Override
             protected void layoutChildren() {
@@ -124,17 +124,17 @@ public class SimpleIDockProvider implements Sample {
         };
         pane0.setStyle("-fx-border-width: 1px; -fx-border-color: red;");
         pane0.setManaged(false);
-       
-        
+
+
         StringBinding bLbl = Bindings.createStringBinding(() -> {
             return "dockPosition: " + dockPosition.get();
         }, dockPosition);
-        
+
         Label lblState = new Label();
         lblState.textProperty().bind(bLbl);
-        
+
         pane0.setCenter(lblState);
-        
+
 
         // init
         pane0.resizeRelocate(20, 20, 100, 100);
@@ -162,10 +162,10 @@ public class SimpleIDockProvider implements Sample {
         double h = pane0.prefHeight(-1);
 
         switch(dockPosition.get()) {
-            case None: 
+            case None:
                 pane0.resizeRelocate(50, 50, w, h);
                 break;
-            case Top: 
+            case Top:
                 pane0.resizeRelocate(0, 0, hw, h);
                 break;
             case Bottom:
@@ -202,7 +202,7 @@ public class SimpleIDockProvider implements Sample {
     public Node getControls() {
         return ctrl;
     }
-    
+
 
 
 }

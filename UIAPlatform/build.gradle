@@ -22,8 +22,17 @@ java {
     toolchain {
         // since auto detection is disabled only the env var JDK8FX is picked up as java toolchain (see gradle.properties)
         // it seems not possible to query for toolchains with included JavaFX...
-        languageVersion = JavaLanguageVersion.of(8)
+        languageVersion = JavaLanguageVersion.of(17)
     }
+}
+
+compileJava {
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.glass.ui=ALL-UNNAMED'
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED'
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.tk.quantum=ALL-UNNAMED'
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.scene=ALL-UNNAMED'
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.stage=ALL-UNNAMED'
+
 }
 
 
@@ -44,7 +53,7 @@ dependencies {
 
 task writeServiceFiles() {
     var services = [
-        "com.sun.glass.ui.uia.IAccessibleFactory": "com.sun.glass.ui.uia.UIAAccessibleFactory",
+        "at.bestsolution.uia.IAccessibleFactory": "at.bestsolution.uia.UIAAccessibleFactory",
     ]
 
     services.each {
@@ -60,7 +69,7 @@ task writeServiceFiles() {
 jar {
     dependsOn configurations.debugDll
     from configurations.debugDll.files
-    
+
     manifest {
         attributes('Git-Hash':"${gitHash}")
         attributes('Git-Version': "${gitVersion}")

@@ -12,7 +12,7 @@ java {
     toolchain {
         // since auto detection is disabled only the env var JDK8FX is picked up as java toolchain (see gradle.properties)
         // it seems not possible to query for toolchains with included JavaFX...
-        languageVersion = JavaLanguageVersion.of(8)
+        languageVersion = JavaLanguageVersion.of(17)
     }
 }
 

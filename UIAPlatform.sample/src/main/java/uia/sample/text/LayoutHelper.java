@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -37,6 +37,7 @@ import com.sun.javafx.geom.RectBounds;
 import com.sun.javafx.geom.transform.BaseTransform;
 import com.sun.javafx.text.TextRun;
 
+import at.bestsolution.uia.javafx.uia.IUIAElement;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
@@ -45,14 +46,13 @@ import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.FillRule;
 import javafx.scene.text.Font;
-import javafx.uia.IUIAElement;
 import uia.sample.samples.model.IDrawable;
 
 
-// this class uses the javafx internal TextLayout 
+// this class uses the javafx internal TextLayout
 @SuppressWarnings("restriction")
 public class LayoutHelper {
-   
+
     public static interface Embedded {
         //Image getImage();
 
@@ -72,7 +72,7 @@ public class LayoutHelper {
         }
     }
     static class TextFragment extends Fragment {
-        
+
         Font font;
         Color color;
 
@@ -85,15 +85,16 @@ public class LayoutHelper {
         @Override
         public com.sun.javafx.geom.RectBounds getBounds() {
             return null;
-       
+
         }
 
         @Override
         @SuppressWarnings("deprecation")
         public Object getFont() {
-            return font.impl_getNativeFont();
+            // return font.impl_getNativeFont();
+            return com.sun.javafx.scene.text.FontHelper.getNativeFont(font);
         }
-      
+
     }
     static class ImageFragment extends Fragment implements Embedded {
         Image image;
@@ -171,9 +172,9 @@ public class LayoutHelper {
         this.layout = com.sun.javafx.tk.Toolkit.getToolkit().getTextLayoutFactory().createLayout();
     }
 
-    public com.sun.javafx.scene.text.HitInfo pick(javafx.geometry.Point2D point, Point2D base) {
-        return layout.getHitInfo((float) (point.getX() - base.getX()), (float) (point.getY() - base.getY()));
-    }
+    // public javafx.scene.text.HitInfo pick(javafx.geometry.Point2D point, Point2D base) {
+    //     return layout.getHitInfo((float) (point.getX() - base.getX()), (float) (point.getY() - base.getY()), "foo", 0, 0);
+    // }
 
     public String getText() {
         return content.stream().map(part -> part.content).collect(Collectors.joining());
@@ -195,7 +196,7 @@ public class LayoutHelper {
             this.content.add(new DrawableFragment(drawable));
             this.content.add(new TextFragment("\n", Font.getDefault(), Color.BLACK));
         }
-        
+
     }
 
     public void setWrapWidth(double width) {
@@ -207,7 +208,7 @@ public class LayoutHelper {
 
         layout.setContent(content.stream().toArray(size -> new com.sun.javafx.scene.text.TextSpan[size]));
 
-        
+
     }
 
     public Bounds getLayoutBounds() {
@@ -269,7 +270,7 @@ public class LayoutHelper {
         float lineY = 0;
 
         for  (int lineIndex = 0; lineIndex < lineCount; lineIndex++) {
-            
+
             com.sun.javafx.text.TextLine line = (com.sun.javafx.text.TextLine) layout.getLines()[lineIndex];
             com.sun.javafx.geom.RectBounds lineBounds = line.getBounds();
             int lineStart = line.getStart();
@@ -329,7 +330,7 @@ public class LayoutHelper {
 
                     top = lineY + lineBounds.getMinY();
                     bottom = lineY + lineBounds.getMinY() + lineBounds.getHeight();
-                    
+
                     /* Merge continuous rectangles */
                     if (runLeft != right) {
                         if (left != -1 && right != -1) {
@@ -353,7 +354,7 @@ public class LayoutHelper {
                         //     l = width - l;
                         //     r = width - r;
                         // }
-                        
+
                         result.add(new com.sun.javafx.geom.RectBounds(x + l, y + top, x + r, y + bottom));
                     }
                 }
@@ -379,7 +380,7 @@ public class LayoutHelper {
                     com.sun.javafx.font.FontStrike strike = font.getStrike(BaseTransform.getTranslateInstance(0, 0));
 
                     for (int glyphIndex = 0; glyphIndex < run.getGlyphCount(); glyphIndex++) {
-                       
+
 
                         float posX = run.getPosX(glyphIndex);
                         float posY = run.getPosY(glyphIndex);
@@ -387,14 +388,14 @@ public class LayoutHelper {
 
                         com.sun.javafx.font.Glyph glyph = strike.getGlyph(glyphCode);
                         com.sun.javafx.geom.Shape shape = glyph.getShape();
-                        
+
                         com.sun.javafx.geom.PathIterator it = shape.getPathIterator(BaseTransform.IDENTITY_TRANSFORM);
-                        
+
                         float[] buf = new float[6];
 
                         double glyphX = base.getX() + loc.x + posX;
                         double glyphY = base.getY() + loc.y + posY;
-                        
+
                         ctx.beginPath();
 
                         if (it.getWindingRule() == PathIterator.WIND_NON_ZERO) {
@@ -404,7 +405,7 @@ public class LayoutHelper {
                         }
 
                         while (!it.isDone()) {
-                           
+
                             int type = it.currentSegment(buf);
                             switch (type) {
 
@@ -429,7 +430,7 @@ public class LayoutHelper {
                                 ctx.closePath();
                                 break;
 
-                                
+
                             }
 
                             it.next();
@@ -438,12 +439,12 @@ public class LayoutHelper {
                         ctx.setFill(textFragment.color);
                         ctx.fill();
                     }
-                    
-    
+
+
                 }
                 if (run.getTextSpan() instanceof ImageFragment) {
                     ImageFragment fragment = (ImageFragment) run.getTextSpan();
-    
+
                     ctx.drawImage(fragment.image, base.getX() + loc.x + fragment.getBounds().getMinX(), base.getY()+ loc.y + fragment.getBounds().getMinY());
                 }
 
@@ -464,14 +465,14 @@ public class LayoutHelper {
     }
 
     public int getStart(Embedded embedded) {
-        return 
+        return
         Arrays.stream(layout.getRuns()).filter(run -> run.getTextSpan() == embedded).findFirst()
         .map(gl -> (TextRun) gl)
         .map(run -> run.getStart())
         .orElse(-1);
     }
     public int getEnd(Embedded embedded) {
-        return 
+        return
         Arrays.stream(layout.getRuns()).filter(run -> run.getTextSpan() == embedded).findFirst()
         .map(gl -> (TextRun) gl)
         .map(run -> run.getEnd())
@@ -480,7 +481,7 @@ public class LayoutHelper {
 
     public Bounds getBounds(Embedded embedded) {
 
-        return 
+        return
         Arrays.stream(layout.getRuns()).filter(run -> run.getTextSpan() == embedded).findFirst()
         .map(gl -> (TextRun) gl)
         .map(run -> {

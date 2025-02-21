@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -27,13 +27,13 @@ package uia.sample.samples.model;
 import java.util.Collections;
 import java.util.List;
 
+import at.bestsolution.uia.javafx.uia.IGridItemProvider;
+import at.bestsolution.uia.javafx.uia.IInitContext;
+import at.bestsolution.uia.javafx.uia.ITextChildProvider;
+import at.bestsolution.uia.javafx.uia.ITextRangeProvider;
+import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.javafx.uia.IUIAVirtualElement;
 import javafx.geometry.Bounds;
-import javafx.uia.IGridItemProvider;
-import javafx.uia.IInitContext;
-import javafx.uia.ITextChildProvider;
-import javafx.uia.ITextRangeProvider;
-import javafx.uia.IUIAElement;
-import javafx.uia.IUIAVirtualElement;
 
 public class UIACell extends Cell implements /*IUIAElement,*/ IUIAVirtualElement, IGridItemProvider, ITextChildProvider {
 
@@ -107,5 +107,5 @@ public class UIACell extends Cell implements /*IUIAElement,*/ IUIAVirtualElement
         .findFirst()
         .orElse(null);
     }
-    
+
 }

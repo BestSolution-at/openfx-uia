@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -61,7 +61,7 @@ namespace jni { namespace ids {
 
   HRESULT initIDs(JNIEnv* env) {
     /* Variant */
-    jclass jVariantClass = env->FindClass("com/sun/glass/ui/uia/glass/WinVariant");
+    jclass jVariantClass = env->FindClass("at/bestsolution/uia/glass/WinVariant");
     if (env->ExceptionCheck()) return E_FAIL;
     WinVariant.vt = env->GetFieldID(jVariantClass, "vt", "S");
     if (env->ExceptionCheck()) return E_FAIL;
@@ -95,7 +95,7 @@ namespace jni { namespace ids {
     if (env->ExceptionCheck()) return E_FAIL;
 
     /* HResultException */
-    jclass jHResultExceptionClass = env->FindClass("com/sun/glass/ui/uia/HResultException");
+    jclass jHResultExceptionClass = env->FindClass("at/bestsolution/uia/HResultException");
     if (env->ExceptionCheck()) return E_FAIL;
     HResultException.clazz = (jclass) env->NewGlobalRef(jHResultExceptionClass);
     if (env->ExceptionCheck()) return E_FAIL;

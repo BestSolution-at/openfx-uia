@@ -1010,7 +1010,7 @@ IFACEMETHODIMP ProxyAccessible::get_ItemCount(int *pResult) {
  * Method:    _initIDs
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1initIDs
+JNIEXPORT void JNICALL Java_at_bestsolution_uia_ProxyAccessible__1initIDs
 (JNIEnv* env, jclass jClass)
 {
     /* IRawElementProviderSimple */
@@ -1018,7 +1018,7 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1initIDs
     if (env->ExceptionCheck()) return;
     mid_IRawElementProviderSimple_get_HostRawElementProvider = env->GetMethodID(jClass, "IRawElementProviderSimple_get_HostRawElementProvider", "()J");
     if (env->ExceptionCheck()) return;
-    mid_IRawElementProviderSimple_GetPropertyValue = env->GetMethodID(jClass, "IRawElementProviderSimple_GetPropertyValue", "(I)Lcom/sun/glass/ui/uia/glass/WinVariant;");
+    mid_IRawElementProviderSimple_GetPropertyValue = env->GetMethodID(jClass, "IRawElementProviderSimple_GetPropertyValue", "(I)Lat/bestsolution/uia/glass/WinVariant;");
     if (env->ExceptionCheck()) return;
 
     /* IRawElementProviderFragment */
@@ -1274,7 +1274,7 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1initIDs
     mid_ITextChildProvider_get_TextRange = env->GetMethodID(jClass, "ITextChildProvider_get_TextRange", "()J");
     if (env->ExceptionCheck()) return;
     // ITextProvider2
-    mid_ITextProvider2_GetCaretRange = env->GetMethodID(jClass, "ITextProvider2_GetCaretRange", "()Lcom/sun/glass/ui/uia/ProxyAccessible$NCaretRangeResult;");
+    mid_ITextProvider2_GetCaretRange = env->GetMethodID(jClass, "ITextProvider2_GetCaretRange", "()Lat/bestsolution/uia/ProxyAccessible$NCaretRangeResult;");
     if (env->ExceptionCheck()) return;
     mid_ITextProvider2_RangeFromAnnotation = env->GetMethodID(jClass, "ITextProvider2_RangeFromAnnotation", "(J)J");
     if (env->ExceptionCheck()) return;
@@ -1321,7 +1321,7 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1initIDs
     jni::ids::initIDs(env);
 
     /* NCaretRangeResult */
-    jclass jNCaretRangeResultClass = env->FindClass("com/sun/glass/ui/uia/ProxyAccessible$NCaretRangeResult");
+    jclass jNCaretRangeResultClass = env->FindClass("at/bestsolution/uia/ProxyAccessible$NCaretRangeResult");
     if (env->ExceptionCheck()) return;
     fid_isActive = env->GetFieldID(jNCaretRangeResultClass, "isActive", "Z");
     if (env->ExceptionCheck()) return;
@@ -1329,7 +1329,7 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1initIDs
     if (env->ExceptionCheck()) return;
 }
 
-extern "C" JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible_UiaRaiseNotificationEvent
+extern "C" JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_ProxyAccessible_UiaRaiseNotificationEvent
 (JNIEnv * env, jclass jClass, jlong jAccessible, jint notificationKind, jint notificationProcessing, jstring displayString, jstring activityId)
 {
     ProxyAccessible* acc = reinterpret_cast<ProxyAccessible*>(jAccessible);
@@ -1356,7 +1356,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible_Uia
  * Method:    _createProxyAccessible
  * Signature: ()J
  */
-JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1createProxyAccessible
+JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_ProxyAccessible__1createProxyAccessible
 (JNIEnv* env, jobject jAccessible)
 {
     ProxyAccessible* acc = new (std::nothrow) ProxyAccessible(env, jAccessible);
@@ -1368,7 +1368,7 @@ JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1createProxyA
  * Method:    _destroyProxyAccessible
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1destroyProxyAccessible
+JNIEXPORT void JNICALL Java_at_bestsolution_uia_ProxyAccessible__1destroyProxyAccessible
 (JNIEnv* env, jobject jAccessible, jlong winAccessible)
 {
     ProxyAccessible* acc = reinterpret_cast<ProxyAccessible*>(winAccessible);
@@ -1380,7 +1380,7 @@ JNIEXPORT void JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible__1destroyProxyA
  * Method:    UiaRaiseAutomationEvent
  * Signature: (JI)J
  */
-JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible_UiaRaiseAutomationEvent
+JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_ProxyAccessible_UiaRaiseAutomationEvent
 (JNIEnv* env, jclass jClass, jlong jAccessible, jint id)
 {
     ProxyAccessible* acc = reinterpret_cast<ProxyAccessible*>(jAccessible);
@@ -1393,7 +1393,7 @@ JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible_UiaRaiseAutoma
  * Method:    UiaRaiseAutomationPropertyChangedEvent
  * Signature: (JILcom/sun/glass/ui/win/WinVariant;Lcom/sun/glass/ui/win/WinVariant;)J
  */
-JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible_UiaRaiseAutomationPropertyChangedEvent
+JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_ProxyAccessible_UiaRaiseAutomationPropertyChangedEvent
 (JNIEnv* env, jclass jClass, jlong jAccessible, jint id, jobject oldV, jobject newV)
 {
     ProxyAccessible* acc = reinterpret_cast<ProxyAccessible*>(jAccessible);
@@ -1416,7 +1416,7 @@ JNIEXPORT jlong JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible_UiaRaiseAutoma
  * Method:    UiaClientsAreListening
  * Signature: ()Z
  */
-JNIEXPORT jboolean JNICALL Java_com_sun_glass_ui_uia_ProxyAccessible_UiaClientsAreListening
+JNIEXPORT jboolean JNICALL Java_at_bestsolution_uia_ProxyAccessible_UiaClientsAreListening
 (JNIEnv* env, jclass jClass)
 {
     return UiaClientsAreListening() ? JNI_TRUE : JNI_FALSE;

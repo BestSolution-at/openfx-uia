@@ -3,11 +3,11 @@ package uia.sample.samples.model;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.javafx.uia.IUIAVirtualRootElement;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.canvas.Canvas;
-import javafx.uia.IUIAElement;
-import javafx.uia.IUIAVirtualRootElement;
 
 public class UIACanvas extends BaseModel implements /*IUIAElement,*/ IUIAVirtualRootElement {
 
