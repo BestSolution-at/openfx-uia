@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -24,11 +24,11 @@
  */
 package uia.sample.samples;
 
+import at.bestsolution.uia.javafx.uia.UIA;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Label;
-import javafx.uia.UIA;
 import uia.sample.Sample;
 import uia.sample.samples.model.UIACanvas;
 import uia.sample.samples.model.UIACell;
@@ -47,7 +47,7 @@ public class SimpleIGridProvider implements Sample {
     public SimpleIGridProvider() {
         desc = new Label("Basic usage of IGridProvider & IGridItemProvider");
         desc.setWrapText(true);
-        
+
         UIACanvas root = new UIACanvas();
 
         canvas = new Canvas(500, 500) {
@@ -60,7 +60,7 @@ public class SimpleIGridProvider implements Sample {
             }
         };
         root.canvas = canvas;
-        
+
         UIAGrid grid = new UIAGrid();
         grid.colCount = 3;
         grid.rowCount = 5;
@@ -81,7 +81,7 @@ public class SimpleIGridProvider implements Sample {
                 grid.addCell(cell);
             }
         }
-        
+
         root.addChild(grid);
 
         root.layout();
@@ -92,7 +92,7 @@ public class SimpleIGridProvider implements Sample {
         sample = canvas;
     }
 
-  
+
 
     @Override
     public String getName() {
@@ -113,7 +113,7 @@ public class SimpleIGridProvider implements Sample {
     public Node getControls() {
         return null;
     }
-    
+
 
 
 }

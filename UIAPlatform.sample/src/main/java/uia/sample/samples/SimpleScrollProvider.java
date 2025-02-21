@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -28,6 +28,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import at.bestsolution.uia.javafx.uia.IScrollItemProvider;
+import at.bestsolution.uia.javafx.uia.IScrollProvider;
+import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.javafx.uia.IUIAVirtualElement;
+import at.bestsolution.uia.javafx.uia.IUIAVirtualRootElement;
+import at.bestsolution.uia.javafx.uia.ScrollAmount;
+import at.bestsolution.uia.javafx.uia.UIA;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.Orientation;
@@ -42,13 +49,6 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
-import javafx.uia.IScrollItemProvider;
-import javafx.uia.IScrollProvider;
-import javafx.uia.IUIAElement;
-import javafx.uia.IUIAVirtualElement;
-import javafx.uia.IUIAVirtualRootElement;
-import javafx.uia.ScrollAmount;
-import javafx.uia.UIA;
 import uia.sample.Sample;
 
 public class SimpleScrollProvider implements Sample {
@@ -92,7 +92,7 @@ public class SimpleScrollProvider implements Sample {
 
         @Override
         public void SetFocus() {
-            
+
         }
 
         public void render() {
@@ -251,7 +251,7 @@ public class SimpleScrollProvider implements Sample {
         updateFX();
     }
 
-    
+
 
     Node sample;
 
@@ -267,7 +267,7 @@ public class SimpleScrollProvider implements Sample {
     public SimpleScrollProvider() {
         desc = new Label("Basic usage of IScrollProvider and IScrollItemProvider");
         desc.setWrapText(true);
-        
+
         ScrollAreaElement scrollEl = new ScrollAreaElement();
         Canvas canvas = new Canvas(500, 500);
 
@@ -338,9 +338,9 @@ public class SimpleScrollProvider implements Sample {
         mask.widthProperty().bind(viewPort.widthProperty());
         mask.heightProperty().bind(viewPort.heightProperty());
         viewPort.setClip(mask);
-        
-        
-        
+
+
+
         hScroll = new ScrollBar();
         hScroll.setOrientation(Orientation.HORIZONTAL);
         vScroll = new ScrollBar();
@@ -369,7 +369,7 @@ public class SimpleScrollProvider implements Sample {
         pane.add(viewPort, 0, 0);
         pane.add(hScroll, 0, 1);
         pane.add(vScroll, 1, 0);
-        
+
         sample = pane;
 
     }
@@ -377,7 +377,7 @@ public class SimpleScrollProvider implements Sample {
     private void updateFX() {
         viewPort.setMinSize(viewportWidth, viewportHeight);
         viewPort.setMaxSize(viewportWidth, viewportHeight);
-        
+
         content.setTranslateX(-scrollX);
         content.setTranslateY(-scrollY);
 
@@ -404,7 +404,7 @@ public class SimpleScrollProvider implements Sample {
     public Node getControls() {
         return control;
     }
-    
+
 
 
 }

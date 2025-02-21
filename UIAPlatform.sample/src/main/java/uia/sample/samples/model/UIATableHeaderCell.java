@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -24,11 +24,11 @@
  */
 package uia.sample.samples.model;
 
+import at.bestsolution.uia.javafx.uia.ControlType;
+import at.bestsolution.uia.javafx.uia.IUIAElement;
 import javafx.geometry.Bounds;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
-import javafx.uia.ControlType;
-import javafx.uia.IUIAElement;
 
 public class UIATableHeaderCell extends UIATableCell {
 
@@ -37,9 +37,9 @@ public class UIATableHeaderCell extends UIATableCell {
 
     @Override
     public void render(GraphicsContext gc) {
-        
+
         gc.setFill(Color.LIGHTGREY);
-    
+
         Bounds lb = getLayoutBounds();
         gc.fillRect(lb.getMinX(), lb.getMinY(), lb.getWidth(), lb.getHeight());
 

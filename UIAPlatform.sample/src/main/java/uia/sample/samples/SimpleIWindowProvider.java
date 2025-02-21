@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -26,6 +26,12 @@ package uia.sample.samples;
 
 import java.util.function.Function;
 
+import at.bestsolution.uia.javafx.uia.IProperty;
+import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.javafx.uia.IWindowProvider;
+import at.bestsolution.uia.javafx.uia.UIA;
+import at.bestsolution.uia.javafx.uia.WindowInteractionState;
+import at.bestsolution.uia.javafx.uia.WindowVisualState;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.BooleanProperty;
@@ -42,12 +48,6 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
-import javafx.uia.IProperty;
-import javafx.uia.IUIAElement;
-import javafx.uia.IWindowProvider;
-import javafx.uia.UIA;
-import javafx.uia.WindowInteractionState;
-import javafx.uia.WindowVisualState;
 import uia.sample.Sample;
 
 public class SimpleIWindowProvider implements Sample {
@@ -64,7 +64,7 @@ public class SimpleIWindowProvider implements Sample {
     private ObjectProperty<WindowVisualState> windowVisualState = new SimpleObjectProperty<>(WindowVisualState.Normal);
 
 
-    
+
     class UIAWindow implements IUIAElement, IWindowProvider {
 
         final Node node;
@@ -88,7 +88,7 @@ public class SimpleIWindowProvider implements Sample {
             simpleListen(WindowProviderContext.class, ctx -> ctx.WindowVisualState, windowVisualState);
         }
 
-       
+
 
         @Override
         public Bounds getBounds() {
@@ -145,7 +145,7 @@ public class SimpleIWindowProvider implements Sample {
             System.err.println("WaitForInputIdle " + milliseconds);
             return false;
         }
-        
+
     }
 
     Label desc;
@@ -153,7 +153,7 @@ public class SimpleIWindowProvider implements Sample {
     public SimpleIWindowProvider() {
         desc = new Label("Basic usage of IWindowProvider.");
         desc.setWrapText(true);
-        
+
 
         window = new BorderPane() {
             UIAWindow uiaEl = new UIAWindow(this);
@@ -168,7 +168,7 @@ public class SimpleIWindowProvider implements Sample {
 
 
         StringBinding lbl = Bindings.createStringBinding(() -> {
-            return "Window\ncanMaximize: " + canMaximize.get() + 
+            return "Window\ncanMaximize: " + canMaximize.get() +
             "\ncanMinimize: " + canMinimize.get() +
             "\nisModal: " + isModal.get() +
             "\nisTopmost: " + isTopmost.get() +
@@ -181,7 +181,7 @@ public class SimpleIWindowProvider implements Sample {
 
         window.setCenter(lblState);
 
-       
+
 
         window.setTop(new Label("Window"));
 
@@ -226,7 +226,7 @@ public class SimpleIWindowProvider implements Sample {
 
     }
 
-  
+
 
     @Override
     public String getName() {
@@ -247,7 +247,7 @@ public class SimpleIWindowProvider implements Sample {
     public Node getControls() {
         return ctrl;
     }
-    
+
 
 
 }

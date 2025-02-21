@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -26,6 +26,11 @@ package uia.sample.samples;
 
 import java.util.Arrays;
 
+import at.bestsolution.uia.javafx.uia.IInitContext;
+import at.bestsolution.uia.javafx.uia.IStructureChangedEvent;
+import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.javafx.uia.StructureChangeType;
+import at.bestsolution.uia.javafx.uia.UIA;
 import javafx.collections.FXCollections;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
@@ -36,11 +41,6 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
-import javafx.uia.IInitContext;
-import javafx.uia.IStructureChangedEvent;
-import javafx.uia.IUIAElement;
-import javafx.uia.StructureChangeType;
-import javafx.uia.UIA;
 import uia.sample.Sample;
 
 public class SimpleStructureChangedEvent implements Sample {
@@ -70,7 +70,7 @@ public class SimpleStructureChangedEvent implements Sample {
 
 
 
-    
+
 
     Label desc;
     VBox content;
@@ -80,7 +80,7 @@ public class SimpleStructureChangedEvent implements Sample {
     public SimpleStructureChangedEvent() {
         desc = new Label("Showcase for raising StructureChangedEvent.");
         desc.setWrapText(true);
-       
+
         content = new VBox() {
             UIAStructureChanged uia = new UIAStructureChanged(this);
             @Override
@@ -145,7 +145,7 @@ public class SimpleStructureChangedEvent implements Sample {
     public Node getControls() {
         return control;
     }
-    
+
 
 
 }

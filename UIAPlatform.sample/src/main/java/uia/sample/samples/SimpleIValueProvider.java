@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -27,6 +27,10 @@ package uia.sample.samples;
 import java.util.Collections;
 import java.util.List;
 
+import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.javafx.uia.IUIAVirtualRootElement;
+import at.bestsolution.uia.javafx.uia.IValueProvider;
+import at.bestsolution.uia.javafx.uia.UIA;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -42,17 +46,13 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
-import javafx.uia.IUIAElement;
-import javafx.uia.IUIAVirtualRootElement;
-import javafx.uia.IValueProvider;
-import javafx.uia.UIA;
 import uia.sample.Sample;
 
 public class SimpleIValueProvider implements Sample {
 
     private BooleanProperty isReadonly = new SimpleBooleanProperty(false);
     private StringProperty value = new SimpleStringProperty("Hello");
-    
+
     class UIAValue implements IUIAVirtualRootElement, IValueProvider {
         final Pane node;
         public UIAValue(Pane node) {
@@ -87,7 +87,7 @@ public class SimpleIValueProvider implements Sample {
         @Override
         public void SetValue(String val) {
             if (isReadonly.get()) return;
-            value.set(val);  
+            value.set(val);
         }
         @Override
         public List<IUIAElement> getChildren() {
@@ -108,7 +108,7 @@ public class SimpleIValueProvider implements Sample {
     public SimpleIValueProvider() {
         desc = new Label("Basic usage of IValueProvider.");
         desc.setWrapText(true);
-        
+
         host = new Pane();
 
         BorderPane pane0 = new BorderPane() {
@@ -125,8 +125,8 @@ public class SimpleIValueProvider implements Sample {
         Text text = new Text();
         text.textProperty().bind(value);
         pane0.setCenter(text);
-       
-      
+
+
         host.getChildren().add(pane0);
 
 
@@ -139,10 +139,10 @@ public class SimpleIValueProvider implements Sample {
         TextField val = new TextField();
         val.textProperty().bindBidirectional(value);
         ctrl.getChildren().addAll(new Label("Value"), val);
-        
+
     }
 
-  
+
 
     @Override
     public String getName() {
@@ -163,7 +163,7 @@ public class SimpleIValueProvider implements Sample {
     public Node getControls() {
         return ctrl;
     }
-    
+
 
 
 }

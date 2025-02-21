@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -24,6 +24,11 @@
  */
 package uia.sample.samples;
 
+import at.bestsolution.uia.javafx.uia.AsyncContentLoadedState;
+import at.bestsolution.uia.javafx.uia.IAsyncContentLoadedEvent;
+import at.bestsolution.uia.javafx.uia.IInitContext;
+import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.javafx.uia.UIA;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.geometry.Bounds;
@@ -37,11 +42,6 @@ import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
-import javafx.uia.AsyncContentLoadedState;
-import javafx.uia.IAsyncContentLoadedEvent;
-import javafx.uia.IInitContext;
-import javafx.uia.IUIAElement;
-import javafx.uia.UIA;
 import uia.sample.Sample;
 
 public class SimpleAsyncContentLoadedEvent implements Sample {
@@ -71,7 +71,7 @@ public class SimpleAsyncContentLoadedEvent implements Sample {
 
 
 
-    
+
 
     Label desc;
     VBox content;
@@ -83,7 +83,7 @@ public class SimpleAsyncContentLoadedEvent implements Sample {
     public SimpleAsyncContentLoadedEvent() {
         desc = new Label("Showcase for raising AsyncContentLoadedEvent.");
         desc.setWrapText(true);
-       
+
         content = new VBox() {
             UIAAsyncContentLoaded uia = new UIAAsyncContentLoaded(this);
             @Override
@@ -146,7 +146,7 @@ public class SimpleAsyncContentLoadedEvent implements Sample {
                     Platform.runLater(() -> prog.setProgress(p));
                     Platform.runLater(() -> event.fire(AsyncContentLoadedState.Progress, p));
                 }
-                
+
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
@@ -191,7 +191,7 @@ public class SimpleAsyncContentLoadedEvent implements Sample {
     public Node getControls() {
         return control;
     }
-    
+
 
 
 }

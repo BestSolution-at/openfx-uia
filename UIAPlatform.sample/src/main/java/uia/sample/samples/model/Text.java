@@ -41,7 +41,8 @@ public class Text extends BaseModel {
             @Override
             @SuppressWarnings("deprecation")
             public Object getFont() {
-                return font.impl_getNativeFont();
+                // return font.impl_getNativeFont();
+                return com.sun.javafx.scene.text.FontHelper.getNativeFont(font);
             }
 
             @Override
@@ -146,13 +147,13 @@ public class Text extends BaseModel {
     }
 
     private List<Glyph> localGlyphs = new ArrayList<>();
-    
+
     @Override
     public int computeGlyphs(int beginIndex) {
         int length = 0;
         begin = beginIndex;
 
-       
+
 
         int index = beginIndex;
 
@@ -161,7 +162,7 @@ public class Text extends BaseModel {
 
             if (fragment instanceof TextFragment) {
                 TextFragment textFragment = (TextFragment) fragment;
-                
+
                 textFragment.begin = begin + length;
                 fragmentLength += textFragment.content.length();
                 textFragment.end = begin + length;
@@ -179,11 +180,11 @@ public class Text extends BaseModel {
                         g.w = tg.w;
                         g.h = tg.h;
                         g.content = textFragment.content.substring(sourceIdx, sourceIdx + 1);
-    
+
                         g.render = tg.render;
                         g.index = index;
                         localGlyphs.add(g);
-    
+
                         index ++;
 
                         lastGlyph = g;
@@ -195,11 +196,11 @@ public class Text extends BaseModel {
                         g.w = 1;
                         g.h = lastGlyph.h;
                         g.content = textFragment.content.substring(sourceIdx, sourceIdx + 1);
-    
+
                         g.render = (gc, color) -> {};
                         g.index = index;
                         localGlyphs.add(g);
-    
+
                         index ++;
                     } else {
                         index ++;
@@ -210,7 +211,7 @@ public class Text extends BaseModel {
             } else if (fragment instanceof EmbedFragment) {
                 EmbedFragment embedFragment = (EmbedFragment) fragment;
                 fragmentLength += embedFragment.embed.computeGlyphs(begin + length);
-                
+
                 index += fragmentLength;
             }
 
@@ -231,7 +232,7 @@ public class Text extends BaseModel {
     }
 
     private TextSupport textSupport = new TextSupport();
-    
+
     @Override
     public void layout() {
         // first layout embeds
@@ -239,7 +240,7 @@ public class Text extends BaseModel {
             .filter(fragment -> fragment instanceof EmbedFragment)
             .map(fragment -> (EmbedFragment) fragment)
             .forEach(embed -> embed.embed.layout());
-        
+
 
         double baseX = computeParentLayoutX() + layoutX;
         double baseY = computeParentLayoutY() + layoutY;
@@ -247,12 +248,12 @@ public class Text extends BaseModel {
         textSupport = new TextSupport();
         textSupport.layout(getBegin(), baseX, baseY, layoutW, content);
 
-        // re-layout embeds 
+        // re-layout embeds
         content.stream()
             .filter(fragment -> fragment instanceof EmbedFragment)
             .map(fragment -> (EmbedFragment) fragment)
             .forEach(embed -> embed.embed.layout());
-       
+
         layoutW = textSupport.getWidth();
         layoutH = textSupport.getHeight();
     }
@@ -263,30 +264,30 @@ public class Text extends BaseModel {
             //gc.setStroke(Color.RED);
             //gc.strokeRect(layoutX, layoutY, layoutW, layoutH);
             //gc.strokeRect(layoutX + bounds.getMinX(), layoutY + bounds.getMinY(), bounds.getWidth(), bounds.getHeight());
-    
+
             // render text
             //renderText(gc);
             textSupport.render(gc);
-    
-           
+
+
 
             // render embeds
             getModelChildren().forEach(child -> child.render(gc));
-    
-            renderBounds(gc); 
+
+            renderBounds(gc);
 
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
- 
+
 
     @Override
     public int pickText(double x, double y) {
         return textSupport.pickText(x, y);
     }
-    
+
 /*
     private void renderText(GraphicsContext ctx) {
         for (com.sun.javafx.scene.text.TextLine line : textLayout.getLines()) {
@@ -308,14 +309,14 @@ public class Text extends BaseModel {
 
                         com.sun.javafx.font.Glyph glyph = strike.getGlyph(glyphCode);
                         com.sun.javafx.geom.Shape shape = glyph.getShape();
-                        
+
                         com.sun.javafx.geom.PathIterator it = shape.getPathIterator(com.sun.javafx.geom.transform.BaseTransform.IDENTITY_TRANSFORM);
-                        
+
                         float[] buf = new float[6];
 
                         double glyphX = computeParentLayoutX() + layoutX + loc.x + posX;
                         double glyphY = computeParentLayoutY() + layoutY + loc.y + posY - ascent;
-                        
+
                         ctx.beginPath();
 
                         if (it.getWindingRule() == com.sun.javafx.geom.PathIterator.WIND_NON_ZERO) {
@@ -325,7 +326,7 @@ public class Text extends BaseModel {
                         }
 
                         while (!it.isDone()) {
-                           
+
                             int type = it.currentSegment(buf);
                             switch (type) {
 
@@ -350,7 +351,7 @@ public class Text extends BaseModel {
                                 ctx.closePath();
                                 break;
 
-                                
+
                             }
 
                             it.next();
@@ -359,12 +360,12 @@ public class Text extends BaseModel {
                         ctx.setFill(textFragment.color);
                         ctx.fill();
                     }
-                    
-    
+
+
                 }
                 // if (run.getTextSpan() instanceof ImageFragment) {
                 //     ImageFragment fragment = (ImageFragment) run.getTextSpan();
-    
+
                 //     ctx.drawImage(fragment.image, base.getX() + loc.x + fragment.getBounds().getMinX(), base.getY()+ loc.y + fragment.getBounds().getMinY());
                 // }
 
@@ -396,7 +397,7 @@ public class Text extends BaseModel {
 
 
 
-    
+
 
 /*
     @Override
@@ -427,7 +428,7 @@ public class Text extends BaseModel {
                 System.err.println("hit line @" + line.getStart());
 
                 for (com.sun.javafx.scene.text.GlyphList run : line.getRuns()) {
-                    com.sun.javafx.text.TextRun run1 = (com.sun.javafx.text.TextRun) run;   
+                    com.sun.javafx.text.TextRun run1 = (com.sun.javafx.text.TextRun) run;
 
                     if (run.getTextSpan() instanceof TextFragment.Span) {
                         TextFragment text = ((TextFragment.Span) run.getTextSpan()).getFragment();
@@ -444,19 +445,19 @@ public class Text extends BaseModel {
 
                         for (int glyphIndex = 0; glyphIndex < run.getGlyphCount(); glyphIndex++) {
                             int realIdx = sameRunBuf + text.begin + glyphIndex; // + line.getStart();
-                            
+
                             if (text == lastLineRun) {
                                 realIdx += line.getStart();
                             }
 
                             int lineGlyphIndex = glyphIndex + line.getStart();
-                            
+
                             float lineBeginX = run.getLocation().x;
 
                             float glyphX = lineBeginX + run1.getXAtOffset(glyphIndex , true);
                             float advance = run1.getAdvance(glyphIndex);
                             System.err.println("GLYPH " + glyphIndex + ": " + glyphX + "("+advance+")" + " vs " + localX);
-                            
+
                             if (localX >= glyphX && localX < glyphX + advance / 2d) {
                                 // first half of glyph
 
@@ -524,8 +525,8 @@ public class Text extends BaseModel {
                 lineHeight = lineBounds.getHeight();
                 float lineX = lineBounds.getMinX();
                 for (com.sun.javafx.scene.text.GlyphList run : line.getRuns()) {
-                    com.sun.javafx.text.TextRun run1 = (com.sun.javafx.text.TextRun) run;   
-                    float ascent = run1.getAscent();   
+                    com.sun.javafx.text.TextRun run1 = (com.sun.javafx.text.TextRun) run;
+                    float ascent = run1.getAscent();
 
                     if (run.getTextSpan() instanceof TextFragment.Span) {
                         TextFragment text = ((TextFragment.Span) run.getTextSpan()).getFragment();
@@ -535,7 +536,7 @@ public class Text extends BaseModel {
                         } else {
                             sameRunBuf = 0;
                         }
-                      
+
                         float left = -1;
                         float right = -1;
 
@@ -546,11 +547,11 @@ public class Text extends BaseModel {
                                 if (left == -1) left = lineX + run1.getXAtOffset(glyphIndex, true);
                                 right = lineX + run1.getXAtOffset(glyphIndex, true);
                             }
-                            
+
                         }
 
                         if (sameRunBuf + text.begin + run.getGlyphCount() <= end) {
-                            right = lineX + run1.getWidth(); 
+                            right = lineX + run1.getWidth();
                         }
 
 
@@ -593,7 +594,7 @@ public class Text extends BaseModel {
         float lineY = 0;
 
         for  (int lineIndex = 0; lineIndex < lineCount; lineIndex++) {
-            
+
             com.sun.javafx.text.TextLine line = (com.sun.javafx.text.TextLine) textLayout.getLines()[lineIndex];
             com.sun.javafx.geom.RectBounds lineBounds = line.getBounds();
             int lineStart = line.getStart();
@@ -653,7 +654,7 @@ public class Text extends BaseModel {
 
                     top = lineY + lineBounds.getMinY();
                     bottom = lineY + lineBounds.getMinY() + lineBounds.getHeight();
-                    
+
                     // Merge continuous rectangles
                     if (runLeft != right) {
                         if (left != -1 && right != -1) {
@@ -677,7 +678,7 @@ public class Text extends BaseModel {
                         //     l = width - l;
                         //     r = width - r;
                         // }
-                        
+
                         result.add(new com.sun.javafx.geom.RectBounds(x + l, y + top, x + r, y + bottom));
                     }
                 }

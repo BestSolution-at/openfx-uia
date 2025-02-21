@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -24,6 +24,11 @@
  */
 package uia.sample.samples;
 
+import at.bestsolution.uia.javafx.uia.IInitContext;
+import at.bestsolution.uia.javafx.uia.ITextEditTextChangedEvent;
+import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.javafx.uia.TextEditChangeType;
+import at.bestsolution.uia.javafx.uia.UIA;
 import javafx.collections.FXCollections;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
@@ -34,11 +39,6 @@ import javafx.scene.control.ChoiceBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
-import javafx.uia.IInitContext;
-import javafx.uia.ITextEditTextChangedEvent;
-import javafx.uia.IUIAElement;
-import javafx.uia.TextEditChangeType;
-import javafx.uia.UIA;
 import uia.sample.Sample;
 
 public class SimpleTextEditTextChangedEvent implements Sample {
@@ -68,7 +68,7 @@ public class SimpleTextEditTextChangedEvent implements Sample {
 
 
 
-    
+
 
     Label desc;
     VBox content;
@@ -78,7 +78,7 @@ public class SimpleTextEditTextChangedEvent implements Sample {
     public SimpleTextEditTextChangedEvent() {
         desc = new Label("Showcase for raising TextEditTextChanged.");
         desc.setWrapText(true);
-       
+
         content = new VBox() {
             UIANotify uia = new UIANotify(this);
             @Override
@@ -135,7 +135,7 @@ public class SimpleTextEditTextChangedEvent implements Sample {
     public Node getControls() {
         return control;
     }
-    
+
 
 
 }

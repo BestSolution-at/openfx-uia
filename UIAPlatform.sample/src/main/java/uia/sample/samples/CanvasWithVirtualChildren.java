@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -30,6 +30,13 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import at.bestsolution.uia.javafx.uia.ControlType;
+import at.bestsolution.uia.javafx.uia.IToggleProvider;
+import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.javafx.uia.IUIAVirtualElement;
+import at.bestsolution.uia.javafx.uia.IUIAVirtualRootElement;
+import at.bestsolution.uia.javafx.uia.ToggleState;
+import at.bestsolution.uia.javafx.uia.UIA;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.geometry.BoundingBox;
@@ -42,13 +49,6 @@ import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
-import javafx.uia.ControlType;
-import javafx.uia.IToggleProvider;
-import javafx.uia.IUIAElement;
-import javafx.uia.IUIAVirtualElement;
-import javafx.uia.IUIAVirtualRootElement;
-import javafx.uia.ToggleState;
-import javafx.uia.UIA;
 import uia.sample.Sample;
 
 public class CanvasWithVirtualChildren implements Sample {
@@ -69,7 +69,7 @@ public class CanvasWithVirtualChildren implements Sample {
             return Stream.concat(
                 Stream.of(element),
                 node.getChildren().stream().flatMap(this::flatten)
-            ); 
+            );
         } else {
             return Stream.of(element);
         }
@@ -130,7 +130,7 @@ public class CanvasWithVirtualChildren implements Sample {
         double y;
         double w;
         double h;
-        
+
         public MyRectangle(Paint color, double x, double y, double w, double h) {
             this.color = color;
             this.x = x;
@@ -206,7 +206,7 @@ public class CanvasWithVirtualChildren implements Sample {
 
         sample.uia.children.add(red); red.parent = sample.uia;
         sample.uia.children.add(parent1); parent1.parent = sample.uia;
- 
+
         parent1.children.add(green); green.parent = parent1;
         parent1.children.add(blue); blue.parent = parent1;
 
@@ -251,5 +251,5 @@ public class CanvasWithVirtualChildren implements Sample {
     public Node getControls() {
         return null;
     }
-    
+
 }

@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -24,10 +24,10 @@
  */
 package uia.sample.samples.model;
 
-import javafx.uia.ControlType;
-import javafx.uia.IInitContext;
-import javafx.uia.ITableItemProvider;
-import javafx.uia.IUIAElement;
+import at.bestsolution.uia.javafx.uia.ControlType;
+import at.bestsolution.uia.javafx.uia.IInitContext;
+import at.bestsolution.uia.javafx.uia.ITableItemProvider;
+import at.bestsolution.uia.javafx.uia.IUIAElement;
 
 public class UIATableCell extends UIACell implements ITableItemProvider {
 
@@ -60,7 +60,7 @@ public class UIATableCell extends UIACell implements ITableItemProvider {
 
         //init.addNameProperty(this::getName);
     }
-    
+
     // public String getName() {
     //     return "Cell " + col + ", " + row;
     // }

@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -27,6 +27,10 @@ package uia.sample.samples;
 import java.util.Collections;
 import java.util.List;
 
+import at.bestsolution.uia.javafx.uia.IRangeValueProvider;
+import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.javafx.uia.IUIAVirtualRootElement;
+import at.bestsolution.uia.javafx.uia.UIA;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.BooleanProperty;
@@ -47,10 +51,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
-import javafx.uia.IRangeValueProvider;
-import javafx.uia.IUIAElement;
-import javafx.uia.IUIAVirtualRootElement;
-import javafx.uia.UIA;
 import uia.sample.Sample;
 
 public class SimpleIRangeValueProvider implements Sample {
@@ -61,7 +61,7 @@ public class SimpleIRangeValueProvider implements Sample {
     private DoubleProperty minimum = new SimpleDoubleProperty(0);
     private DoubleProperty smallIncrement = new SimpleDoubleProperty(1);
     private DoubleProperty largeIncrement = new SimpleDoubleProperty(10);
-    
+
     class UIARangeValue implements IUIAVirtualRootElement, IRangeValueProvider {
         final Pane node;
         public UIARangeValue(Pane node) {
@@ -116,7 +116,7 @@ public class SimpleIRangeValueProvider implements Sample {
         @Override
         public void SetValue(double val) {
             if (isReadonly.get()) return;
-            value.set(val);  
+            value.set(val);
         }
         @Override
         public double get_Minimum() {
@@ -154,7 +154,7 @@ public class SimpleIRangeValueProvider implements Sample {
     public SimpleIRangeValueProvider() {
         desc = new Label("Basic usage of IRangeValueProvider.");
         desc.setWrapText(true);
-        
+
         host = new Pane();
 
         BorderPane pane0 = new BorderPane() {
@@ -168,7 +168,7 @@ public class SimpleIRangeValueProvider implements Sample {
             }
         };
         pane0.setStyle("-fx-border-width: 1px; -fx-border-color: red;");
-        
+
         StringBinding bLbl = Bindings.createStringBinding(() -> {
             return "Value: " + value.get();
         }, value);
@@ -176,8 +176,8 @@ public class SimpleIRangeValueProvider implements Sample {
         Text text = new Text();
         text.textProperty().bind(bLbl);
         pane0.setCenter(text);
-       
-      
+
+
         host.getChildren().add(pane0);
 
 
@@ -208,7 +208,7 @@ public class SimpleIRangeValueProvider implements Sample {
         ctrl.getChildren().addAll(large);
     }
 
-  
+
 
     @Override
     public String getName() {
@@ -229,7 +229,7 @@ public class SimpleIRangeValueProvider implements Sample {
     public Node getControls() {
         return ctrl;
     }
-    
+
 
 
 }

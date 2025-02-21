@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -24,6 +24,10 @@
  */
 package uia.sample.samples;
 
+import at.bestsolution.uia.javafx.uia.ExpandCollapseState;
+import at.bestsolution.uia.javafx.uia.IExpandCollapseProvider;
+import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.javafx.uia.UIA;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Bounds;
@@ -33,10 +37,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
-import javafx.uia.ExpandCollapseState;
-import javafx.uia.IExpandCollapseProvider;
-import javafx.uia.IUIAElement;
-import javafx.uia.UIA;
 import uia.sample.Sample;
 
 public class SimpleIExpandCollapseProvider implements Sample {
@@ -44,7 +44,7 @@ public class SimpleIExpandCollapseProvider implements Sample {
     BorderPane expandCollapse;
 
     private ObjectProperty<ExpandCollapseState> state = new SimpleObjectProperty<>(ExpandCollapseState.Collapsed);
-    
+
     class UIAExpandCollapse implements IUIAElement, IExpandCollapseProvider {
 
         final Node node;
@@ -52,7 +52,7 @@ public class SimpleIExpandCollapseProvider implements Sample {
         public UIAExpandCollapse(Node node) {
             this.node = node;
             state.addListener((obs, oldValue, newValue) -> {
-                
+
                 withContext(ExpandCollapseProviderContext.class, ctx -> {
                     ctx.ExpandCollapseState.fireChanged(oldValue, newValue);
                 });
@@ -84,7 +84,7 @@ public class SimpleIExpandCollapseProvider implements Sample {
         public void SetFocus() {
             node.requestFocus();
         }
-        
+
     }
 
     Label desc;
@@ -92,7 +92,7 @@ public class SimpleIExpandCollapseProvider implements Sample {
     public SimpleIExpandCollapseProvider() {
         desc = new Label("Basic usage of IExpandCollapseProvider.");
         desc.setWrapText(true);
-        
+
 
         expandCollapse = new BorderPane() {
             UIAExpandCollapse uiaEl = new UIAExpandCollapse(this);
@@ -123,7 +123,7 @@ public class SimpleIExpandCollapseProvider implements Sample {
         expandCollapse.setRight(new VBox(expand, collapse, leaf));
     }
 
-  
+
 
     @Override
     public String getName() {
@@ -144,7 +144,7 @@ public class SimpleIExpandCollapseProvider implements Sample {
     public Node getControls() {
         return null;
     }
-    
+
 
 
 }

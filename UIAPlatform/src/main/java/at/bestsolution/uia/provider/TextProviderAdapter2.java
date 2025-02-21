@@ -1,0 +1,56 @@
+/*
+ * -----------------------------------------------------------------
+ * Copyright (c) 2021 BestSolution.at EDV Systemhaus GmbH
+ * All Rights Reserved.
+ *
+ * BestSolution.at MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE
+ * SUITABILITY OF THE SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING
+ * BUT NOT LIMITED TO THE IMPLIED WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE  OR NON - INFRINGEMENT.
+ * BestSolution.at SHALL NOT BE LIABLE FOR ANY DAMAGES SUFFERED BY
+ * LICENSEE AS A RESULT OF USING, MODIFYING OR DISTRIBUTING THIS
+ * SOFTWARE OR ITS DERIVATIVES.
+ *
+ * This software is released under the terms of the
+ *
+ *                  "GNU General Public License, Version 2
+ *                         with classpath exception"
+ *
+ * and may only be distributed and used under the terms of the
+ * mentioned license. You should have received a copy of the license
+ * along with this software product, if not you can download it from
+ * http://www.gnu.org/licenses/gpl.html
+ * ----------------------------------------------------------------
+ */
+package at.bestsolution.uia.provider;
+
+import at.bestsolution.uia.ProxyAccessible;
+import at.bestsolution.uia.ProxyAccessibleRegistry;
+import at.bestsolution.uia.ProxyAccessible.NCaretRangeResult;
+import at.bestsolution.uia.javafx.uia.ITextProvider2;
+import at.bestsolution.uia.javafx.uia.IUIAElement;
+
+public class TextProviderAdapter2 extends BaseAdapter<ITextProvider2> implements NativeITextProvider2 {
+
+    public TextProviderAdapter2(ProxyAccessible accessible, ITextProvider2 provider) {
+        super(accessible, provider);
+    }
+
+    @Override
+    public NCaretRangeResult GetCaretRange() {
+        ITextProvider2.CaretRangeResult result = provider.GetCaretRange();
+        NCaretRangeResult r = new NCaretRangeResult();
+        r.isActive = result.isActive;
+        r.range = wrapNative(result.range);
+        return r;
+    }
+
+    @Override
+    public long RangeFromAnnotation(long annotationElement) {
+        ProxyAccessible acc = ProxyAccessibleRegistry.getInstance().getByNative(annotationElement);
+        IUIAElement el = acc.getUIAElement();
+
+        return wrapNative(provider.RangeFromAnnotation(el));
+    }
+
+}

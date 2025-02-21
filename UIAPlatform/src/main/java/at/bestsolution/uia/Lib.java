@@ -6,9 +6,6 @@ import java.util.Optional;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-import com.sun.glass.ui.uia.Logger;
-import com.sun.glass.ui.uia.LoggerFactory;
-
 public class Lib {
 
     private static Logger log = LoggerFactory.create(Lib.class);

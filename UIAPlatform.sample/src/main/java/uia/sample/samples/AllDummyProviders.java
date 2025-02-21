@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -33,42 +33,42 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import at.bestsolution.uia.javafx.uia.ControlType;
+import at.bestsolution.uia.javafx.uia.IAnnotationProvider;
+import at.bestsolution.uia.javafx.uia.IDockProvider;
+import at.bestsolution.uia.javafx.uia.IExpandCollapseProvider;
+import at.bestsolution.uia.javafx.uia.IGridItemProvider;
+import at.bestsolution.uia.javafx.uia.IGridProvider;
+import at.bestsolution.uia.javafx.uia.IInvokeProvider;
+import at.bestsolution.uia.javafx.uia.IMultipleViewProvider;
+import at.bestsolution.uia.javafx.uia.IRangeValueProvider;
+import at.bestsolution.uia.javafx.uia.IScrollItemProvider;
+import at.bestsolution.uia.javafx.uia.IScrollProvider;
+import at.bestsolution.uia.javafx.uia.ISelectionItemProvider;
+import at.bestsolution.uia.javafx.uia.ISelectionProvider;
+import at.bestsolution.uia.javafx.uia.ISelectionProvider2;
+import at.bestsolution.uia.javafx.uia.IStylesProvider;
+import at.bestsolution.uia.javafx.uia.ISynchronizedInputProvider;
+import at.bestsolution.uia.javafx.uia.ITableItemProvider;
+import at.bestsolution.uia.javafx.uia.ITableProvider;
+import at.bestsolution.uia.javafx.uia.ITextChildProvider;
+import at.bestsolution.uia.javafx.uia.ITextEditProvider;
+import at.bestsolution.uia.javafx.uia.ITextProvider;
+import at.bestsolution.uia.javafx.uia.ITextProvider2;
+import at.bestsolution.uia.javafx.uia.IToggleProvider;
+import at.bestsolution.uia.javafx.uia.ITransformProvider;
+import at.bestsolution.uia.javafx.uia.ITransformProvider2;
+import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.javafx.uia.IUIAVirtualRootElement;
+import at.bestsolution.uia.javafx.uia.IValueProvider;
+import at.bestsolution.uia.javafx.uia.IVirtualizedItemProvider;
+import at.bestsolution.uia.javafx.uia.IWindowProvider;
+import at.bestsolution.uia.javafx.uia.UIA;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
-import javafx.uia.ControlType;
-import javafx.uia.IAnnotationProvider;
-import javafx.uia.IDockProvider;
-import javafx.uia.IExpandCollapseProvider;
-import javafx.uia.IGridItemProvider;
-import javafx.uia.IGridProvider;
-import javafx.uia.IInvokeProvider;
-import javafx.uia.IMultipleViewProvider;
-import javafx.uia.IRangeValueProvider;
-import javafx.uia.IScrollItemProvider;
-import javafx.uia.IScrollProvider;
-import javafx.uia.ISelectionItemProvider;
-import javafx.uia.ISelectionProvider;
-import javafx.uia.ISelectionProvider2;
-import javafx.uia.IStylesProvider;
-import javafx.uia.ISynchronizedInputProvider;
-import javafx.uia.ITableItemProvider;
-import javafx.uia.ITableProvider;
-import javafx.uia.ITextChildProvider;
-import javafx.uia.ITextEditProvider;
-import javafx.uia.ITextProvider;
-import javafx.uia.ITextProvider2;
-import javafx.uia.IToggleProvider;
-import javafx.uia.ITransformProvider;
-import javafx.uia.ITransformProvider2;
-import javafx.uia.IUIAElement;
-import javafx.uia.IUIAVirtualRootElement;
-import javafx.uia.IValueProvider;
-import javafx.uia.IVirtualizedItemProvider;
-import javafx.uia.IWindowProvider;
-import javafx.uia.UIA;
 import uia.sample.Sample;
 
 public class AllDummyProviders implements Sample {
@@ -77,7 +77,7 @@ public class AllDummyProviders implements Sample {
 
         Node node;
         Class<?> provider;
-        
+
         public Handler(Node node, Class<?> provider) {
             this.node = node;
             this.provider = provider;
@@ -88,7 +88,7 @@ public class AllDummyProviders implements Sample {
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            
+
             if ("getBounds".equals(method.getName())) {
                 return node.localToScreen(node.getLayoutBounds());
             }
@@ -115,7 +115,7 @@ public class AllDummyProviders implements Sample {
             switch(method.getName()) {
                 case "getControlType": return ControlType.UIA_CustomControlTypeId;
             }
-            
+
 
             System.err.println(provider + "#" + method + " was called!");
 
@@ -154,7 +154,7 @@ public class AllDummyProviders implements Sample {
         allProviders.add(IGridItemProvider.class);
         allProviders.add(IGridProvider.class);
         allProviders.add(IInvokeProvider.class);
-        //allProviders.add(IItemContainerProvider.class); 
+        //allProviders.add(IItemContainerProvider.class);
         allProviders.add(IMultipleViewProvider.class);
         allProviders.add(IRangeValueProvider.class);
         allProviders.add(IScrollItemProvider.class);
@@ -197,7 +197,7 @@ public class AllDummyProviders implements Sample {
             };
             sample.getChildren().add(label);
         }
-        
+
     }
 
     @Override
@@ -219,5 +219,5 @@ public class AllDummyProviders implements Sample {
     public Node getControls() {
         return null;
     }
-    
+
 }

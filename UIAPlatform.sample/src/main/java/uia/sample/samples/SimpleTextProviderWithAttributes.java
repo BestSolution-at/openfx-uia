@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -42,6 +42,16 @@ import com.sun.javafx.scene.text.TextLayout;
 import com.sun.javafx.scene.text.TextSpan;
 import com.sun.javafx.tk.Toolkit;
 
+import at.bestsolution.uia.javafx.uia.ControlType;
+import at.bestsolution.uia.javafx.uia.ITextAttributeSupport;
+import at.bestsolution.uia.javafx.uia.ITextProvider;
+import at.bestsolution.uia.javafx.uia.ITextRangeProvider;
+import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.javafx.uia.SupportedTextSelection;
+import at.bestsolution.uia.javafx.uia.TextAttributeValue;
+import at.bestsolution.uia.javafx.uia.TextPatternRangeEndpoint;
+import at.bestsolution.uia.javafx.uia.TextUnit;
+import at.bestsolution.uia.javafx.uia.UIA;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.scene.AccessibleAttribute;
@@ -53,20 +63,10 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
-import javafx.uia.ControlType;
-import javafx.uia.ITextAttributeSupport;
-import javafx.uia.ITextProvider;
-import javafx.uia.ITextRangeProvider;
-import javafx.uia.IUIAElement;
-import javafx.uia.SupportedTextSelection;
-import javafx.uia.TextAttributeValue;
-import javafx.uia.TextPatternRangeEndpoint;
-import javafx.uia.TextUnit;
-import javafx.uia.UIA;
 import uia.sample.Sample;
 
 @SuppressWarnings("restriction")
-public class SimpleTextProviderWithAttributes implements Sample { 
+public class SimpleTextProviderWithAttributes implements Sample {
 
     class TextPart implements TextSpan {
         Font font;
@@ -87,7 +87,8 @@ public class SimpleTextProviderWithAttributes implements Sample {
         @Override
         @SuppressWarnings("deprecation")
         public Object getFont() {
-            return font.impl_getNativeFont();
+            // return font.impl_getNativeFont();
+            return com.sun.javafx.scene.text.FontHelper.getNativeFont(font);
         }
 
         @Override
@@ -95,7 +96,7 @@ public class SimpleTextProviderWithAttributes implements Sample {
             return content;
         }
 
- 
+
     }
 
     List<TextPart> content = Arrays.asList(
@@ -122,7 +123,7 @@ public class SimpleTextProviderWithAttributes implements Sample {
             ctx.setFill(part.foreground);
             ctx.setFont(part.font);
             Point2D loc = gl.getLocation();
-            
+
             ctx.fillText(part.getText(), baseX + loc.x, baseY + loc.y);
         }
     }
@@ -438,7 +439,7 @@ public class SimpleTextProviderWithAttributes implements Sample {
             if (text == null) return 0;
             int length = text.length();
             if (length == 0) return 0;
-    
+
             int actualCount = 0;
             switch (unit) {
                 case Character: {
@@ -529,7 +530,7 @@ public class SimpleTextProviderWithAttributes implements Sample {
                     return 0;
                 }
             }
-    
+
             /* Always ensure range consistency */
             start = Math.max(0, Math.min(start, length));
             end = Math.max(start, Math.min(end, length));
@@ -541,7 +542,7 @@ public class SimpleTextProviderWithAttributes implements Sample {
             String text = helper.getText();
             if (text == null) return;
             int length = text.length();
-    
+
             int offset = targetEndpoint == TextPatternRangeEndpoint.Start ? cast(targetRange).start : cast(targetRange).end;
             if (endpoint == TextPatternRangeEndpoint.Start) {
                 start = offset;
@@ -551,7 +552,7 @@ public class SimpleTextProviderWithAttributes implements Sample {
             if (start > end) {
                 start = end = offset;
             }
-    
+
             /* Always ensure range consistency */
             start = Math.max(0, Math.min(start, length));
             end = Math.max(start, Math.min(end, length));
@@ -563,7 +564,7 @@ public class SimpleTextProviderWithAttributes implements Sample {
             String text = helper.getText();
             if (text == null) return 0;
             int length = text.length();
-    
+
             int actualCount = 0;
             int offset = endpoint == TextPatternRangeEndpoint.Start ? start : end;
             switch (unit) {
@@ -656,7 +657,7 @@ public class SimpleTextProviderWithAttributes implements Sample {
             if (start > end) {
                 start = end = offset;
             }
-    
+
             /* Always ensure range consistency */
             start = Math.max(0, Math.min(start, length));
             end = Math.max(start, Math.min(end, length));
@@ -665,17 +666,17 @@ public class SimpleTextProviderWithAttributes implements Sample {
 
         @Override
         public void RemoveFromSelection() {
-            
+
         }
 
         @Override
         public void ScrollIntoView(boolean alignToTop) {
-            
+
         }
 
         @Override
         public void Select() {
-            
+
         }
 
     }
@@ -723,19 +724,20 @@ public class SimpleTextProviderWithAttributes implements Sample {
 
         @Override
         public ITextRangeProvider RangeFromPoint(javafx.geometry.Point2D point) {
-            javafx.geometry.Point2D pickPoint = canvas.screenToLocal(point);
-            com.sun.javafx.scene.text.HitInfo hitInfo = LAYOUT.getHitInfo((float) pickPoint.getX() - baseX, (float) pickPoint.getY() - baseY);
-            System.err.println("hitInfo: " + hitInfo);
-            if (hitInfo != null) {
-                int idx = hitInfo.getCharIndex();
-                idx = Math.min(helper.getText().length()-1, idx);
-                if (!hitInfo.isLeading()) {
-                    idx+=1;
-                }
-                return new SimpleRange(helper, idx, idx);
-            } else {
-                return null;
-            }
+            return null;
+            // javafx.geometry.Point2D pickPoint = canvas.screenToLocal(point);
+            // javafx.scene.text.HitInfo hitInfo = LAYOUT.getHitInfo((float) pickPoint.getX() - baseX, (float) pickPoint.getY() - baseY, "foo", 0, 0);
+            // System.err.println("hitInfo: " + hitInfo);
+            // if (hitInfo != null) {
+            //     int idx = hitInfo.getCharIndex();
+            //     idx = Math.min(helper.getText().length()-1, idx);
+            //     if (!hitInfo.isLeading()) {
+            //         idx+=1;
+            //     }
+            //     return new SimpleRange(helper, idx, idx);
+            // } else {
+            //     return null;
+            // }
         }
 
         @Override
@@ -745,7 +747,7 @@ public class SimpleTextProviderWithAttributes implements Sample {
 
         @Override
         public void SetFocus() {
-            canvas.requestFocus();            
+            canvas.requestFocus();
         }
 
     }
@@ -785,7 +787,7 @@ public class SimpleTextProviderWithAttributes implements Sample {
 
     @Override
     public Node getDescription() {
-       
+
         return desc;
     }
 

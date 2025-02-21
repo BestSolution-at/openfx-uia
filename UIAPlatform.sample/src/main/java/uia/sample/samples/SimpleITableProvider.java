@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -24,11 +24,11 @@
  */
 package uia.sample.samples;
 
+import at.bestsolution.uia.javafx.uia.UIA;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.control.Label;
-import javafx.uia.UIA;
 import uia.sample.Sample;
 import uia.sample.samples.model.UIACanvas;
 import uia.sample.samples.model.UIATable;
@@ -47,7 +47,7 @@ public class SimpleITableProvider implements Sample {
     public SimpleITableProvider() {
         desc = new Label("Basic usage of ITableProvider & ITableItemProvider. Those require IGridProvider and IGridItemProvider respectivly");
         desc.setWrapText(true);
-        
+
         UIACanvas root = new UIACanvas();
 
         canvas = new Canvas(500, 500) {
@@ -60,7 +60,7 @@ public class SimpleITableProvider implements Sample {
             }
         };
         root.canvas = canvas;
-        
+
         UIATable grid = new UIATable();
         grid.colCount = 3;
         grid.rowCount = 5;
@@ -88,7 +88,7 @@ public class SimpleITableProvider implements Sample {
                 } else {
                     cell  = new UIATableCell();
                 }
-               
+
                 cell.grid = grid;
                 cell.row = r;
                 cell.col = c;
@@ -107,7 +107,7 @@ public class SimpleITableProvider implements Sample {
         sample = canvas;
     }
 
-  
+
 
     @Override
     public String getName() {
@@ -128,7 +128,7 @@ public class SimpleITableProvider implements Sample {
     public Node getControls() {
         return null;
     }
-    
+
 
 
 }
