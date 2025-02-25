@@ -72,8 +72,17 @@ public class ProxyAccessibleRegistry {
         return fxAccessibles.get(element);
     }
 
+    boolean guard = false;
+
+
     public ProxyAccessible getVirtualAccessible(ProxyAccessible context, IUIAElement element) {
-        return virtualAccessibles.computeIfAbsent(element, el -> new ProxyAccessible(context, el));
+        // Note: intentionally not computeIfAbsent! Since java9 computeIfAbsent throws a ConcurrentModificationException caused by our children initialization
+        ProxyAccessible proxy = virtualAccessibles.get(element);
+        if (proxy == null) {
+            proxy = new ProxyAccessible(context, element);
+            virtualAccessibles.put(element, proxy);
+        }
+        return proxy;
     }
 
     public void ensureExists(ProxyAccessible context, List<IUIAElement> elements) {
