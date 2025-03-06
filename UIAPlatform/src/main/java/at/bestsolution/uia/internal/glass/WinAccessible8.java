@@ -468,7 +468,7 @@ public final class WinAccessible8 extends Accessible implements IWinAccessible{
         Accessible acc =  NodeHelper.getAccessible(node);
         // TODO is this right, we always get the glass accessible in here
         ProxyAccessible proxy = (ProxyAccessible) acc;
-        return proxy.getGlassAccessible();
+        return (Accessible) proxy.getGlassAccessible();
     }
 
     @Override
@@ -476,7 +476,7 @@ public final class WinAccessible8 extends Accessible implements IWinAccessible{
         if (scene == null) return null;
         Accessible acc = SceneHelper.getAccessible(scene);
         ProxyAccessible proxy = (ProxyAccessible) acc;
-        return proxy.getGlassAccessible();
+        return (Accessible) proxy.getGlassAccessible();
     }
 
     private Accessible getContainer() {

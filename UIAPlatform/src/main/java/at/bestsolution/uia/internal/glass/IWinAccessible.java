@@ -1,5 +1,11 @@
 package at.bestsolution.uia.internal.glass;
 
+
+import com.sun.glass.ui.Accessible;
+import com.sun.glass.ui.View;
+
+import javafx.scene.AccessibleAction;
+import javafx.scene.AccessibleAttribute;
 import javafx.scene.Node;
 
 public interface IWinAccessible {
@@ -94,6 +100,15 @@ public interface IWinAccessible {
     public void ScrollIntoView();
 
 
+    public void dispose();
+    public Object getAttribute(AccessibleAttribute attribute, Object... parameters);
+    public void executeAction(AccessibleAction action, Object... parameters);
+    public View getView();
+    public void setView(View view);
+    public Accessible.EventHandler getEventHandler();
+    public void setEventHandler(Accessible.EventHandler eventHandler);
 
+    public void sendNotification(AccessibleAttribute notification);
 
+    public long getPeer();
 }

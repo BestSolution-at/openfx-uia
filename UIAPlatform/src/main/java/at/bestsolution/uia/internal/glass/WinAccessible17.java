@@ -43,13 +43,16 @@ import javafx.scene.Scene;
 import javafx.scene.input.KeyCombination;
 import com.sun.glass.ui.Accessible;
 import com.sun.glass.ui.Application;
-import com.sun.glass.ui.Screen;
+// import com.sun.glass.ui.Screen;
 import com.sun.glass.ui.View;
-import com.sun.javafx.stage.WindowHelper;
-import com.sun.javafx.tk.TKStage;
-import com.sun.javafx.tk.quantum.WindowStage;
+import com.sun.javafx.scene.NodeHelper;
+// import com.sun.javafx.stage.WindowHelper;
+// import com.sun.javafx.tk.TKStage;
+// import com.sun.javafx.tk.quantum.WindowStage;
+import com.sun.javafx.scene.SceneHelper;
 
 import at.bestsolution.uia.internal.Logger;
+import at.bestsolution.uia.internal.PlatformBoundsUtil;
 import at.bestsolution.uia.internal.ProxyAccessible;
 import at.bestsolution.uia.internal.ProxyAccessibleRegistry;
 import at.bestsolution.uia.internal.ProxyTextRangeProvider;
@@ -74,7 +77,7 @@ import static javafx.scene.AccessibleAttribute.*;
  *
  */
 
-final class WinAccessible17 extends Accessible implements IWinAccessible {
+public final class WinAccessible17 extends Accessible implements IWinAccessible {
 
     private static Logger LOG = Logger.create(WinAccessible17.class);
     // private native static void _initIDs();
@@ -254,7 +257,7 @@ final class WinAccessible17 extends Accessible implements IWinAccessible {
         return ProxyAccessible.UiaClientsAreListening();
     }
 
-    WinAccessible17(ProxyAccessible proxy) {
+    public WinAccessible17(ProxyAccessible proxy) {
         Application.checkEventThread();
         this.proxy = proxy;
 
@@ -468,6 +471,23 @@ final class WinAccessible17 extends Accessible implements IWinAccessible {
     protected long getNativeAccessible() {
         Application.checkEventThread();
         return peer;
+    }
+
+    @Override
+    protected Accessible getAccessible(Node node) {
+        if (node == null) return null;
+        Accessible acc =  NodeHelper.getAccessible(node);
+        // TODO is this right, we always get the glass accessible in here
+        ProxyAccessible proxy = (ProxyAccessible) acc;
+        return (Accessible) proxy.getGlassAccessible();
+    }
+
+    @Override
+    protected Accessible getAccessible(Scene scene) {
+        if (scene == null) return null;
+        Accessible acc = SceneHelper.getAccessible(scene);
+        ProxyAccessible proxy = (ProxyAccessible) acc;
+        return (Accessible) proxy.getGlassAccessible();
     }
 
     private Accessible getContainer() {
@@ -988,26 +1008,29 @@ final class WinAccessible17 extends Accessible implements IWinAccessible {
         return variant;
     }
 
-    private Screen getScreen() {
-        Scene scene = (Scene) getAttribute(SCENE);
-        if (scene == null || scene.getWindow() == null) return null;
-        TKStage tkStage = WindowHelper.getPeer(scene.getWindow());
-        if (!(tkStage instanceof WindowStage)) return null;
-        WindowStage windowStage = (WindowStage) tkStage;
-        if (windowStage.getPlatformWindow() == null) return null;
-        return windowStage.getPlatformWindow().getScreen();
-    }
+    // private Screen getScreen() {
+    //     Scene scene = (Scene) getAttribute(SCENE);
+    //     if (scene == null || scene.getWindow() == null) return null;
+    //     TKStage tkStage = WindowHelper.getPeer(scene.getWindow());
+    //     if (!(tkStage instanceof WindowStage)) return null;
+    //     WindowStage windowStage = (WindowStage) tkStage;
+    //     if (windowStage.getPlatformWindow() == null) return null;
+    //     return windowStage.getPlatformWindow().getScreen();
+    // }
 
     float[] getPlatformBounds(float x, float y, float w, float h) {
-        float[] platformBounds = new float[] { x, y, w, h };
-        Screen screen = getScreen();
-        if (screen == null) return platformBounds;
-        platformBounds[0] = screen.toPlatformX(x);
-        platformBounds[1] = screen.toPlatformY(y);
-        platformBounds[2] = (float) Math.ceil(w * screen.getPlatformScaleX());
-        platformBounds[3] = (float) Math.ceil(h * screen.getPlatformScaleY());
-        return platformBounds;
+        Scene scene = (Scene) getAttribute(SCENE);
+        return PlatformBoundsUtil.convertToPlatformBounds(scene, x, y, w, h);
     }
+    //     // float[] platformBounds = new float[] { x, y, w, h };
+    //     // Screen screen = getScreen();
+    //     // if (screen == null) return platformBounds;
+    //     // platformBounds[0] = screen.toPlatformX(x);
+    //     // platformBounds[1] = screen.toPlatformY(y);
+    //     // platformBounds[2] = (float) Math.ceil(w * screen.getPlatformScaleX());
+    //     // platformBounds[3] = (float) Math.ceil(h * screen.getPlatformScaleY());
+    //     // return platformBounds;
+    // }
 
     /***********************************************/
     /*       IRawElementProviderFragment           */
@@ -1017,9 +1040,11 @@ final class WinAccessible17 extends Accessible implements IWinAccessible {
         /* No needs to answer for the root */
         if (getView() != null) return null;
 
+        Scene scene = (Scene) getAttribute(SCENE);
         Bounds bounds = (Bounds)getAttribute(BOUNDS);
         if (bounds != null) {
-            return getPlatformBounds((float) bounds.getMinX(),
+            return PlatformBoundsUtil.convertToPlatformBounds(scene,
+                                        (float) bounds.getMinX(),
                                         (float) bounds.getMinY(),
                                         (float) bounds.getWidth(),
                                         (float) bounds.getHeight());

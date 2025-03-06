@@ -17,8 +17,7 @@ java {
 }
 
 compileJava {
-    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.glass.ui=at.bestsolution.uia.core'
-
+    // for com.sun.glass.ui.Accessible
     options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.glass.ui=ALL-UNNAMED'
 }
 

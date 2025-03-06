@@ -45,7 +45,6 @@ import at.bestsolution.uia.TextPatternRangeEndpoint;
 import at.bestsolution.uia.TextUnit;
 import at.bestsolution.uia.Variant;
 import at.bestsolution.uia.internal.glass.IWinTextRangeProvider;
-import at.bestsolution.uia.internal.glass.WinTextRangeProvider8;
 import at.bestsolution.uia.internal.glass.WinVariant;
 import at.bestsolution.uia.internal.provider.Convert;
 import at.bestsolution.uia.internal.winapi.Windows;

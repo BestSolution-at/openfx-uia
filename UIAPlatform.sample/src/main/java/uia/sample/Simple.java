@@ -29,9 +29,6 @@ package uia.sample;
 import java.util.Arrays;
 import java.util.List;
 
-
-//import com.sun.glass.ui.uia.AccessibleMonitor;
-
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
