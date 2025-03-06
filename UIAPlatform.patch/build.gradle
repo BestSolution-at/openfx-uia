@@ -1,0 +1,64 @@
+plugins {
+    id "java-library"
+}
+
+repositories {
+    mavenCentral()
+}
+
+java {
+    withSourcesJar()
+
+    toolchain {
+        // since auto detection is disabled only the env var JDK8FX is picked up as java toolchain (see gradle.properties)
+        // it seems not possible to query for toolchains with included JavaFX...
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+compileJava {
+    options.compilerArgs << '--patch-module' << "javafx.graphics=${project.projectDir}/src/main/java"
+    // options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.glass.ui=ALL-UNNAMED'
+    // options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.glass.ui.win=ALL-UNNAMED'
+    // options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.prism.impl=ALL-UNNAMED'
+    // options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED'
+
+    // options.compilerArgs << '--add-opens' << 'javafx.graphics/com.sun.glass.ui.win=ALL-UNNAMED'
+}
+
+configurations {
+    // repackageDeps
+    // includeJars
+}
+
+dependencies {
+    implementation project(':UIAPlatform')
+    // compileOnly 'org.javassist:javassist:3.28.0-GA'
+    // repackageDeps 'org.javassist:javassist:3.28.0-GA'
+
+    // includeJars project(':UIAPlatform.core')
+}
+
+jar {
+    // dependsOn configurations.includeJars
+    manifest {
+        // attributes('Premain-Class': 'javafx.uia.agent.UIAPlatformAgent')
+        // attributes('Git-Hash':"${gitHash}")
+        // attributes('Git-Version': "${gitVersion}")
+    }
+
+    // from configurations.includeJars.files
+
+    // from {
+        // configurations.repackageDeps.collect {
+            // it.isDirectory() ? it : zipTree(it)
+        // }
+    // }
+}
+
+tasks.withType(JavaCompile) {
+   doFirst {
+        println "${project.projectDir}/src/main/java"
+      println "Args for for $name are $options.allCompilerArgs"
+   }
+}

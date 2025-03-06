@@ -24,11 +24,11 @@
  */
 package uia.sample.samples;
 
-import at.bestsolution.uia.javafx.uia.ControlType;
-import at.bestsolution.uia.javafx.uia.IToggleProvider;
-import at.bestsolution.uia.javafx.uia.IUIAElement;
-import at.bestsolution.uia.javafx.uia.ToggleState;
-import at.bestsolution.uia.javafx.uia.UIA;
+import at.bestsolution.uia.ControlType;
+import at.bestsolution.uia.IToggleProvider;
+import at.bestsolution.uia.IUIAElement;
+import at.bestsolution.uia.ToggleState;
+import at.bestsolution.uia.UIA;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;

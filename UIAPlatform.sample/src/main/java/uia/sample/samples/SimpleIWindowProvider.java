@@ -26,12 +26,12 @@ package uia.sample.samples;
 
 import java.util.function.Function;
 
-import at.bestsolution.uia.javafx.uia.IProperty;
-import at.bestsolution.uia.javafx.uia.IUIAElement;
-import at.bestsolution.uia.javafx.uia.IWindowProvider;
-import at.bestsolution.uia.javafx.uia.UIA;
-import at.bestsolution.uia.javafx.uia.WindowInteractionState;
-import at.bestsolution.uia.javafx.uia.WindowVisualState;
+import at.bestsolution.uia.IProperty;
+import at.bestsolution.uia.IUIAElement;
+import at.bestsolution.uia.IWindowProvider;
+import at.bestsolution.uia.UIA;
+import at.bestsolution.uia.WindowInteractionState;
+import at.bestsolution.uia.WindowVisualState;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.BooleanProperty;

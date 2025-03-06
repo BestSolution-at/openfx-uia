@@ -24,8 +24,8 @@
  */
 package uia.sample.samples.model;
 
-import at.bestsolution.uia.javafx.uia.ControlType;
-import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.ControlType;
+import at.bestsolution.uia.IUIAElement;
 import javafx.geometry.Bounds;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;

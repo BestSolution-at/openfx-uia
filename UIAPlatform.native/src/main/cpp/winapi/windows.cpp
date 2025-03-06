@@ -30,7 +30,7 @@
 
 extern "C" {
 
-JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantInit
+JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantInit
 (JNIEnv* env, jclass jClass)
 {
     VARIANT* variant = new VARIANT();
@@ -38,7 +38,7 @@ JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantInit
     return (jlong) variant;
 }
 
-JNIEXPORT jint JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantClear
+JNIEXPORT jint JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantClear
 (JNIEnv* env, jclass jClass, jlong _variant) {
     VARIANT* variant = (VARIANT*) _variant;
     jint hr = VariantClear(variant);
@@ -47,68 +47,68 @@ JNIEXPORT jint JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantClear
     return hr;
 }
 
-JNIEXPORT void JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantSetVt
+JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantSetVt
 (JNIEnv* env, jclass jClass, jlong _variant, jshort _vt) {
     VARIANT* variant = (VARIANT*) _variant;
     VARTYPE vt = (VARTYPE) _vt;
     variant->vt = vt;
 }
-JNIEXPORT jshort JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantGetVt
+JNIEXPORT jshort JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantGetVt
 (JNIEnv* env, jclass jClass, jlong _variant) {
     VARIANT* variant = (VARIANT*) _variant;
     return (jshort) variant->vt;
 }
 
-JNIEXPORT void JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantSetIVal
+JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantSetIVal
 (JNIEnv* env, jclass jClass, jlong _variant, jshort _iVal) {
     VARIANT* variant = (VARIANT*) _variant;
     variant->iVal  = (SHORT) _iVal;
 }
-JNIEXPORT jshort JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantGetIVal
+JNIEXPORT jshort JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantGetIVal
 (JNIEnv* env, jclass jClass, jlong _variant) {
     VARIANT* variant = (VARIANT*) _variant;
     return (jshort) variant->iVal;
 }
 
-JNIEXPORT void JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantSetLVal
+JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantSetLVal
 (JNIEnv* env, jclass jClass, jlong _variant, jint _lVal) {
     VARIANT* variant = (VARIANT*) _variant;
     variant->iVal  = (LONG) _lVal;
 }
-JNIEXPORT jint JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantGetLVal
+JNIEXPORT jint JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantGetLVal
 (JNIEnv* env, jclass jClass, jlong _variant) {
     VARIANT* variant = (VARIANT*) _variant;
     return (jint) variant->lVal;
 }
 
-JNIEXPORT void JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantSetFltVal
+JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantSetFltVal
 (JNIEnv* env, jclass jClass, jlong _variant, jfloat _fltVal) {
     VARIANT* variant = (VARIANT*) _variant;
     variant->fltVal  = (FLOAT) _fltVal;
 }
-JNIEXPORT jfloat JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantGetFltVal
+JNIEXPORT jfloat JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantGetFltVal
 (JNIEnv* env, jclass jClass, jlong _variant) {
     VARIANT* variant = (VARIANT*) _variant;
     return (jfloat) variant->fltVal;
 }
 
-JNIEXPORT void JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantSetDblVal
+JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantSetDblVal
 (JNIEnv* env, jclass jClass, jlong _variant, jdouble _dblVal) {
     VARIANT* variant = (VARIANT*) _variant;
     variant->dblVal  = (DOUBLE) _dblVal;
 }
-JNIEXPORT jdouble JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantGetDblVal
+JNIEXPORT jdouble JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantGetDblVal
 (JNIEnv* env, jclass jClass, jlong _variant) {
     VARIANT* variant = (VARIANT*) _variant;
     return (jdouble) variant->dblVal;
 }
 
-JNIEXPORT void JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantSetBoolVal
+JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantSetBoolVal
 (JNIEnv* env, jclass jClass, jlong _variant, jboolean _boolVal) {
     VARIANT* variant = (VARIANT*) _variant;
     variant->boolVal  = _boolVal ? VARIANT_TRUE : VARIANT_FALSE;
 }
-JNIEXPORT jboolean JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantGetBoolVal
+JNIEXPORT jboolean JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantGetBoolVal
 (JNIEnv* env, jclass jClass, jlong _variant) {
     VARIANT* variant = (VARIANT*) _variant;
     return variant->boolVal == VARIANT_TRUE ? JNI_TRUE : JNI_FALSE;
@@ -122,12 +122,12 @@ BSTR toBSTR(JNIEnv* env, jstring value) {
     return result;
 }
 
-JNIEXPORT void JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantSetBstrVal
+JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantSetBstrVal
 (JNIEnv* env, jclass jClass, jlong _variant, jstring _bstrVal) {
     VARIANT* variant = (VARIANT*) _variant;
     variant->bstrVal = toBSTR(env, _bstrVal);
 }
-JNIEXPORT jstring JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantGetBstrVal
+JNIEXPORT jstring JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantGetBstrVal
 (JNIEnv* env, jclass jClass, jlong _variant) {
     VARIANT* variant = (VARIANT*) _variant;
 
@@ -142,19 +142,19 @@ JNIEXPORT jstring JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantGetBstr
     return env->NewStringUTF(dblstr.c_str());
 }
 
-JNIEXPORT void JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantSetPunkVal
+JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantSetPunkVal
 (JNIEnv* env, jclass jClass, jlong _variant, jlong _punkVal) {
     VARIANT* variant = (VARIANT*) _variant;
     variant->punkVal = (IUnknown*) _punkVal;
     variant->punkVal->AddRef();
 }
-JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantGetPunkVal
+JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantGetPunkVal
 (JNIEnv* env, jclass jClass, jlong _variant) {
     VARIANT* variant = (VARIANT*) _variant;
     return (jlong) variant->punkVal;
 }
 
-JNIEXPORT void JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantSetLSafeArray
+JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantSetLSafeArray
 (JNIEnv* env, jclass jClass, jlong _variant, jarray _lArray) {
     VARIANT* variant = (VARIANT*) _variant;
 
@@ -167,7 +167,7 @@ JNIEXPORT void JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantSetLSafeAr
     }
     env->ReleasePrimitiveArrayCritical(_lArray, listPtr, 0);
 }
-JNIEXPORT jintArray JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantGetLSafeArray
+JNIEXPORT jintArray JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantGetLSafeArray
 (JNIEnv* env, jclass jClass, jlong _variant) {
     VARIANT* variant = (VARIANT*) _variant;
 
@@ -194,7 +194,7 @@ JNIEXPORT jintArray JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantGetLS
     return result;
 }
 
-JNIEXPORT void JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantSetFltSafeArray
+JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantSetFltSafeArray
 (JNIEnv* env, jclass jClass, jlong _variant, jarray _fltArray) {
     VARIANT* variant = (VARIANT*) _variant;
 
@@ -207,7 +207,7 @@ JNIEXPORT void JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantSetFltSafe
     }
     env->ReleasePrimitiveArrayCritical(_fltArray, listPtr, 0);
 }
-JNIEXPORT jfloatArray JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantGetFltSafeArray
+JNIEXPORT jfloatArray JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantGetFltSafeArray
 (JNIEnv* env, jclass jClass, jlong _variant) {
     VARIANT* variant = (VARIANT*) _variant;
 
@@ -234,7 +234,7 @@ JNIEXPORT jfloatArray JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantGet
     return result;
 }
 
-JNIEXPORT void JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantSetDblSafeArray
+JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantSetDblSafeArray
 (JNIEnv* env, jclass jClass, jlong _variant, jarray _dblArray) {
     VARIANT* variant = (VARIANT*) _variant;
 
@@ -247,7 +247,7 @@ JNIEXPORT void JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantSetDblSafe
     }
     env->ReleasePrimitiveArrayCritical(_dblArray, listPtr, 0);
 }
-JNIEXPORT jdoubleArray JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantGetDblSafeArray
+JNIEXPORT jdoubleArray JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantGetDblSafeArray
 (JNIEnv* env, jclass jClass, jlong _variant) {
     VARIANT* variant = (VARIANT*) _variant;
 
@@ -274,7 +274,7 @@ JNIEXPORT jdoubleArray JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantGe
     return result;
 }
 
-JNIEXPORT void JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantSetPunkSafeArray
+JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantSetPunkSafeArray
 (JNIEnv* env, jclass jClass, jlong _variant, jarray _punkArray) {
     VARIANT* variant = (VARIANT*) _variant;
 
@@ -289,7 +289,7 @@ JNIEXPORT void JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantSetPunkSaf
     }
     env->ReleasePrimitiveArrayCritical(_punkArray, listPtr, 0);
 }
-JNIEXPORT jlongArray JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantGetPunkSafeArray
+JNIEXPORT jlongArray JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantGetPunkSafeArray
 (JNIEnv* env, jclass jClass, jlong _variant) {
     VARIANT* variant = (VARIANT*) _variant;
 
@@ -316,7 +316,7 @@ JNIEXPORT jlongArray JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantGetP
     return result;
 }
 
-JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_UiaGetReservedMixedAttributeValue
+JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_UiaGetReservedMixedAttributeValue
 (JNIEnv* env, jclass jClass)
 {
     IUnknown* mixedAttributeValue;
@@ -324,7 +324,7 @@ JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_UiaGetReservedMi
     return (jlong) mixedAttributeValue;
 }
 
-JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_UiaGetReservedNotSupportedValue
+JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_UiaGetReservedNotSupportedValue
 (JNIEnv* env, jclass jClass)
 {
     IUnknown* notSupportedValue;
@@ -332,7 +332,7 @@ JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_UiaGetReservedNo
     return (jlong) notSupportedValue;
 }
 
-JNIEXPORT void JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantDebugOutput
+JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_VariantDebugOutput
 (JNIEnv* env, jclass jClass, jlong _variant) {
     VARIANT* variant = (VARIANT*) _variant;
     switch (variant->vt) {
@@ -420,7 +420,7 @@ JNIEXPORT void JNICALL Java_at_bestsolution_uia_winapi_Windows_VariantDebugOutpu
 }
 
 
-JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_UiaRaiseActiveTextPositionChangedEvent
+JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_UiaRaiseActiveTextPositionChangedEvent
 (JNIEnv* env, jclass jClass, jlong _pProvider, jlong _pTextRange) {
     IRawElementProviderSimple* pProvider = (IRawElementProviderSimple*) _pProvider;
     ITextRangeProvider* pTextRange = (ITextRangeProvider*) _pTextRange;
@@ -428,7 +428,7 @@ JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_UiaRaiseActiveTe
     return (jlong) result;
 }
 
-JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_UiaRaiseAsyncContentLoadedEvent
+JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_UiaRaiseAsyncContentLoadedEvent
 (JNIEnv* env, jclass jClass, jlong _pProvider, jint _asyncContentLoadedState, jdouble _percentComplete) {
     IRawElementProviderSimple* pProvider = (IRawElementProviderSimple*) _pProvider;
     AsyncContentLoadedState asyncContentLoadedState = (AsyncContentLoadedState) _asyncContentLoadedState;
@@ -438,7 +438,7 @@ JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_UiaRaiseAsyncCon
     return (jlong) result;
 }
 
-JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_UiaRaiseAutomationEvent
+JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_UiaRaiseAutomationEvent
 (JNIEnv* env, jclass jClass, jlong _pProvider, jint _id) {
     IRawElementProviderSimple* pProvider = (IRawElementProviderSimple*) _pProvider;
     EVENTID id = (EVENTID) _id;
@@ -446,7 +446,7 @@ JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_UiaRaiseAutomati
     return (jlong) result;
 }
 
-JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_UiaRaiseAutomationPropertyChangedEvent
+JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_UiaRaiseAutomationPropertyChangedEvent
 (JNIEnv* env, jclass jClass, jlong _pProvider, jint _id, jlong _variantOld, jlong _variantNew) {
     IRawElementProviderSimple* pProvider = (IRawElementProviderSimple*) _pProvider;
     PROPERTYID id = (PROPERTYID) _id;
@@ -456,7 +456,7 @@ JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_UiaRaiseAutomati
     return result;
 }
 
-JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_UiaRaiseChangesEvent
+JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_UiaRaiseChangesEvent
 (JNIEnv* env, jclass jClass, jlong _pProvider, jint _eventIdCount, jlong _pUiaChanges) {
     IRawElementProviderSimple* pProvider = (IRawElementProviderSimple*) _pProvider;
     int eventIdCount = (int) _eventIdCount;
@@ -465,7 +465,7 @@ JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_UiaRaiseChangesE
     return result;
 }
 
-JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_UiaRaiseNotificationEvent
+JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_UiaRaiseNotificationEvent
 (JNIEnv* env, jclass jClass, jlong _pProvider, jint _notificationKind, jint _notificationProcessing, jstring _displayString, jstring _activityId) {
     IRawElementProviderSimple* pProvider = (IRawElementProviderSimple*) _pProvider;
     NotificationKind notificationKind = (NotificationKind) _notificationKind;
@@ -476,7 +476,7 @@ JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_UiaRaiseNotifica
     return result;
 }
 
-JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_UiaRaiseStructureChangedEvent
+JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_UiaRaiseStructureChangedEvent
 (JNIEnv* env, jclass jClass, jlong _pProvider, jint _structureChangeType, jarray _pRuntimeId) {
     IRawElementProviderSimple* pProvider = (IRawElementProviderSimple*) _pProvider;
     StructureChangeType structureChangeType = (StructureChangeType) _structureChangeType;
@@ -501,7 +501,7 @@ JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_UiaRaiseStructur
     return result;
 }
 
-JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_UiaRaiseTextEditTextChangedEvent
+JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_UiaRaiseTextEditTextChangedEvent
 (JNIEnv* env, jclass jClass, jlong _pProvider, jint _textEditChangeType, jarray _pRuntimeId, jlong _pChangedData) {
     IRawElementProviderSimple* pProvider = (IRawElementProviderSimple*) _pProvider;
     TextEditChangeType textEditChangeType = (TextEditChangeType) _textEditChangeType;
@@ -510,7 +510,7 @@ JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_UiaRaiseTextEdit
     return result;
 }
 
-JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_SysAllocString
+JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_SysAllocString
 (JNIEnv* env, jclass jClass, jstring value) {
     UINT length = env->GetStringLength(value);
     const jchar* ptr = env->GetStringCritical(value, NULL);
@@ -521,13 +521,13 @@ JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_SysAllocString
     return (jlong) result;
 }
 
-JNIEXPORT void JNICALL Java_at_bestsolution_uia_winapi_Windows_SysFreeString
+JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_SysFreeString
 (JNIEnv* env, jclass jClass, jlong pBstr) {
     BSTR bstr = (BSTR) pBstr;
     SysFreeString(bstr);
 }
 
-JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_SafeArrayCreateVector
+JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_SafeArrayCreateVector
 (JNIEnv* env, jclass jClass, jshort _vt, jint _lLbound, jint _cElements) {
     VARTYPE vt = (VARTYPE) _vt;
     LONG lLbound = (LONG) _lLbound;
@@ -536,14 +536,14 @@ JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_SafeArrayCreateV
     return (jlong) result;
 }
 
-JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_SafeArrayDestroy
+JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_SafeArrayDestroy
 (JNIEnv* env, jclass jClass, jlong _psa) {
     SAFEARRAY* psa = (SAFEARRAY*) _psa;
     HRESULT result = SafeArrayDestroy(psa);
     return result;
 }
 
-JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_SafeArrayPutElement
+JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_SafeArrayPutElement
 (JNIEnv* env, jclass jClass, jlong _psa, jint _index, jlong pValue) {
     SAFEARRAY* psa = (SAFEARRAY*) _psa;
     LONG index = (LONG) _index;
@@ -552,7 +552,7 @@ JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_SafeArrayPutElem
     return result;
 }
 
-JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_SafeArrayGetElement
+JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_SafeArrayGetElement
 (JNIEnv* env, jclass jClass, jlong _psa, jint _index, jlong pValue) {
     SAFEARRAY* psa = (SAFEARRAY*) _psa;
     LONG index = (LONG) _index;
@@ -562,7 +562,7 @@ JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_winapi_Windows_SafeArrayGetElem
     return (jlong) value;
 }
 
-JNIEXPORT void JNICALL Java_at_bestsolution_uia_winapi_Windows_DebugOutputBSTR
+JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_winapi_Windows_DebugOutputBSTR
 (JNIEnv* env, jclass jClass, jlong _pBstr) {
     BSTR bstr = (BSTR) _pBstr;
     std::wcerr << bstr << std::endl;

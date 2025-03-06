@@ -24,10 +24,10 @@
  */
 package uia.sample.samples;
 
-import at.bestsolution.uia.javafx.uia.ExpandCollapseState;
-import at.bestsolution.uia.javafx.uia.IExpandCollapseProvider;
-import at.bestsolution.uia.javafx.uia.IUIAElement;
-import at.bestsolution.uia.javafx.uia.UIA;
+import at.bestsolution.uia.ExpandCollapseState;
+import at.bestsolution.uia.IExpandCollapseProvider;
+import at.bestsolution.uia.IUIAElement;
+import at.bestsolution.uia.UIA;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Bounds;

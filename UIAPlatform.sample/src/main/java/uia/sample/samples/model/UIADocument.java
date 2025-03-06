@@ -1,14 +1,14 @@
 package uia.sample.samples.model;
 
-import at.bestsolution.uia.javafx.uia.ControlType;
-import at.bestsolution.uia.javafx.uia.IInitContext;
-import at.bestsolution.uia.javafx.uia.IProperty;
-import at.bestsolution.uia.javafx.uia.ITextProvider2;
-import at.bestsolution.uia.javafx.uia.ITextRangeProvider;
-import at.bestsolution.uia.javafx.uia.IUIAElement;
-import at.bestsolution.uia.javafx.uia.StandardPropertyIds;
-import at.bestsolution.uia.javafx.uia.StandardVariantConverters;
-import at.bestsolution.uia.javafx.uia.SupportedTextSelection;
+import at.bestsolution.uia.ControlType;
+import at.bestsolution.uia.IInitContext;
+import at.bestsolution.uia.IProperty;
+import at.bestsolution.uia.ITextProvider2;
+import at.bestsolution.uia.ITextRangeProvider;
+import at.bestsolution.uia.IUIAElement;
+import at.bestsolution.uia.StandardPropertyIds;
+import at.bestsolution.uia.StandardVariantConverters;
+import at.bestsolution.uia.SupportedTextSelection;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import uia.sample.samples.DocumentModelSample.EditorPane;

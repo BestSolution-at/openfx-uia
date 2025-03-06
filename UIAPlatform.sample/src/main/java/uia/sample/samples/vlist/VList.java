@@ -10,10 +10,25 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
-import com.sun.glass.ui.uia.HResultException;
-import com.sun.glass.ui.uia.Logger;
-import com.sun.glass.ui.uia.LoggerFactory;
-
+import at.bestsolution.uia.ControlType;
+import at.bestsolution.uia.IEvent;
+import at.bestsolution.uia.IInitContext;
+import at.bestsolution.uia.IProperty;
+import at.bestsolution.uia.IScrollItemProvider;
+import at.bestsolution.uia.IScrollProvider;
+import at.bestsolution.uia.ISelectionItemProvider;
+import at.bestsolution.uia.ISelectionProvider;
+import at.bestsolution.uia.IStructureChangedEvent;
+import at.bestsolution.uia.IUIAElement;
+import at.bestsolution.uia.IUIAVirtualElement;
+import at.bestsolution.uia.IUIAVirtualRootElement;
+import at.bestsolution.uia.ScrollAmount;
+import at.bestsolution.uia.StandardEventIds;
+import at.bestsolution.uia.StructureChangeType;
+import at.bestsolution.uia.UIA;
+import at.bestsolution.uia.internal.HResultException;
+import at.bestsolution.uia.internal.Logger;
+import at.bestsolution.uia.internal.LoggerFactory;
 import javafx.animation.AnimationTimer;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
@@ -39,22 +54,6 @@ import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Rectangle;
-import javafx.uia.ControlType;
-import javafx.uia.IEvent;
-import javafx.uia.IInitContext;
-import javafx.uia.IProperty;
-import javafx.uia.IScrollItemProvider;
-import javafx.uia.IScrollProvider;
-import javafx.uia.ISelectionItemProvider;
-import javafx.uia.ISelectionProvider;
-import javafx.uia.IStructureChangedEvent;
-import javafx.uia.IUIAElement;
-import javafx.uia.IUIAVirtualElement;
-import javafx.uia.IUIAVirtualRootElement;
-import javafx.uia.ScrollAmount;
-import javafx.uia.StandardEventIds;
-import javafx.uia.StructureChangeType;
-import javafx.uia.UIA;
 
 public class VList<T> extends BorderPane {
 
@@ -99,20 +98,20 @@ public class VList<T> extends BorderPane {
 
         @Override
         public void initialize(IInitContext init) {
-            
+
             IsEnabled = init.addIsEnabledElementProperty(this::isEnabled);
             IsOffscreen = init.addIsOffscreenProperty(this::isOffscreen);
             name = init.addNameProperty(() -> labelFunc.apply(model));
 
             AutomationFocusChanged = init.addEvent(StandardEventIds.UIA_AutomationFocusChangedEventId);
-            
+
             SelectionItem_ElementSelected = init.addEvent(StandardEventIds.UIA_SelectionItem_ElementSelectedEventId);
             SelectionItem_ElementAddedToSelection = init.addEvent(StandardEventIds.UIA_SelectionItem_ElementAddedToSelectionEventId);
             SelectionItem_ElementRemovedFromSelection = init.addEvent(StandardEventIds.UIA_SelectionItem_ElementRemovedFromSelectionEventId);
-        
+
             IsControlElement = init.addIsControlElementProperty(() -> true);
             IsContentElement = init.addIsContentElementProperty(() -> true);
-        
+
             IsKeyboardFocusable = init.addIsKeyboardFocusableProperty(() -> true);
 
             ObservableValue<T> focused = VList.this.uia.virtualFocused;
@@ -159,7 +158,7 @@ public class VList<T> extends BorderPane {
         //         getOrCreateCell(model);
         //     }
         // }
-        
+
         @Override
         public ControlType getControlType() {
             return ControlType.UIA_ListItemControlTypeId;
@@ -248,7 +247,7 @@ public class VList<T> extends BorderPane {
 
         UIAList() {
             VList.this.selected.addListener((x, o, n) -> {
-                LOG.debug(() -> "VList.selected changed: " + o + " -> " + n);      
+                LOG.debug(() -> "VList.selected changed: " + o + " -> " + n);
 
                 withContext(SelectionProviderContext.class, ctx -> {
                     ctx.Selection.fireChanged(toSel(o), toSel(n));
@@ -273,13 +272,14 @@ public class VList<T> extends BorderPane {
                 LOG.debug(() -> "virtualFocused changed: " + o + " -> " + n);
             });
 
-            
-            
+
+
         }
 
         @Override
         public IUIAElement getFocus() {
             T vFocused = virtualFocused.get();
+            System.err.println("!!!! getFocus() -> " + vFocused);
             if (vFocused != null) {
                 UIAItem item = VList.this.getOrCreateUIAItem(vFocused);
                 return item;
@@ -306,7 +306,7 @@ public class VList<T> extends BorderPane {
             disabledProperty().addListener((x, o, n) -> {
                 IsEnabled.fireChanged(o, n);
             });
-            
+
             StructureChanged = init.addStructureChangedEvent();
 
             VList.this.focusedProperty().addListener((x, o, n) -> {
@@ -338,7 +338,7 @@ public class VList<T> extends BorderPane {
 
         // @Override
         // public IUIAElement FindItemByProperty(IUIAElement startAfter, IPropertyId propertyId, Variant value) {
-            
+
         //     UIAItem itemStartAfter = (UIAItem) startAfter;
 
         //     System.err.println("FindItemByProperty("+itemStartAfter.model+", " + propertyId + ", " + value + ")");
@@ -422,7 +422,7 @@ public class VList<T> extends BorderPane {
 
         @Override
         public void SetScrollPercent(double horizontalPercent, double verticalPercent) {
-           
+
         }
 
         @Override
@@ -472,7 +472,7 @@ public class VList<T> extends BorderPane {
             Label l = new Label(labelFunc.apply(model));
             setCenter(l);
 
-            
+
             addEventHandler(MouseEvent.MOUSE_CLICKED, e -> {
                 selected.set(model);
             });
@@ -484,7 +484,7 @@ public class VList<T> extends BorderPane {
 
         void updateStyle() {
             String selectionColor = VList.this.isFocused() ? "orange" : "gray";
-            
+
 
             if (model.equals(selected.get())) {
                 setStyle(baseStyle + " -fx-background-color: " + selectionColor);
@@ -535,7 +535,7 @@ public class VList<T> extends BorderPane {
             System.err.println("layoutChildren " + getChildrenUnmodifiable().size());
             for (Node child : getChildrenUnmodifiable()) {
                 if (child instanceof VList.Cell) {
-                    
+
                     Cell cell = (Cell) child;
                     int index = cell.index();
                     if (index >= beginIndex.get() && index <= endIndex.get()) {
@@ -548,7 +548,7 @@ public class VList<T> extends BorderPane {
                 }
             } */
         }
-        
+
     };
     Label data = new Label();
 
@@ -587,7 +587,7 @@ public class VList<T> extends BorderPane {
                 }
                 lastTick = now;
             }
-            
+
         };
         //timer.start();
 
@@ -602,12 +602,12 @@ public class VList<T> extends BorderPane {
         setFocusTraversable(true);
 
         scrollbar.setOrientation(Orientation.VERTICAL);
- 
+
         viewport.setStyle("-fx-border-width: 1px; -fx-border-color: gray");
         setCenter(viewport);
         setRight(scrollbar);
         setBottom(data);
-        
+
         data.setStyle("-fx-color: gray");
 
         contentHeight = itemHeight.multiply(Bindings.size(items));
@@ -663,24 +663,47 @@ public class VList<T> extends BorderPane {
         addEventHandler(KeyEvent.KEY_PRESSED, e -> {
             switch (e.getCode()) {
                 case DOWN:{
-                    T cur = selected.get();
-                    if (cur == null) {
-                        if (items.size() > 0) selected.set(items.get(0));
+                    if (e.isShortcutDown()) {
+                        T cur = VList.this.uia.virtualFocused.get();
+                        if (cur == null) {
+                            if (items.size() > 0) VList.this.uia.virtualFocused.set(items.get(0));
+                        } else {
+                            T next = items.get(Math.min(items.size()-1, items.indexOf(cur) + 1));
+                            VList.this.uia.virtualFocused.set(next);
+                            scrollIntoView(next);
+                        }
                     } else {
-                        T next = items.get(Math.min(items.size()-1, items.indexOf(cur) + 1));
-                        selected.set(next);
-                        scrollIntoView(next);
+                        T cur = selected.get();
+                        if (cur == null) {
+                            if (items.size() > 0) selected.set(items.get(0));
+                        } else {
+                            T next = items.get(Math.min(items.size()-1, items.indexOf(cur) + 1));
+                            selected.set(next);
+                            scrollIntoView(next);
+                        }
                     }
+
                 break;}
 
                 case UP:{
-                    T cur = selected.get();
-                    if (cur == null) {
-                        if (items.size() > 0) selected.set(items.get(0));
+                    if (e.isShortcutDown()) {
+                        T cur = VList.this.uia.virtualFocused.get();
+                        if (cur == null) {
+                            if (items.size() > 0) VList.this.uia.virtualFocused.set(items.get(0));
+                        } else {
+                            T next = items.get(Math.max(0, items.indexOf(cur) - 1));
+                            VList.this.uia.virtualFocused.set(next);
+                            scrollIntoView(next);
+                        }
                     } else {
-                        T next = items.get(Math.max(0, items.indexOf(cur) - 1));
-                        selected.set(next);
-                        scrollIntoView(next);
+                        T cur = selected.get();
+                        if (cur == null) {
+                            if (items.size() > 0) selected.set(items.get(0));
+                        } else {
+                            T next = items.get(Math.max(0, items.indexOf(cur) - 1));
+                            selected.set(next);
+                            scrollIntoView(next);
+                        }
                     }
                 break;}
                 default:
@@ -732,7 +755,7 @@ public class VList<T> extends BorderPane {
             uia.children.add(it);
             return it;
         });
-        
+
         return item;
     }
 

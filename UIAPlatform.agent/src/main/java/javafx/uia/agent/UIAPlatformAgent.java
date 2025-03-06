@@ -59,7 +59,7 @@ public class UIAPlatformAgent {
             LOG.debug(() -> "adding UIAPlatform.core.jar to Classloader ("+file+")");
             instrumentation.appendToSystemClassLoaderSearch(new JarFile(file, true));
 
-            Class<?> cls = ClassLoader.getSystemClassLoader().loadClass("at.bestsolution.uia.AccessibleFactory");
+            Class<?> cls = ClassLoader.getSystemClassLoader().loadClass("at.bestsolution.uia.core.AccessibleFactory");
             LOG.debug(() -> "cls: " + cls);
             // cls.getMethod("foo", new Class<?>[0]);
             //Class<?> c = java.lang.System.out.println(java.lang.ClassLoader.getSystemClassLoader().loadClass("at.bestsolution.uia.AccessibleFactory")).getMethod("createAccessible").invoke(null)
@@ -145,20 +145,21 @@ public class UIAPlatformAgent {
                                 ClassPool classPool = scopedClassPoolFactory.create(loader, ClassPool.getDefault(), ScopedClassPoolRepositoryImpl.getInstance());
                                 // add to ClassPool for compiling
                                 classPool.appendClassPath(LibraryManager.coreJar.toString());
+                                classPool.appendSystemPath();
 
                                 CtClass ctClass = classPool.makeClass(new ByteArrayInputStream(classfileBuffer));
                                 CtMethod ctMethod = ctClass.getDeclaredMethod("createAccessible");
 
-
-                                String src = "";
-                                src += "{";
-                                src += "java.lang.ClassLoader loader = java.lang.ClassLoader.getSystemClassLoader();";
-                                src += "java.lang.Class cls = loader.loadClass(\"at.bestsolution.uia.AccessibleFactory\");";
-                                src += "java.lang.Class[] args = {};";
-                                src += "java.lang.reflect.Method m = cls.getMethod(\"createAccessible\", args);";
-                                src += "java.lang.Object[] invoke_args = {};";
-                                src += "return (com.sun.glass.ui.Accessible) m.invoke(null, invoke_args);";
-                                src += "}";
+                                String src = "return at.bestsolution.uia.core.AccessibleFactory.createAccessible();";
+                                // String src = "";
+                                // src += "{";
+                                // src += "java.lang.ClassLoader loader = java.lang.ClassLoader.getSystemClassLoader();";
+                                // src += "java.lang.Class cls = loader.loadClass(\"at.bestsolution.uia.core.AccessibleFactory\");";
+                                // src += "java.lang.Class[] args = {};";
+                                // src += "java.lang.reflect.Method m = cls.getMethod(\"createAccessible\", args);";
+                                // src += "java.lang.Object[] invoke_args = {};";
+                                // src += "return (com.sun.glass.ui.Accessible) m.invoke(null, invoke_args);";
+                                // src += "}";
                                 ctMethod.setBody(src);
 
                                 // ctMethod.setBody("{ return java.lang.ClassLoader.getSystemClassLoader().loadClass(\"at.bestsolution.uia.AccessibleFactory\").getMethod(\"createAccessible\", new java.lang.Class<java.lang.Object>[0]).invoke(null); }");

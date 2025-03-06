@@ -1,0 +1,78 @@
+How found:	Selected from tree...
+ControlType:	UIA_ListControlTypeId (0xC358)
+LocalizedControlType:	"list"
+BoundingRectangle:	{l:215 t:348 r:463 b:948}
+IsEnabled:	true
+IsKeyboardFocusable:	true
+HasKeyboardFocus:	false
+ProcessId:	19672
+RuntimeId:	[2A.B0A08.4.2]
+AutomationId:	"JavaFX2"
+IsControlElement:	true
+IsContentElement:	true
+ProviderDescription:	"[pid:19672,providerId:0x0 Main(parent link):JavaFXProvider (unmanaged:UIAPlatform.dll)]"
+IsPassword:	false
+HelpText:	""
+IsDialog:	false
+LegacyIAccessible.ChildId:	0
+LegacyIAccessible.DefaultAction:	""
+LegacyIAccessible.Description:	""
+LegacyIAccessible.Help:	""
+LegacyIAccessible.KeyboardShortcut:	""
+LegacyIAccessible.Name:	""
+LegacyIAccessible.Role:	list (0x21)
+LegacyIAccessible.State:	focusable (0x100000)
+LegacyIAccessible.Value:	""
+Selection.CanSelectMultiple:	false
+Selection.IsSelectionRequired:	true
+Selection.Selection:	"VList" list item
+Scroll.HorizontallyScrollable:	false
+Scroll.HorizontalScrollPercent:	-1.000000
+Scroll.HorizontalViewSize:	100.000000
+Scroll.VerticallyScrollable:	false
+Scroll.VerticalScrollPercent:	-1.000000
+Scroll.VerticalViewSize:	100.000000
+IsAnnotationPatternAvailable:	false
+IsDragPatternAvailable:	false
+IsDockPatternAvailable:	false
+IsDropTargetPatternAvailable:	false
+IsExpandCollapsePatternAvailable:	false
+IsGridItemPatternAvailable:	false
+IsGridPatternAvailable:	false
+IsInvokePatternAvailable:	false
+IsItemContainerPatternAvailable:	false
+IsLegacyIAccessiblePatternAvailable:	true
+IsMultipleViewPatternAvailable:	false
+IsObjectModelPatternAvailable:	false
+IsRangeValuePatternAvailable:	false
+IsScrollItemPatternAvailable:	false
+IsScrollPatternAvailable:	true
+IsSelectionItemPatternAvailable:	false
+IsSelectionPatternAvailable:	true
+IsSpreadsheetItemPatternAvailable:	false
+IsSpreadsheetPatternAvailable:	false
+IsStylesPatternAvailable:	false
+IsSynchronizedInputPatternAvailable:	false
+IsTableItemPatternAvailable:	false
+IsTablePatternAvailable:	false
+IsTextChildPatternAvailable:	false
+IsTextEditPatternAvailable:	false
+IsTextPatternAvailable:	false
+IsTextPattern2Available:	false
+IsTogglePatternAvailable:	false
+IsTransformPatternAvailable:	false
+IsTransform2PatternAvailable:	false
+IsValuePatternAvailable:	false
+IsVirtualizedItemPatternAvailable:	false
+IsWindowPatternAvailable:	false
+IsCustomNavigationPatternAvailable:	false
+IsSelectionPattern2Available:	false
+FirstChild:	...
+LastChild:	...
+Next:	...
+Previous: ...
+Other Props:	Object has no additional properties
+Children: ...
+Ancestors:	"Simple UIA samples" window
+	"Desktop 1" pane
+	[ No Parent ]

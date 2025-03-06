@@ -26,11 +26,11 @@ package uia.sample.samples;
 
 import java.util.function.Function;
 
-import at.bestsolution.uia.javafx.uia.DockPosition;
-import at.bestsolution.uia.javafx.uia.IDockProvider;
-import at.bestsolution.uia.javafx.uia.IProperty;
-import at.bestsolution.uia.javafx.uia.IUIAElement;
-import at.bestsolution.uia.javafx.uia.UIA;
+import at.bestsolution.uia.DockPosition;
+import at.bestsolution.uia.IDockProvider;
+import at.bestsolution.uia.IProperty;
+import at.bestsolution.uia.IUIAElement;
+import at.bestsolution.uia.UIA;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;

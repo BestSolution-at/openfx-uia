@@ -5,11 +5,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import at.bestsolution.uia.javafx.uia.ITextAttributeSupport;
-import at.bestsolution.uia.javafx.uia.ITextRangeProvider;
-import at.bestsolution.uia.javafx.uia.IUIAElement;
-import at.bestsolution.uia.javafx.uia.TextPatternRangeEndpoint;
-import at.bestsolution.uia.javafx.uia.TextUnit;
+import at.bestsolution.uia.ITextAttributeSupport;
+import at.bestsolution.uia.ITextRangeProvider;
+import at.bestsolution.uia.IUIAElement;
+import at.bestsolution.uia.TextPatternRangeEndpoint;
+import at.bestsolution.uia.TextUnit;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 

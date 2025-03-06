@@ -234,7 +234,7 @@ extern "C" {
  * Method:    _initIDs
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_at_bestsolution_uia_ProxyAccessible__1initIDs
+JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_ProxyAccessible__1initIDs
   (JNIEnv *, jclass);
 
 /*
@@ -242,7 +242,7 @@ JNIEXPORT void JNICALL Java_at_bestsolution_uia_ProxyAccessible__1initIDs
  * Method:    _createGlassAccessible
  * Signature: ()J
  */
-JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_ProxyAccessible__1createProxyAccessible
+JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_internal_ProxyAccessible__1createProxyAccessible
   (JNIEnv *, jobject);
 
 /*
@@ -250,7 +250,7 @@ JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_ProxyAccessible__1createProxyAc
  * Method:    _destroyGlassAccessible
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_at_bestsolution_uia_ProxyAccessible__1destroyProxyAccessible
+JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_ProxyAccessible__1destroyProxyAccessible
   (JNIEnv *, jobject, jlong);
 
 /*
@@ -258,7 +258,7 @@ JNIEXPORT void JNICALL Java_at_bestsolution_uia_ProxyAccessible__1destroyProxyAc
  * Method:    UiaRaiseAutomationEvent
  * Signature: (JI)J
  */
-JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_ProxyAccessible_UiaRaiseAutomationEvent
+JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_internal_ProxyAccessible_UiaRaiseAutomationEvent
   (JNIEnv *, jclass, jlong, jint);
 
 /*
@@ -266,7 +266,7 @@ JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_ProxyAccessible_UiaRaiseAutomat
  * Method:    UiaRaiseAutomationPropertyChangedEvent
  * Signature: (JILcom/sun/glass/ui/uia/WinVariant;Lcom/sun/glass/ui/uia/WinVariant;)J
  */
-JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_ProxyAccessible_UiaRaiseAutomationPropertyChangedEvent
+JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_internal_ProxyAccessible_UiaRaiseAutomationPropertyChangedEvent
   (JNIEnv *, jclass, jlong, jint, jobject, jobject);
 
 /*
@@ -274,7 +274,7 @@ JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_ProxyAccessible_UiaRaiseAutomat
  * Method:    UiaClientsAreListening
  * Signature: ()Z
  */
-JNIEXPORT jboolean JNICALL Java_at_bestsolution_uia_ProxyAccessible_UiaClientsAreListening
+JNIEXPORT jboolean JNICALL Java_at_bestsolution_uia_internal_ProxyAccessible_UiaClientsAreListening
   (JNIEnv *, jclass);
 
 #ifdef __cplusplus

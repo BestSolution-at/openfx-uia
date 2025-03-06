@@ -42,6 +42,7 @@ repositories {
 
 configurations {
     agent
+    patch
     includedJars
     withLogging
 }
@@ -49,10 +50,12 @@ configurations {
 dependencies {
     implementation project(":UIAPlatform")
     agent project(":UIAPlatform.agent")
+    patch project(":UIAPlatform.patch")
 
     includedJars project(":UIAPlatform.agent")
     includedJars project(":UIAPlatform.core")
     includedJars project(":UIAPlatform")
+
 
     withLogging project(":UIAPlatform.logger")
     withLogging 'org.slf4j:slf4j-api:2.0.0-alpha7'
@@ -61,6 +64,9 @@ dependencies {
 
 def getAgentJar() {
     configurations.agent.files[0]
+}
+def getPatchJar() {
+    configurations.patch.files[0]
 }
 
 sourceSets {
@@ -110,6 +116,52 @@ task runWithAgentWithLogging(type: JavaExec) {
 
 }
 
+
+task runWithPatch(type: JavaExec) {
+    dependsOn configurations.patch
+
+  	group = 'application'
+	  description = 'Runs the sample with the glass platfrom configured'
+
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+
+    classpath sourceSets.main.runtimeClasspath
+    mainClass = 'uia.sample.Simple'
+
+    systemProperties "uia.log": true
+    systemProperties "uia.loglevel": 1
+    //jvmArgs ""
+    // jvmArgs "-javaagent:${getAgentJar()}"
+    // jvmArgs "-verbose:jni"
+    jvmArgs "--patch-module=javafx.graphics=${getPatchJar()}"
+
+    // from UIAPlatform
+    jvmArgs "--add-exports=javafx.graphics/com.sun.glass.ui=ALL-UNNAMED"
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED"
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.tk.quantum=ALL-UNNAMED"
+
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.scene=ALL-UNNAMED"
+
+    // from sample
+    jvmArgs "--add-exports=javafx.controls/javafx.scene.control.skin=ALL-UNNAMED"
+
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.text=ALL-UNNAMED"
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.geom=ALL-UNNAMED"
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.geom.transform=ALL-UNNAMED"
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.scene.text=ALL-UNNAMED"
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED"
+
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.scene.text=ALL-UNNAMED"
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.font=ALL-UNNAMED"
+
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.stage=ALL-UNNAMED"
+
+    jvmArgs "--add-opens=javafx.graphics/com.sun.javafx.tk.quantum=ALL-UNNAMED"
+    jvmArgs "--add-opens=javafx.graphics/javafx.scene=ALL-UNNAMED"
+}
+
 task runWithAgent(type: JavaExec) {
     dependsOn configurations.agent
 
@@ -127,6 +179,49 @@ task runWithAgent(type: JavaExec) {
     systemProperties "uia.loglevel": 1
     //jvmArgs ""
     jvmArgs "-javaagent:${getAgentJar()}"
+    // jvmArgs "-verbose:jni"
+
+    // from UIAPlatform
+    jvmArgs "--add-exports=javafx.graphics/com.sun.glass.ui=ALL-UNNAMED"
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED"
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.tk.quantum=ALL-UNNAMED"
+
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.scene=ALL-UNNAMED"
+
+    // from sample
+    jvmArgs "--add-exports=javafx.controls/javafx.scene.control.skin=ALL-UNNAMED"
+
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.text=ALL-UNNAMED"
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.geom=ALL-UNNAMED"
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.geom.transform=ALL-UNNAMED"
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.scene.text=ALL-UNNAMED"
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED"
+
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.scene.text=ALL-UNNAMED"
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.font=ALL-UNNAMED"
+
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.stage=ALL-UNNAMED"
+
+    jvmArgs "--add-opens=javafx.graphics/com.sun.javafx.tk.quantum=ALL-UNNAMED"
+    jvmArgs "--add-opens=javafx.graphics/javafx.scene=ALL-UNNAMED"
+}
+task runX(type: JavaExec) {
+    dependsOn configurations.agent
+
+  	group = 'application'
+	  description = 'Runs the sample with the glass platfrom configured'
+
+    javaLauncher = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+
+    classpath sourceSets.main.runtimeClasspath
+    mainClass = 'uia.sample.Simple'
+
+    systemProperties "uia.log": true
+    systemProperties "uia.loglevel": 1
+    //jvmArgs ""
+    //jvmArgs "-javaagent:${getAgentJar()}"
     // jvmArgs "-verbose:jni"
 
     // from UIAPlatform

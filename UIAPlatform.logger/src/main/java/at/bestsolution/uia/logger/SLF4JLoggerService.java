@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.spi.LoggingEventBuilder;
 
-import at.bestsolution.uia.ILoggerService;
+import at.bestsolution.uia.internal.ILoggerService;
 
 public class SLF4JLoggerService implements ILoggerService {
 

@@ -26,11 +26,11 @@ package uia.sample.samples;
 
 import java.util.Arrays;
 
-import at.bestsolution.uia.javafx.uia.IInitContext;
-import at.bestsolution.uia.javafx.uia.IStructureChangedEvent;
-import at.bestsolution.uia.javafx.uia.IUIAElement;
-import at.bestsolution.uia.javafx.uia.StructureChangeType;
-import at.bestsolution.uia.javafx.uia.UIA;
+import at.bestsolution.uia.IInitContext;
+import at.bestsolution.uia.IStructureChangedEvent;
+import at.bestsolution.uia.IUIAElement;
+import at.bestsolution.uia.StructureChangeType;
+import at.bestsolution.uia.UIA;
 import javafx.collections.FXCollections;
 import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
