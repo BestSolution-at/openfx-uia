@@ -78,7 +78,7 @@ import at.bestsolution.uia.internal.ProxyTextRangeProvider;
  // * the getAccessible methods translate the proxy accessible to the WinAccessible
  // this should make it easy to merge openjfx changes
 
- @SuppressWarnings({"restriction", "javadoc"})
+ @SuppressWarnings({"javadoc", "unused"})
 public final class WinAccessible8 extends Accessible implements IWinAccessible{
 
   private static Logger LOG = Logger.create(WinAccessible8.class);
