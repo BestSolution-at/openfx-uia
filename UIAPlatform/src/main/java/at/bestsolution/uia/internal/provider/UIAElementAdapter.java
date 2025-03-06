@@ -56,7 +56,7 @@ import at.bestsolution.uia.internal.Logger;
 import at.bestsolution.uia.internal.LoggerFactory;
 import at.bestsolution.uia.internal.ProxyAccessible;
 import at.bestsolution.uia.internal.ProxyAccessibleRegistry;
-import at.bestsolution.uia.internal.glass.WinAccessible8;
+import at.bestsolution.uia.internal.glass.IWinAccessible;
 import at.bestsolution.uia.internal.glass.WinVariant;
 import at.bestsolution.uia.internal.provider.ProviderRegistry.ProviderInstance;
 
@@ -213,19 +213,23 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
 
         // force children into existence !?
         if (element instanceof IUIAVirtualRootElement) {
-            LOG.info(() -> "begin init children");
+            LOG.info(() -> "begin virtual init children");
+            tmpCount = 0;
             long begin = System.currentTimeMillis();
             IUIAVirtualRootElement root = (IUIAVirtualRootElement) element;
             initChildren(accessible, root.getChildren());
             long duration = System.currentTimeMillis() - begin;
-            LOG.info(() -> "end init children " + duration + "ms");
+            LOG.info(() -> "end init children " + duration + "ms (" + tmpCount + ")");
         }
 
         getChildren(element).ifPresent(children -> ProxyAccessibleRegistry.getInstance().ensureExists(accessible, children));
     }
 
+    int tmpCount;
+
     private void initChildren(ProxyAccessible context, List<IUIAElement> children) {
         children.forEach(child -> {
+            tmpCount++;
             ProxyAccessibleRegistry.getInstance().ensureExists(accessible, child);
             if (child instanceof IUIAVirtualElement) {
                 IUIAVirtualElement v = (IUIAVirtualElement) child;
@@ -248,6 +252,7 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
 
     @Override
     public float[] get_BoundingRectangle() {
+        // TODO jdk17port: got once in VList null from provider.getBounds()
         return Convert.convertBounds(accessible.getPlatformBounds(provider.getBounds()));
     }
 
@@ -398,8 +403,8 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
         }
     }
     class WinAccessibleNavRes implements NavRes {
-        private WinAccessible8 accessible;
-        public WinAccessibleNavRes(WinAccessible8 accessible) {
+        private IWinAccessible accessible;
+        public WinAccessibleNavRes(IWinAccessible accessible) {
             this.accessible = accessible;
         }
         @Override
@@ -441,7 +446,7 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
                                 // a virtual root needs to delegate to the glass version
                                 // TODO CHECK THIS MESS!!
                                 //log(element, "PARENT: " + accessible + " / glass: " + (accessible!=null?""+accessible.getGlassAccessible():"-"));
-                                WinAccessible8 glass = accessible.getGlassAccessible();
+                                IWinAccessible glass = accessible.getGlassAccessible();
                                 if (glass == null) {
                                     glass = accessible.getGlassAccessibleRoot();
                                     return new WinAccessibleNavRes(glass);

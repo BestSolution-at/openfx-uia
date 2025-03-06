@@ -27,22 +27,18 @@ java {
 }
 
 compileJava {
-    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.glass.ui=at.bestsolution.uia.core'
-
-    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.glass.ui=at.bestsolution.uia'
-    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.tk=at.bestsolution.uia'
-    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.tk.quantum=at.bestsolution.uia'
-    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.scene=at.bestsolution.uia'
-    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.stage=at.bestsolution.uia'
-    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.util=at.bestsolution.uia'
-
+    // for Screen, Accessible, View
     options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.glass.ui=ALL-UNNAMED'
+    // for TKStage
     options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED'
+    // for WindowStage, QuantumToolkit
     options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.tk.quantum=ALL-UNNAMED'
+    // for NodeHelper, SceneHelper
     options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.scene=ALL-UNNAMED'
+    // for WindowHelper
     options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.stage=ALL-UNNAMED'
+    // for Utils
     options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.util=ALL-UNNAMED'
-
 }
 
 

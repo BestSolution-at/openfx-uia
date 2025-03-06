@@ -29,11 +29,15 @@ import java.io.File;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.lang.instrument.Instrumentation;
-import java.lang.reflect.Method;
-import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.Paths;
 import java.security.ProtectionDomain;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import java.util.jar.JarFile;
 
 import at.bestsolution.uia.agent.internal.AgentLogger;
@@ -51,6 +55,55 @@ public class UIAPlatformAgent {
     static {
         at.bestsolution.uia.agent.Lib.reportVersionInfo();
     }
+    private static Optional<Class<?>> findClass(String clazz) {
+        try {
+            return Optional.of(Class.forName(clazz));
+        } catch (ClassNotFoundException e) {
+            return Optional.empty();
+        }
+    }
+    private static Optional<Module> findModuleFromClass(String clazz) {
+        return findClass(clazz).map(Class::getModule);
+    }
+
+    private static void fixModules(Instrumentation instrumentation) {
+        LOG.debug(() -> "patching module exports / opens");
+
+        // Class<?> factory = findClass("at.bestsolution.uia.core.AccessibleFactory").orElseThrow();
+
+        Module coreModule = findModuleFromClass("at.bestsolution.uia.core.AccessibleFactory").orElseThrow();
+        LOG.info(() -> "loaded " + coreModule);
+        Module platformModule = findModuleFromClass("at.bestsolution.uia.UIA").orElseThrow();
+        LOG.info(() -> "loaded " + platformModule);
+
+        Module graphicsModule =  ModuleLayer.boot().findModule("javafx.graphics").orElseThrow();
+        LOG.info(() -> "loaded " + graphicsModule);
+
+        Set<Module> extraReads = new HashSet<>();
+        extraReads.add(coreModule);
+
+        Map<String, Set<Module>> extraExports = new HashMap<>();
+        extraExports.put("com.sun.glass.ui", new HashSet<>(Arrays.asList(platformModule)));
+        extraExports.put("com.sun.javafx.tk", new HashSet<>(Arrays.asList(platformModule)));
+        extraExports.put("com.sun.javafx.tk.quantum", new HashSet<>(Arrays.asList(platformModule)));
+        extraExports.put("com.sun.javafx.scene", new HashSet<>(Arrays.asList(platformModule)));
+        extraExports.put("com.sun.javafx.stage", new HashSet<>(Arrays.asList(platformModule)));
+        extraExports.put("com.sun.javafx.util", new HashSet<>(Arrays.asList(platformModule)));
+
+        Map<String, Set<Module>> extraOpens = new HashMap<>();
+        // extraOpens.put("javafx.scene", new HashSet<>(Arrays.asList(platformModule)));
+
+        Set<Class<?>> extraUses = new HashSet<>();
+        // extraUses.add(factory);
+
+        instrumentation.redefineModule(graphicsModule,
+            extraReads,
+            extraExports,
+            extraOpens,
+            extraUses,
+            Collections.emptyMap());
+
+    }
 
     public static void premain(String agentArgument, Instrumentation instrumentation) {
         LOG.trace(() -> "agent init");
@@ -58,6 +111,10 @@ public class UIAPlatformAgent {
             File file = LibraryManager.coreJar.toFile();
             LOG.debug(() -> "adding UIAPlatform.core.jar to Classloader ("+file+")");
             instrumentation.appendToSystemClassLoaderSearch(new JarFile(file, true));
+
+           fixModules(instrumentation);
+            // ModuleFinder.ofSystem().findAll().forEach(m -> System.out.println("module: " + m));
+            // instrumentation.redefineModule(null, null, null, null, null, null);
 
             Class<?> cls = ClassLoader.getSystemClassLoader().loadClass("at.bestsolution.uia.core.AccessibleFactory");
             LOG.debug(() -> "cls: " + cls);
@@ -101,16 +158,16 @@ public class UIAPlatformAgent {
     //     } catch (Throwable e) { e.printStackTrace(); }
     // }
 
-    static void addURL(URLClassLoader classLoader, URL url) throws Exception {
-        try {
-            Method addUrl = URLClassLoader.class.getDeclaredMethod("addURL", new Class[] { URL.class });
-            addUrl.setAccessible(true);
-            addUrl.invoke(classLoader, url);
-        } catch (Exception e) {
-            LOG.error(() -> "Could not add URL to URLClassLoader", e);
-            throw new Exception("Could not add URL to URLClassLoader" , e);
-        }
-    }
+    // static void addURL(URLClassLoader classLoader, URL url) throws Exception {
+    //     try {
+    //         Method addUrl = URLClassLoader.class.getDeclaredMethod("addURL", new Class[] { URL.class });
+    //         addUrl.setAccessible(true);
+    //         addUrl.invoke(classLoader, url);
+    //     } catch (Exception e) {
+    //         LOG.error(() -> "Could not add URL to URLClassLoader", e);
+    //         throw new Exception("Could not add URL to URLClassLoader" , e);
+    //     }
+    // }
 
     static URLClassLoader findExtClassLoader() throws Exception {
         ClassLoader cur = UIAPlatformAgent.class.getClassLoader();
@@ -150,16 +207,21 @@ public class UIAPlatformAgent {
                                 CtClass ctClass = classPool.makeClass(new ByteArrayInputStream(classfileBuffer));
                                 CtMethod ctMethod = ctClass.getDeclaredMethod("createAccessible");
 
-                                String src = "return at.bestsolution.uia.core.AccessibleFactory.createAccessible();";
-                                // String src = "";
-                                // src += "{";
-                                // src += "java.lang.ClassLoader loader = java.lang.ClassLoader.getSystemClassLoader();";
-                                // src += "java.lang.Class cls = loader.loadClass(\"at.bestsolution.uia.core.AccessibleFactory\");";
-                                // src += "java.lang.Class[] args = {};";
-                                // src += "java.lang.reflect.Method m = cls.getMethod(\"createAccessible\", args);";
-                                // src += "java.lang.Object[] invoke_args = {};";
-                                // src += "return (com.sun.glass.ui.Accessible) m.invoke(null, invoke_args);";
-                                // src += "}";
+                                // TODO: produces java.lang.NoClassDefFoundError: at/bestsolution/uia/core/AccessibleFactory
+
+                                // the below reflective approach works
+                                // String src = "return at.bestsolution.uia.core.AccessibleFactory.createAccessible();";
+                                String src = """
+                                        {
+                                            java.lang.ClassLoader loader = java.lang.ClassLoader.getSystemClassLoader();
+                                            java.lang.Class cls = loader.loadClass("at.bestsolution.uia.core.AccessibleFactory");
+                                            // java.lang.Class cls = Class.forName("at.bestsolution.uia.core.AccessibleFactory");
+                                            // java.lang.Class[] args = {};
+                                            java.lang.reflect.Method m = cls.getMethod("createAccessible", new java.lang.Class[0]);
+                                            //java.lang.Object[] invoke_args = {};
+                                            return (com.sun.glass.ui.Accessible) m.invoke(null, new java.lang.Object[0]);
+                                        }
+                                        """;
                                 ctMethod.setBody(src);
 
                                 // ctMethod.setBody("{ return java.lang.ClassLoader.getSystemClassLoader().loadClass(\"at.bestsolution.uia.AccessibleFactory\").getMethod(\"createAccessible\", new java.lang.Class<java.lang.Object>[0]).invoke(null); }");

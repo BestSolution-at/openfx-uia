@@ -26,7 +26,6 @@ package at.bestsolution.uia.internal;
 
 import static at.bestsolution.uia.internal.Util.*;
 
-import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -37,6 +36,7 @@ import java.util.function.ToLongFunction;
 
 import com.sun.glass.ui.Accessible;
 import com.sun.glass.ui.View;
+import com.sun.javafx.scene.NodeHelper;
 import com.sun.javafx.tk.quantum.QuantumToolkit;
 
 import at.bestsolution.uia.IUIAElement;
@@ -44,7 +44,8 @@ import at.bestsolution.uia.IUIAVirtualElement;
 import at.bestsolution.uia.IUIAVirtualRootElement;
 import at.bestsolution.uia.StandardPatternIds;
 import at.bestsolution.uia.internal.ProxyAccessible;
-import at.bestsolution.uia.internal.glass.WinAccessible8;
+import at.bestsolution.uia.internal.glass.IWinAccessible;
+import at.bestsolution.uia.internal.glass.WinAccessible17;
 import at.bestsolution.uia.internal.glass.WinVariant;
 import at.bestsolution.uia.internal.provider.NativeIAnnotationProvider;
 import at.bestsolution.uia.internal.provider.NativeIDockProvider;
@@ -75,7 +76,6 @@ import at.bestsolution.uia.internal.provider.NativeIValueProvider;
 import at.bestsolution.uia.internal.provider.NativeIVirtualizedItemProvider;
 import at.bestsolution.uia.internal.provider.NativeIWindowProvider;
 import at.bestsolution.uia.internal.provider.UIAElementAdapter;
-import javafx.application.Application;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
@@ -84,7 +84,6 @@ import javafx.scene.AccessibleAttribute;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 
-@SuppressWarnings("restriction")
 public class ProxyAccessible extends Accessible {
 
   private static final Logger LOG = Logger.create(ProxyAccessible.class);
@@ -133,8 +132,8 @@ public class ProxyAccessible extends Accessible {
 
     private UIAElementAdapter uiaElementAdapter;
 
-    WinAccessible8 glass;
-    WinAccessible8 glassRoot;
+    IWinAccessible glass;
+    IWinAccessible glassRoot;
 
     public StackTraceElement[] src;
 
@@ -152,7 +151,7 @@ public class ProxyAccessible extends Accessible {
 
       ProxyAccessibleRegistry.getInstance().registerNative(this, peer);
 
-      glass = new WinAccessible8(this);
+      glass = new WinAccessible17(this);
 
       //LOG.debug(this, () -> "created. (glass)");
 
@@ -485,11 +484,11 @@ public class ProxyAccessible extends Accessible {
         return "ProxyAccessible " + num + " [" + getNativeAccessible()+ "] (uia="+uiaElement+") (glass="+glass+")";
     }
 
-    public WinAccessible8 getGlassAccessible() {
+    public IWinAccessible getGlassAccessible() {
         return glass;
     }
 
-    public WinAccessible8 getGlassAccessibleRoot() {
+    public IWinAccessible getGlassAccessibleRoot() {
         if (glass != null) {
             return glass;
         }
@@ -530,7 +529,7 @@ public class ProxyAccessible extends Accessible {
         return callElementLongW(el -> el.GetPatternProvider(patternId), glass -> glass.GetPatternProvider(patternId));
     }
     private long IRawElementProviderSimple_get_HostRawElementProvider() {
-        return callElementLongW(UIAElementAdapter::get_HostRawElementProvider, WinAccessible8::get_HostRawElementProvider);
+        return callElementLongW(UIAElementAdapter::get_HostRawElementProvider, IWinAccessible::get_HostRawElementProvider);
     }
     private WinVariant IRawElementProviderSimple_GetPropertyValue(int propertyId) {
         return callElementObjW(el -> el.GetPropertyValue(propertyId), glass -> glass.GetPropertyValue(propertyId));
@@ -540,35 +539,26 @@ public class ProxyAccessible extends Accessible {
     /*       IRawElementProviderFragment           */
     /***********************************************/
     private float[] IRawElementProviderFragment_get_BoundingRectangle() {
-        return callElementFloatArrayW(UIAElementAdapter::get_BoundingRectangle, WinAccessible8::get_BoundingRectangle);
+        return callElementFloatArrayW(UIAElementAdapter::get_BoundingRectangle, IWinAccessible::get_BoundingRectangle);
     }
     private long IRawElementProviderFragment_get_FragmentRoot() {
-        return callElementLongW(UIAElementAdapter::get_FragmentRoot, WinAccessible8::get_FragmentRoot);
+        return callElementLongW(UIAElementAdapter::get_FragmentRoot, IWinAccessible::get_FragmentRoot);
     }
     private long[] IRawElementProviderFragment_GetEmbeddedFragmentRoots() {
-        return callElementLongArrayW(UIAElementAdapter::GetEmbeddedFragmentRoots, WinAccessible8::GetEmbeddedFragmentRoots);
+        return callElementLongArrayW(UIAElementAdapter::GetEmbeddedFragmentRoots, IWinAccessible::GetEmbeddedFragmentRoots);
     }
     private int[] IRawElementProviderFragment_GetRuntimeId() {
-        return callElementIntArrayW(UIAElementAdapter::GetRuntimeId, WinAccessible8::GetRuntimeId);
+        return callElementIntArrayW(UIAElementAdapter::GetRuntimeId, IWinAccessible::GetRuntimeId);
     }
     public long IRawElementProviderFragment_Navigate(int direction) {
         return callElementLongW(el -> el.Navigate(direction), glass -> glass.Navigate(direction));
     }
     private void IRawElementProviderFragment_SetFocus() {
-        callElementW(UIAElementAdapter::SetFocus, WinAccessible8::SetFocus);
+        callElementW(UIAElementAdapter::SetFocus, IWinAccessible::SetFocus);
     }
 
     private static ProxyAccessible getNodeAccessible(Node node) {
-        // TODO maybe there is a way without using reflection
-        try {
-            Method getter = Node.class.getDeclaredMethod("getAccessible");
-            getter.setAccessible(true);
-            ProxyAccessible accessible = (ProxyAccessible) getter.invoke(node);
-            return accessible;
-        } catch (Exception e) {
-            LOG.error(() -> "Failed to get Accessible! " + node, e);
-            throw new RuntimeException("Failed to get Accessible! " + node , e);
-        }
+        return (ProxyAccessible) NodeHelper.getAccessible(node);
     }
 
     class VirtualRoot {
@@ -668,37 +658,37 @@ public class ProxyAccessible extends Accessible {
     /*             IInvokeProvider                 */
     /***********************************************/
     private void IInvokeProvider_Invoke() {
-        callVoidProviderW(NativeIInvokeProvider.class, NativeIInvokeProvider::Invoke, WinAccessible8::Invoke);
+        callVoidProviderW(NativeIInvokeProvider.class, NativeIInvokeProvider::Invoke, IWinAccessible::Invoke);
     }
     /***********************************************/
     /*           ISelectionProvider                */
     /***********************************************/
     private long[] ISelectionProvider_GetSelection() {
-        return callProviderLongArrayW(NativeISelectionProvider.class, NativeISelectionProvider::GetSelection, WinAccessible8::GetSelection);
+        return callProviderLongArrayW(NativeISelectionProvider.class, NativeISelectionProvider::GetSelection, IWinAccessible::GetSelection);
     }
     private boolean ISelectionProvider_get_CanSelectMultiple() {
-        return callProviderBooleanW(NativeISelectionProvider.class, NativeISelectionProvider::get_CanSelectMultiple, WinAccessible8::get_CanSelectMultiple);
+        return callProviderBooleanW(NativeISelectionProvider.class, NativeISelectionProvider::get_CanSelectMultiple, IWinAccessible::get_CanSelectMultiple);
     }
     private boolean ISelectionProvider_get_IsSelectionRequired() {
-        return callProviderBooleanW(NativeISelectionProvider.class, NativeISelectionProvider::get_IsSelectionRequired, WinAccessible8::get_IsSelectionRequired);
+        return callProviderBooleanW(NativeISelectionProvider.class, NativeISelectionProvider::get_IsSelectionRequired, IWinAccessible::get_IsSelectionRequired);
     }
     /***********************************************/
     /*          ISelectionItemProvider             */
     /***********************************************/
     private void ISelectionItemProvider_Select() {
-        callVoidProviderW(NativeISelectionItemProvider.class, NativeISelectionItemProvider::Select, WinAccessible8::Select);
+        callVoidProviderW(NativeISelectionItemProvider.class, NativeISelectionItemProvider::Select, IWinAccessible::Select);
     }
     private void ISelectionItemProvider_AddToSelection() {
-        callVoidProviderW(NativeISelectionItemProvider.class, NativeISelectionItemProvider::AddToSelection, WinAccessible8::AddToSelection);
+        callVoidProviderW(NativeISelectionItemProvider.class, NativeISelectionItemProvider::AddToSelection, IWinAccessible::AddToSelection);
     }
     private void ISelectionItemProvider_RemoveFromSelection() {
-        callVoidProviderW(NativeISelectionItemProvider.class, NativeISelectionItemProvider::RemoveFromSelection, WinAccessible8::RemoveFromSelection);
+        callVoidProviderW(NativeISelectionItemProvider.class, NativeISelectionItemProvider::RemoveFromSelection, IWinAccessible::RemoveFromSelection);
     }
     private boolean ISelectionItemProvider_get_IsSelected() {
-        return callProviderBooleanW(NativeISelectionItemProvider.class, NativeISelectionItemProvider::get_IsSelected, WinAccessible8::get_IsSelected);
+        return callProviderBooleanW(NativeISelectionItemProvider.class, NativeISelectionItemProvider::get_IsSelected, IWinAccessible::get_IsSelected);
     }
     private long ISelectionItemProvider_get_SelectionContainer() {
-        return callProviderLongW(NativeISelectionItemProvider.class, NativeISelectionItemProvider::get_SelectionContainer, WinAccessible8::get_SelectionContainer);
+        return callProviderLongW(NativeISelectionItemProvider.class, NativeISelectionItemProvider::get_SelectionContainer, IWinAccessible::get_SelectionContainer);
     }
     /***********************************************/
     /*           IRangeValueProvider               */
@@ -707,7 +697,7 @@ public class ProxyAccessible extends Accessible {
         callVoidProviderW(NativeIRangeValueProvider.class, provider -> provider.SetValue(val), win -> win.SetValue(val));
     }
     private double IRangeValueProvider_get_Value() {
-        return callProviderDoubleW(NativeIRangeValueProvider.class, NativeIRangeValueProvider::get_Value, WinAccessible8::get_Value);
+        return callProviderDoubleW(NativeIRangeValueProvider.class, NativeIRangeValueProvider::get_Value, IWinAccessible::get_Value);
     }
     /*  Note that this method is called by the IValueProvider also. */
     private boolean IRangeValueProvider_get_IsReadOnly() {
@@ -727,16 +717,16 @@ public class ProxyAccessible extends Accessible {
         });
     }
     private double IRangeValueProvider_get_Maximum() {
-        return callProviderDoubleW(NativeIRangeValueProvider.class, NativeIRangeValueProvider::get_Maximum, WinAccessible8::get_Maximum);
+        return callProviderDoubleW(NativeIRangeValueProvider.class, NativeIRangeValueProvider::get_Maximum, IWinAccessible::get_Maximum);
     }
     private double IRangeValueProvider_get_Minimum() {
-        return callProviderDoubleW(NativeIRangeValueProvider.class, NativeIRangeValueProvider::get_Minimum, WinAccessible8::get_Minimum);
+        return callProviderDoubleW(NativeIRangeValueProvider.class, NativeIRangeValueProvider::get_Minimum, IWinAccessible::get_Minimum);
     }
     private double IRangeValueProvider_get_LargeChange() {
-        return callProviderDoubleW(NativeIRangeValueProvider.class, NativeIRangeValueProvider::get_LargeChange, WinAccessible8::get_LargeChange);
+        return callProviderDoubleW(NativeIRangeValueProvider.class, NativeIRangeValueProvider::get_LargeChange, IWinAccessible::get_LargeChange);
     }
     private double IRangeValueProvider_get_SmallChange() {
-        return callProviderDoubleW(NativeIRangeValueProvider.class, NativeIRangeValueProvider::get_SmallChange, WinAccessible8::get_SmallChange);
+        return callProviderDoubleW(NativeIRangeValueProvider.class, NativeIRangeValueProvider::get_SmallChange, IWinAccessible::get_SmallChange);
     }
     /***********************************************/
     /*             IValueProvider                  */
@@ -745,19 +735,19 @@ public class ProxyAccessible extends Accessible {
         callVoidProviderW(NativeIValueProvider.class, provider -> provider.SetValue(val), win -> win.SetValueString(val));
     }
     private String IValueProvider_get_ValueString() {
-        return callProviderW(NativeIValueProvider.class, NativeIValueProvider::get_Value, WinAccessible8::get_ValueString);
+        return callProviderW(NativeIValueProvider.class, NativeIValueProvider::get_Value, IWinAccessible::get_ValueString);
     }
     /***********************************************/
     /*              ITextProvider                  */
     /***********************************************/
     private long[] ITextProvider_GetVisibleRanges() {
         return InstanceTracker.withReason("ITextProvider_GetVisibleRanges", () ->
-            callProviderLongArrayW(NativeITextProvider.class, NativeITextProvider::GetVisibleRanges, WinAccessible8::GetVisibleRanges)
+            callProviderLongArrayW(NativeITextProvider.class, NativeITextProvider::GetVisibleRanges, IWinAccessible::GetVisibleRanges)
         );
     }
     private long[] ITextProvider_GetSelection() {
         return InstanceTracker.withReason("ITextProvider_GetSelection", () ->
-            callProviderLongArrayW(NativeITextProvider.class, NativeITextProvider::GetSelection, WinAccessible8::GetSelection)
+            callProviderLongArrayW(NativeITextProvider.class, NativeITextProvider::GetSelection, IWinAccessible::GetSelection)
         );
     }
     private long ITextProvider_RangeFromChild(long childElement) {
@@ -772,20 +762,20 @@ public class ProxyAccessible extends Accessible {
     }
     private long ITextProvider_get_DocumentRange() {
         return InstanceTracker.withReason("ITextProvider_get_DocumentRange", () ->
-            callProviderLongW(NativeITextProvider.class, NativeITextProvider::get_DocumentRange, WinAccessible8::get_DocumentRange)
+            callProviderLongW(NativeITextProvider.class, NativeITextProvider::get_DocumentRange, IWinAccessible::get_DocumentRange)
         );
     }
     private int ITextProvider_get_SupportedTextSelection() {
-        return callProviderIntW(NativeITextProvider.class, NativeITextProvider::get_SupportedTextSelection, WinAccessible8::get_SupportedTextSelection);
+        return callProviderIntW(NativeITextProvider.class, NativeITextProvider::get_SupportedTextSelection, IWinAccessible::get_SupportedTextSelection);
     }
      /***********************************************/
     /*             IGridProvider                   */
     /***********************************************/
     private int IGridProvider_get_ColumnCount() {
-        return callProviderIntW(NativeIGridProvider.class, NativeIGridProvider::get_ColumnCount, WinAccessible8::get_ColumnCount);
+        return callProviderIntW(NativeIGridProvider.class, NativeIGridProvider::get_ColumnCount, IWinAccessible::get_ColumnCount);
     }
     private int IGridProvider_get_RowCount() {
-        return callProviderIntW(NativeIGridProvider.class, NativeIGridProvider::get_RowCount, WinAccessible8::get_RowCount);
+        return callProviderIntW(NativeIGridProvider.class, NativeIGridProvider::get_RowCount, IWinAccessible::get_RowCount);
     }
     private long IGridProvider_GetItem(int row, int column) {
         return callProviderLongW(NativeIGridProvider.class, p -> p.GetItem(row, column), g -> g.GetItem(row, column));
@@ -794,73 +784,73 @@ public class ProxyAccessible extends Accessible {
     /*             IGridItemProvider               */
     /***********************************************/
     private int IGridItemProvider_get_Column() {
-        return callProviderIntW(NativeIGridItemProvider.class, NativeIGridItemProvider::get_Column, WinAccessible8::get_Column);
+        return callProviderIntW(NativeIGridItemProvider.class, NativeIGridItemProvider::get_Column, IWinAccessible::get_Column);
     }
     private int IGridItemProvider_get_ColumnSpan() {
-        return callProviderIntW(NativeIGridItemProvider.class, NativeIGridItemProvider::get_ColumnSpan, WinAccessible8::get_ColumnSpan);
+        return callProviderIntW(NativeIGridItemProvider.class, NativeIGridItemProvider::get_ColumnSpan, IWinAccessible::get_ColumnSpan);
     }
     private long IGridItemProvider_get_ContainingGrid() {
-        return callProviderLongW(NativeIGridItemProvider.class, NativeIGridItemProvider::get_ContainingGrid, WinAccessible8::get_ContainingGrid);
+        return callProviderLongW(NativeIGridItemProvider.class, NativeIGridItemProvider::get_ContainingGrid, IWinAccessible::get_ContainingGrid);
     }
     private int IGridItemProvider_get_Row() {
-        return callProviderIntW(NativeIGridItemProvider.class, NativeIGridItemProvider::get_Row, WinAccessible8::get_Row);
+        return callProviderIntW(NativeIGridItemProvider.class, NativeIGridItemProvider::get_Row, IWinAccessible::get_Row);
     }
     private int IGridItemProvider_get_RowSpan() {
-        return callProviderIntW(NativeIGridItemProvider.class, NativeIGridItemProvider::get_RowSpan, WinAccessible8::get_RowSpan);
+        return callProviderIntW(NativeIGridItemProvider.class, NativeIGridItemProvider::get_RowSpan, IWinAccessible::get_RowSpan);
     }
     /***********************************************/
     /*               ITableProvider                */
     /***********************************************/
     private long[] ITableProvider_GetColumnHeaders() {
-        return callProviderLongArrayW(NativeITableProvider.class, NativeITableProvider::GetColumnHeaders, WinAccessible8::GetColumnHeaders);
+        return callProviderLongArrayW(NativeITableProvider.class, NativeITableProvider::GetColumnHeaders, IWinAccessible::GetColumnHeaders);
     }
     private long[] ITableProvider_GetRowHeaders() {
-        return callProviderLongArrayW(NativeITableProvider.class, NativeITableProvider::GetRowHeaders, WinAccessible8::GetRowHeaders);
+        return callProviderLongArrayW(NativeITableProvider.class, NativeITableProvider::GetRowHeaders, IWinAccessible::GetRowHeaders);
     }
     private int ITableProvider_get_RowOrColumnMajor() {
-        return callProviderIntW(NativeITableProvider.class, NativeITableProvider::get_RowOrColumnMajor, WinAccessible8::get_RowOrColumnMajor);
+        return callProviderIntW(NativeITableProvider.class, NativeITableProvider::get_RowOrColumnMajor, IWinAccessible::get_RowOrColumnMajor);
     }
     /***********************************************/
     /*             ITableItemProvider              */
     /***********************************************/
     private long[] ITableItemProvider_GetColumnHeaderItems() {
-        return callProviderLongArrayW(NativeITableItemProvider.class, NativeITableItemProvider::GetColumnHeaderItems, WinAccessible8::GetColumnHeaderItems);
+        return callProviderLongArrayW(NativeITableItemProvider.class, NativeITableItemProvider::GetColumnHeaderItems, IWinAccessible::GetColumnHeaderItems);
     }
     private long[] ITableItemProvider_GetRowHeaderItems() {
-        return callProviderLongArrayW(NativeITableItemProvider.class, NativeITableItemProvider::GetRowHeaderItems, WinAccessible8::GetRowHeaderItems);
+        return callProviderLongArrayW(NativeITableItemProvider.class, NativeITableItemProvider::GetRowHeaderItems, IWinAccessible::GetRowHeaderItems);
     }
     /***********************************************/
     /*             IToggleProvider                 */
     /***********************************************/
     private void IToggleProvider_Toggle() {
-        callVoidProviderW(NativeIToggleProvider.class, NativeIToggleProvider::Toggle, WinAccessible8::Toggle);
+        callVoidProviderW(NativeIToggleProvider.class, NativeIToggleProvider::Toggle, IWinAccessible::Toggle);
     }
     private int IToggleProvider_get_ToggleState() {
-        return callProviderIntW(NativeIToggleProvider.class, NativeIToggleProvider::get_ToggleState, WinAccessible8::get_ToggleState);
+        return callProviderIntW(NativeIToggleProvider.class, NativeIToggleProvider::get_ToggleState, IWinAccessible::get_ToggleState);
     }
     /***********************************************/
     /*             IExpandCollapseProvider         */
     /***********************************************/
     private void IExpandCollapseProvider_Collapse() {
-        callVoidProviderW(NativeIExpandCollapseProvider.class, NativeIExpandCollapseProvider::Collapse, WinAccessible8::Collapse);
+        callVoidProviderW(NativeIExpandCollapseProvider.class, NativeIExpandCollapseProvider::Collapse, IWinAccessible::Collapse);
     }
     private void IExpandCollapseProvider_Expand() {
-        callVoidProviderW(NativeIExpandCollapseProvider.class, NativeIExpandCollapseProvider::Expand, WinAccessible8::Expand);
+        callVoidProviderW(NativeIExpandCollapseProvider.class, NativeIExpandCollapseProvider::Expand, IWinAccessible::Expand);
     }
     private int IExpandCollapseProvider_get_ExpandCollapseState() {
-        return callProviderIntW(NativeIExpandCollapseProvider.class, NativeIExpandCollapseProvider::get_ExpandCollapseState, WinAccessible8::get_ExpandCollapseState);
+        return callProviderIntW(NativeIExpandCollapseProvider.class, NativeIExpandCollapseProvider::get_ExpandCollapseState, IWinAccessible::get_ExpandCollapseState);
     }
     /***********************************************/
     /*             ITransformProvider              */
     /***********************************************/
     private boolean ITransformProvider_get_CanMove() {
-        return callProviderBooleanW(NativeITransformProvider.class, NativeITransformProvider::get_CanMove, WinAccessible8::get_CanMove);
+        return callProviderBooleanW(NativeITransformProvider.class, NativeITransformProvider::get_CanMove, IWinAccessible::get_CanMove);
     }
     private boolean ITransformProvider_get_CanResize() {
-        return callProviderBooleanW(NativeITransformProvider.class, NativeITransformProvider::get_CanResize, WinAccessible8::get_CanResize);
+        return callProviderBooleanW(NativeITransformProvider.class, NativeITransformProvider::get_CanResize, IWinAccessible::get_CanResize);
     }
     private boolean ITransformProvider_get_CanRotate() {
-        return callProviderBooleanW(NativeITransformProvider.class, NativeITransformProvider::get_CanRotate, WinAccessible8::get_CanRotate);
+        return callProviderBooleanW(NativeITransformProvider.class, NativeITransformProvider::get_CanRotate, IWinAccessible::get_CanRotate);
     }
     private void ITransformProvider_Move(double x, double y) {
         callVoidProviderW(NativeITransformProvider.class, provider -> provider.Move(x, y), glass -> glass.Move(x, y));
@@ -902,28 +892,28 @@ public class ProxyAccessible extends Accessible {
         callVoidProviderW(NativeIScrollProvider.class, p -> p.SetScrollPercent(horizontalPercent, verticalPercent), g -> g.SetScrollPercent(horizontalPercent, verticalPercent));
     }
     private boolean IScrollProvider_get_HorizontallyScrollable() {
-        return callProviderBooleanW(NativeIScrollProvider.class, NativeIScrollProvider::get_HorizontallyScrollable, WinAccessible8::get_HorizontallyScrollable);
+        return callProviderBooleanW(NativeIScrollProvider.class, NativeIScrollProvider::get_HorizontallyScrollable, IWinAccessible::get_HorizontallyScrollable);
     }
     private double IScrollProvider_get_HorizontalScrollPercent() {
-        return callProviderDoubleW(NativeIScrollProvider.class, NativeIScrollProvider::get_HorizontalScrollPercent, WinAccessible8::get_HorizontalScrollPercent);
+        return callProviderDoubleW(NativeIScrollProvider.class, NativeIScrollProvider::get_HorizontalScrollPercent, IWinAccessible::get_HorizontalScrollPercent);
     }
     private double IScrollProvider_get_HorizontalViewSize() {
-        return callProviderDoubleW(NativeIScrollProvider.class, NativeIScrollProvider::get_HorizontalViewSize, WinAccessible8::get_HorizontalViewSize);
+        return callProviderDoubleW(NativeIScrollProvider.class, NativeIScrollProvider::get_HorizontalViewSize, IWinAccessible::get_HorizontalViewSize);
     }
     private boolean IScrollProvider_get_VerticallyScrollable() {
-        return callProviderBooleanW(NativeIScrollProvider.class, NativeIScrollProvider::get_VerticallyScrollable, WinAccessible8::get_VerticallyScrollable);
+        return callProviderBooleanW(NativeIScrollProvider.class, NativeIScrollProvider::get_VerticallyScrollable, IWinAccessible::get_VerticallyScrollable);
     }
     private double IScrollProvider_get_VerticalScrollPercent() {
-        return callProviderDoubleW(NativeIScrollProvider.class, NativeIScrollProvider::get_VerticalScrollPercent, WinAccessible8::get_VerticalScrollPercent);
+        return callProviderDoubleW(NativeIScrollProvider.class, NativeIScrollProvider::get_VerticalScrollPercent, IWinAccessible::get_VerticalScrollPercent);
     }
     private double IScrollProvider_get_VerticalViewSize() {
-        return callProviderDoubleW(NativeIScrollProvider.class, NativeIScrollProvider::get_VerticalViewSize, WinAccessible8::get_VerticalViewSize);
+        return callProviderDoubleW(NativeIScrollProvider.class, NativeIScrollProvider::get_VerticalViewSize, IWinAccessible::get_VerticalViewSize);
     }
     /***********************************************/
     /*             IScrollItemProvider             */
     /***********************************************/
     private void IScrollItemProvider_ScrollIntoView() {
-        callVoidProviderW(NativeIScrollItemProvider.class, NativeIScrollItemProvider::ScrollIntoView, WinAccessible8::ScrollIntoView);
+        callVoidProviderW(NativeIScrollItemProvider.class, NativeIScrollItemProvider::ScrollIntoView, IWinAccessible::ScrollIntoView);
     }
 
 
@@ -1096,7 +1086,7 @@ public class ProxyAccessible extends Accessible {
 
     // Utility functions
 
-    <R> R callElementObjW(Function<UIAElementAdapter, R> method, Function<WinAccessible8, R> glassMethod) {
+    <R> R callElementObjW(Function<UIAElementAdapter, R> method, Function<IWinAccessible, R> glassMethod) {
         return guardObject(() -> {
             if (uiaElementAdapter != null) {
                 return method.apply(uiaElementAdapter);
@@ -1107,7 +1097,7 @@ public class ProxyAccessible extends Accessible {
         });
     }
 
-    void callElementW(Consumer<UIAElementAdapter> method, Consumer<WinAccessible8> glassMethod) {
+    void callElementW(Consumer<UIAElementAdapter> method, Consumer<IWinAccessible> glassMethod) {
         guardVoid(() -> {
             if (uiaElementAdapter != null) {
                 method.accept(uiaElementAdapter);
@@ -1119,7 +1109,7 @@ public class ProxyAccessible extends Accessible {
     }
 
 
-    long callElementLongW(ToLongFunction<UIAElementAdapter> method, ToLongFunction<WinAccessible8> glassMethod) {
+    long callElementLongW(ToLongFunction<UIAElementAdapter> method, ToLongFunction<IWinAccessible> glassMethod) {
         return guardLong(() -> {
             if (uiaElementAdapter != null) {
                 return method.applyAsLong(uiaElementAdapter);
@@ -1130,7 +1120,7 @@ public class ProxyAccessible extends Accessible {
         });
     }
 
-    long[] callElementLongArrayW(ToLongArrayFunction<UIAElementAdapter> method, ToLongArrayFunction<WinAccessible8> glassMethod) {
+    long[] callElementLongArrayW(ToLongArrayFunction<UIAElementAdapter> method, ToLongArrayFunction<IWinAccessible> glassMethod) {
         return guardLongArray(() -> {
             if (uiaElementAdapter != null) {
                 return method.applyAsLongArray(uiaElementAdapter);
@@ -1141,7 +1131,7 @@ public class ProxyAccessible extends Accessible {
         });
     }
 
-    float[] callElementFloatArrayW(ToFloatArrayFunction<UIAElementAdapter> method, ToFloatArrayFunction<WinAccessible8> glassMethod) {
+    float[] callElementFloatArrayW(ToFloatArrayFunction<UIAElementAdapter> method, ToFloatArrayFunction<IWinAccessible> glassMethod) {
         return guardFloatArray(() -> {
             if (uiaElementAdapter != null) {
                 return method.applyAsFloatArray(uiaElementAdapter);
@@ -1152,7 +1142,7 @@ public class ProxyAccessible extends Accessible {
         });
     }
 
-    int[] callElementIntArrayW(ToIntArrayFunction<UIAElementAdapter> method, ToIntArrayFunction<WinAccessible8> glassMethod) {
+    int[] callElementIntArrayW(ToIntArrayFunction<UIAElementAdapter> method, ToIntArrayFunction<IWinAccessible> glassMethod) {
         return guardIntArray(() -> {
             if (uiaElementAdapter != null) {
                 return method.applyAsIntArray(uiaElementAdapter);
@@ -1163,7 +1153,7 @@ public class ProxyAccessible extends Accessible {
         });
     }
 
-    <P> void callVoidProviderW(Class<P> providerType, Consumer<P> method, Consumer<WinAccessible8> glassMethod) {
+    <P> void callVoidProviderW(Class<P> providerType, Consumer<P> method, Consumer<IWinAccessible> glassMethod) {
         guardVoid(() -> {
             P provider = getNativeProvider(providerType);
             if (provider != null) {
@@ -1186,7 +1176,7 @@ public class ProxyAccessible extends Accessible {
         });
     }
 
-    <P, R> R callProviderW(Class<P> providerType, Function<P, R> method, Function<WinAccessible8, R> glassMethod) {
+    <P, R> R callProviderW(Class<P> providerType, Function<P, R> method, Function<IWinAccessible, R> glassMethod) {
         return guardObject(() -> {
             P provider = getNativeProvider(providerType);
             if (provider != null) {
@@ -1209,7 +1199,7 @@ public class ProxyAccessible extends Accessible {
         });
     }
 
-    <P> long callProviderLongW(Class<P> providerType, ToLongFunction<P> method, ToLongFunction<WinAccessible8> glassMethod) {
+    <P> long callProviderLongW(Class<P> providerType, ToLongFunction<P> method, ToLongFunction<IWinAccessible> glassMethod) {
         return guardLong(() -> {
             P provider = getNativeProvider(providerType);
             if (provider != null) {
@@ -1231,7 +1221,7 @@ public class ProxyAccessible extends Accessible {
         });
     }
 
-    <P> long[] callProviderLongArrayW(Class<P> providerType, ToLongArrayFunction<P> method, ToLongArrayFunction<WinAccessible8> alternative) {
+    <P> long[] callProviderLongArrayW(Class<P> providerType, ToLongArrayFunction<P> method, ToLongArrayFunction<IWinAccessible> alternative) {
         return guardLongArray(() -> {
             P provider = getNativeProvider(providerType);
             if (provider != null) {
@@ -1243,7 +1233,7 @@ public class ProxyAccessible extends Accessible {
         });
     }
 
-    <P> int callProviderIntW(Class<P> providerType, ToIntFunction<P> method, ToIntFunction<WinAccessible8> glassMethod) {
+    <P> int callProviderIntW(Class<P> providerType, ToIntFunction<P> method, ToIntFunction<IWinAccessible> glassMethod) {
         return guardInt(() -> {
             P provider = getNativeProvider(providerType);
             if (provider != null) {
@@ -1267,7 +1257,7 @@ public class ProxyAccessible extends Accessible {
     }
 
 
-    <P> double callProviderDoubleW(Class<P> providerType, ToDoubleFunction<P> method, ToDoubleFunction<WinAccessible8> glassMethod) {
+    <P> double callProviderDoubleW(Class<P> providerType, ToDoubleFunction<P> method, ToDoubleFunction<IWinAccessible> glassMethod) {
         return guardDouble(() -> {
             P provider = getNativeProvider(providerType);
             if (provider != null) {
@@ -1291,7 +1281,7 @@ public class ProxyAccessible extends Accessible {
     }
 
 
-    <P> boolean callProviderBooleanW(Class<P> providerType, ToBooleanFunction<P> method, ToBooleanFunction<WinAccessible8> alternative) {
+    <P> boolean callProviderBooleanW(Class<P> providerType, ToBooleanFunction<P> method, ToBooleanFunction<IWinAccessible> alternative) {
         return guardBoolean(() -> {
             P provider = getNativeProvider(providerType);
             if (provider != null) {
