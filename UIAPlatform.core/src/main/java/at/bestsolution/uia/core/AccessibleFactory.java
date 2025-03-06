@@ -33,7 +33,6 @@ import java.util.ServiceLoader;
 import java.util.Optional;
 import java.util.Iterator;
 
-@SuppressWarnings("restriction")
 public class AccessibleFactory {
 
     private static CoreLogger log = CoreLoggerFactory.create(AccessibleFactory.class);

@@ -77,6 +77,7 @@ import static javafx.scene.AccessibleAttribute.*;
  *
  */
 
+@SuppressWarnings({"unused"})
 public final class WinAccessible17 extends Accessible implements IWinAccessible {
 
     private static Logger LOG = Logger.create(WinAccessible17.class);

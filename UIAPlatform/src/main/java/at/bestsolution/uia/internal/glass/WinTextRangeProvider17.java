@@ -42,6 +42,7 @@ import javafx.scene.text.FontWeight;
 * This class is the Java peer for GlassTextRangeProvider.
 * GlassTextRangeProvider implements ITextRangeProvider.
 */
+@SuppressWarnings({"unused"})
 class WinTextRangeProvider17 implements IWinTextRangeProvider {
 
     private static Logger LOG = LoggerFactory.create(WinTextRangeProvider17.class);
