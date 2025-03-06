@@ -24,7 +24,7 @@
  */
 package uia.sample.samples;
 
-import at.bestsolution.uia.javafx.uia.UIA;
+import at.bestsolution.uia.UIA;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.Node;
 import javafx.scene.canvas.Canvas;

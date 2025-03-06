@@ -28,12 +28,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import at.bestsolution.uia.javafx.uia.ISelectionItemProvider;
-import at.bestsolution.uia.javafx.uia.ISelectionProvider;
-import at.bestsolution.uia.javafx.uia.IUIAElement;
-import at.bestsolution.uia.javafx.uia.IUIAVirtualElement;
-import at.bestsolution.uia.javafx.uia.IUIAVirtualRootElement;
-import at.bestsolution.uia.javafx.uia.UIA;
+import at.bestsolution.uia.ISelectionItemProvider;
+import at.bestsolution.uia.ISelectionProvider;
+import at.bestsolution.uia.IUIAElement;
+import at.bestsolution.uia.IUIAVirtualElement;
+import at.bestsolution.uia.IUIAVirtualRootElement;
+import at.bestsolution.uia.UIA;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.BooleanProperty;

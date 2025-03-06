@@ -24,11 +24,11 @@
  */
 package uia.sample.samples;
 
-import at.bestsolution.uia.javafx.uia.AsyncContentLoadedState;
-import at.bestsolution.uia.javafx.uia.IAsyncContentLoadedEvent;
-import at.bestsolution.uia.javafx.uia.IInitContext;
-import at.bestsolution.uia.javafx.uia.IUIAElement;
-import at.bestsolution.uia.javafx.uia.UIA;
+import at.bestsolution.uia.AsyncContentLoadedState;
+import at.bestsolution.uia.IAsyncContentLoadedEvent;
+import at.bestsolution.uia.IInitContext;
+import at.bestsolution.uia.IUIAElement;
+import at.bestsolution.uia.UIA;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.geometry.Bounds;

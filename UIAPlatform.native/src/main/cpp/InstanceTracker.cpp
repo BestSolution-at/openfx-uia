@@ -11,7 +11,7 @@ jmethodID InstanceTracker::mid_release;
 jmethodID InstanceTracker::mid_debug;
 
 
-extern "C" JNIEXPORT void JNICALL Java_at_bestsolution_uia_InstanceTracker__1initIDs
+extern "C" JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_InstanceTracker__1initIDs
   (JNIEnv *env, jclass jClass)
 {
   InstanceTracker::_init(env, jClass);

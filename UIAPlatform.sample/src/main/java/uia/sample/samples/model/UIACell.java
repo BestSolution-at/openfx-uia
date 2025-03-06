@@ -27,12 +27,12 @@ package uia.sample.samples.model;
 import java.util.Collections;
 import java.util.List;
 
-import at.bestsolution.uia.javafx.uia.IGridItemProvider;
-import at.bestsolution.uia.javafx.uia.IInitContext;
-import at.bestsolution.uia.javafx.uia.ITextChildProvider;
-import at.bestsolution.uia.javafx.uia.ITextRangeProvider;
-import at.bestsolution.uia.javafx.uia.IUIAElement;
-import at.bestsolution.uia.javafx.uia.IUIAVirtualElement;
+import at.bestsolution.uia.IGridItemProvider;
+import at.bestsolution.uia.IInitContext;
+import at.bestsolution.uia.ITextChildProvider;
+import at.bestsolution.uia.ITextRangeProvider;
+import at.bestsolution.uia.IUIAElement;
+import at.bestsolution.uia.IUIAVirtualElement;
 import javafx.geometry.Bounds;
 
 public class UIACell extends Cell implements /*IUIAElement,*/ IUIAVirtualElement, IGridItemProvider, ITextChildProvider {

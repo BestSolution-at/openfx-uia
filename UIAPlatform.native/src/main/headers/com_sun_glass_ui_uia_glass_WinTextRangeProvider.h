@@ -42,7 +42,7 @@ extern "C" {
  * Method:    _initIDs
  * Signature: ()V
  */
-JNIEXPORT void JNICALL Java_at_bestsolution_uia_glass_WinTextRangeProvider__1initIDs
+JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_glass_WinTextRangeProvider__1initIDs
   (JNIEnv *, jclass);
 
 /*
@@ -50,7 +50,7 @@ JNIEXPORT void JNICALL Java_at_bestsolution_uia_glass_WinTextRangeProvider__1ini
  * Method:    _createTextRangeProvider
  * Signature: (J)J
  */
-JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_glass_WinTextRangeProvider__1createTextRangeProvider
+JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_internal_glass_WinTextRangeProvider__1createTextRangeProvider
   (JNIEnv *, jobject, jlong);
 
 /*
@@ -58,7 +58,7 @@ JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_glass_WinTextRangeProvider__1cr
  * Method:    _destroyTextRangeProvider
  * Signature: (J)V
  */
-JNIEXPORT void JNICALL Java_at_bestsolution_uia_glass_WinTextRangeProvider__1destroyTextRangeProvider
+JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_glass_WinTextRangeProvider__1destroyTextRangeProvider
   (JNIEnv *, jobject, jlong);
 
 #ifdef __cplusplus

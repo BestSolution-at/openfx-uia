@@ -27,11 +27,21 @@ java {
 }
 
 compileJava {
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.glass.ui=at.bestsolution.uia.core'
+
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.glass.ui=at.bestsolution.uia'
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.tk=at.bestsolution.uia'
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.tk.quantum=at.bestsolution.uia'
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.scene=at.bestsolution.uia'
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.stage=at.bestsolution.uia'
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.util=at.bestsolution.uia'
+
     options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.glass.ui=ALL-UNNAMED'
     options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED'
     options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.tk.quantum=ALL-UNNAMED'
     options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.scene=ALL-UNNAMED'
     options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.stage=ALL-UNNAMED'
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.util=ALL-UNNAMED'
 
 }
 
@@ -53,7 +63,7 @@ dependencies {
 
 task writeServiceFiles() {
     var services = [
-        "at.bestsolution.uia.IAccessibleFactory": "at.bestsolution.uia.UIAAccessibleFactory",
+        "at.bestsolution.uia.core.IAccessibleFactory": "at.bestsolution.uia.internal.UIAAccessibleFactory",
     ]
 
     services.each {

@@ -37,7 +37,7 @@ import com.sun.javafx.geom.RectBounds;
 import com.sun.javafx.geom.transform.BaseTransform;
 import com.sun.javafx.text.TextRun;
 
-import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.IUIAElement;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;

@@ -211,24 +211,24 @@ IFACEMETHODIMP ProxyTextRangeProvider::ShowContextMenu() {
 /*                  JNI                        */
 /***********************************************/
 
-extern "C" JNIEXPORT void JNICALL Java_at_bestsolution_uia_ProxyTextRangeProvider__1initIDs
+extern "C" JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_ProxyTextRangeProvider__1initIDs
   (JNIEnv *env, jclass jClass)
 {
     mid_Clone = env->GetMethodID(jClass, "Clone", "()J");
     if (env->ExceptionCheck()) return;
-    mid_Compare = env->GetMethodID(jClass, "Compare", "(Lat/bestsolution/uia/ProxyTextRangeProvider;)Z");
+    mid_Compare = env->GetMethodID(jClass, "Compare", "(Lat/bestsolution/uia/internal/ProxyTextRangeProvider;)Z");
     if (env->ExceptionCheck()) return;
-    mid_CompareEndpoints = env->GetMethodID(jClass, "CompareEndpoints", "(ILat/bestsolution/uia/ProxyTextRangeProvider;I)I");
+    mid_CompareEndpoints = env->GetMethodID(jClass, "CompareEndpoints", "(ILat/bestsolution/uia/internal/ProxyTextRangeProvider;I)I");
     if (env->ExceptionCheck()) return;
     mid_ExpandToEnclosingUnit = env->GetMethodID(jClass, "ExpandToEnclosingUnit", "(I)V");
     if (env->ExceptionCheck()) return;
-    mid_FindAttribute = env->GetMethodID(jClass, "FindAttribute", "(ILat/bestsolution/uia/glass/WinVariant;Z)J");
+    mid_FindAttribute = env->GetMethodID(jClass, "FindAttribute", "(ILat/bestsolution/uia/internal/glass/WinVariant;Z)J");
     if (env->ExceptionCheck()) return;
     mid_FindAttribute2 = env->GetMethodID(jClass, "FindAttribute", "(IJZ)J");
     if (env->ExceptionCheck()) return;
     mid_FindText = env->GetMethodID(jClass, "FindText", "(Ljava/lang/String;ZZ)J");
     if (env->ExceptionCheck()) return;
-    mid_GetAttributeValue = env->GetMethodID(jClass, "GetAttributeValue", "(I)Lat/bestsolution/uia/glass/WinVariant;");
+    mid_GetAttributeValue = env->GetMethodID(jClass, "GetAttributeValue", "(I)Lat/bestsolution/uia/internal/glass/WinVariant;");
     if (env->ExceptionCheck()) return;
     mid_GetBoundingRectangles = env->GetMethodID(jClass, "GetBoundingRectangles", "()[D");
     if (env->ExceptionCheck()) return;
@@ -240,7 +240,7 @@ extern "C" JNIEXPORT void JNICALL Java_at_bestsolution_uia_ProxyTextRangeProvide
     if (env->ExceptionCheck()) return;
     mid_MoveEndpointByUnit = env->GetMethodID(jClass, "MoveEndpointByUnit", "(III)I");
     if (env->ExceptionCheck()) return;
-    mid_MoveEndpointByRange = env->GetMethodID(jClass, "MoveEndpointByRange", "(ILat/bestsolution/uia/ProxyTextRangeProvider;I)V");
+    mid_MoveEndpointByRange = env->GetMethodID(jClass, "MoveEndpointByRange", "(ILat/bestsolution/uia/internal/ProxyTextRangeProvider;I)V");
     if (env->ExceptionCheck()) return;
     mid_Select = env->GetMethodID(jClass, "Select", "()V");
     if (env->ExceptionCheck()) return;
@@ -261,7 +261,7 @@ extern "C" JNIEXPORT void JNICALL Java_at_bestsolution_uia_ProxyTextRangeProvide
 }
 
 
-extern "C" JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_ProxyTextRangeProvider__1createTextRangeProvider
+extern "C" JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_internal_ProxyTextRangeProvider__1createTextRangeProvider
   (JNIEnv *env, jobject jTextRangeProvider, jlong proxyAccessible)
 {
     ProxyAccessible* acc = reinterpret_cast<ProxyAccessible*>(proxyAccessible);
@@ -271,7 +271,7 @@ extern "C" JNIEXPORT jlong JNICALL Java_at_bestsolution_uia_ProxyTextRangeProvid
 }
 
 
-extern "C" JNIEXPORT void JNICALL Java_at_bestsolution_uia_ProxyTextRangeProvider__1destroyTextRangeProvider
+extern "C" JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_ProxyTextRangeProvider__1destroyTextRangeProvider
   (JNIEnv *env, jobject object, jlong provider)
 {
     ProxyTextRangeProvider* p = reinterpret_cast<ProxyTextRangeProvider*>(provider);

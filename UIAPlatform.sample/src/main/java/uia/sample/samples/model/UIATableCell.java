@@ -24,10 +24,10 @@
  */
 package uia.sample.samples.model;
 
-import at.bestsolution.uia.javafx.uia.ControlType;
-import at.bestsolution.uia.javafx.uia.IInitContext;
-import at.bestsolution.uia.javafx.uia.ITableItemProvider;
-import at.bestsolution.uia.javafx.uia.IUIAElement;
+import at.bestsolution.uia.ControlType;
+import at.bestsolution.uia.IInitContext;
+import at.bestsolution.uia.ITableItemProvider;
+import at.bestsolution.uia.IUIAElement;
 
 public class UIATableCell extends UIACell implements ITableItemProvider {
 

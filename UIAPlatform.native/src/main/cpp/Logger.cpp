@@ -113,11 +113,11 @@ void Logger::logNative(LogLevel level, const char* msg, std::source_location loc
 
 void Logger::initIDs(JNIEnv* env, jclass jClass) {
   cls_loggerbridge = (jclass) env->NewGlobalRef(jClass);
-  mid_create = env->GetStaticMethodID(cls_loggerbridge, "create", "(Ljava/lang/String;)Lat/bestsolution/uia/Logger;");
-  mid_logNative = env->GetStaticMethodID(cls_loggerbridge, "logNative", "(Lat/bestsolution/uia/Logger;ILjava/lang/String;Ljava/lang/String;ILjava/lang/String;)V");
+  mid_create = env->GetStaticMethodID(cls_loggerbridge, "create", "(Ljava/lang/String;)Lat/bestsolution/uia/internal/Logger;");
+  mid_logNative = env->GetStaticMethodID(cls_loggerbridge, "logNative", "(Lat/bestsolution/uia/internal/Logger;ILjava/lang/String;Ljava/lang/String;ILjava/lang/String;)V");
 }
 
-extern "C" JNIEXPORT void JNICALL Java_at_bestsolution_uia_LoggerNativeBridge_initIDs
+extern "C" JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_LoggerNativeBridge_initIDs
   (JNIEnv *env, jclass jClass) {
     Logger::initIDs(env, jClass);
 }

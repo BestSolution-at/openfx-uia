@@ -24,10 +24,10 @@
  */
 package uia.sample.samples;
 
-import at.bestsolution.uia.javafx.uia.IInitContext;
-import at.bestsolution.uia.javafx.uia.IProperty;
-import at.bestsolution.uia.javafx.uia.IUIAElement;
-import at.bestsolution.uia.javafx.uia.UIA;
+import at.bestsolution.uia.IInitContext;
+import at.bestsolution.uia.IProperty;
+import at.bestsolution.uia.IUIAElement;
+import at.bestsolution.uia.UIA;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.AccessibleAttribute;

@@ -1,5 +1,0 @@
-package at.bestsolution.uia.javafx.uia;
-
-public interface IAsyncContentLoadedEvent {
-    void fire(AsyncContentLoadedState asyncContentLoadedState, double percentComplete);
-}

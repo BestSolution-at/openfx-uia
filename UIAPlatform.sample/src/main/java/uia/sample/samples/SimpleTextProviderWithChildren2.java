@@ -37,18 +37,18 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import at.bestsolution.uia.javafx.uia.ControlType;
-import at.bestsolution.uia.javafx.uia.ITextAttributeSupport;
-import at.bestsolution.uia.javafx.uia.ITextProvider;
-import at.bestsolution.uia.javafx.uia.ITextRangeProvider;
-import at.bestsolution.uia.javafx.uia.IUIAElement;
-import at.bestsolution.uia.javafx.uia.IUIAVirtualElement;
-import at.bestsolution.uia.javafx.uia.IUIAVirtualRootElement;
-import at.bestsolution.uia.javafx.uia.SupportedTextSelection;
-import at.bestsolution.uia.javafx.uia.TextAttributeValue;
-import at.bestsolution.uia.javafx.uia.TextPatternRangeEndpoint;
-import at.bestsolution.uia.javafx.uia.TextUnit;
-import at.bestsolution.uia.javafx.uia.UIA;
+import at.bestsolution.uia.ControlType;
+import at.bestsolution.uia.ITextAttributeSupport;
+import at.bestsolution.uia.ITextProvider;
+import at.bestsolution.uia.ITextRangeProvider;
+import at.bestsolution.uia.IUIAElement;
+import at.bestsolution.uia.IUIAVirtualElement;
+import at.bestsolution.uia.IUIAVirtualRootElement;
+import at.bestsolution.uia.SupportedTextSelection;
+import at.bestsolution.uia.TextAttributeValue;
+import at.bestsolution.uia.TextPatternRangeEndpoint;
+import at.bestsolution.uia.TextUnit;
+import at.bestsolution.uia.UIA;
 import javafx.geometry.BoundingBox;
 import javafx.geometry.Bounds;
 import javafx.scene.AccessibleAttribute;
@@ -743,7 +743,7 @@ public class SimpleTextProviderWithChildren2 implements Sample {
         }
 
         @Override
-        public void initialize(at.bestsolution.uia.javafx.uia.IInitContext init) {
+        public void initialize(at.bestsolution.uia.IInitContext init) {
             init.addNameProperty(() -> "Smiley Emoji");
             init.addIsControlElementProperty(() -> true);
             init.addIsContentElementProperty(() -> true);
@@ -812,7 +812,7 @@ public class SimpleTextProviderWithChildren2 implements Sample {
         }
 
         @Override
-        public void initialize(at.bestsolution.uia.javafx.uia.IInitContext init) {
+        public void initialize(at.bestsolution.uia.IInitContext init) {
             //init.addNameProperty(() -> "Custom Document");
             //init.addIsContentElementProperty(() -> true);
             //init.addIsControlElementProperty(() -> true);

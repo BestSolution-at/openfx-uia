@@ -27,10 +27,10 @@ package uia.sample.samples;
 import java.util.Collections;
 import java.util.List;
 
-import at.bestsolution.uia.javafx.uia.IUIAElement;
-import at.bestsolution.uia.javafx.uia.IUIAVirtualRootElement;
-import at.bestsolution.uia.javafx.uia.IValueProvider;
-import at.bestsolution.uia.javafx.uia.UIA;
+import at.bestsolution.uia.IUIAElement;
+import at.bestsolution.uia.IUIAVirtualRootElement;
+import at.bestsolution.uia.IValueProvider;
+import at.bestsolution.uia.UIA;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleStringProperty;

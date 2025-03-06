@@ -24,11 +24,11 @@
  */
 package uia.sample.samples.model;
 
-import at.bestsolution.uia.javafx.uia.ControlType;
-import at.bestsolution.uia.javafx.uia.IInitContext;
-import at.bestsolution.uia.javafx.uia.ITableProvider;
-import at.bestsolution.uia.javafx.uia.IUIAElement;
-import at.bestsolution.uia.javafx.uia.RowOrColumnMajor;
+import at.bestsolution.uia.ControlType;
+import at.bestsolution.uia.IInitContext;
+import at.bestsolution.uia.ITableProvider;
+import at.bestsolution.uia.IUIAElement;
+import at.bestsolution.uia.RowOrColumnMajor;
 
 public class UIATable extends UIAGrid implements ITableProvider {
 

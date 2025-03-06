@@ -61,7 +61,7 @@ namespace jni { namespace ids {
 
   HRESULT initIDs(JNIEnv* env) {
     /* Variant */
-    jclass jVariantClass = env->FindClass("at/bestsolution/uia/glass/WinVariant");
+    jclass jVariantClass = env->FindClass("at/bestsolution/uia/internal/glass/WinVariant");
     if (env->ExceptionCheck()) return E_FAIL;
     WinVariant.vt = env->GetFieldID(jVariantClass, "vt", "S");
     if (env->ExceptionCheck()) return E_FAIL;
@@ -95,7 +95,7 @@ namespace jni { namespace ids {
     if (env->ExceptionCheck()) return E_FAIL;
 
     /* HResultException */
-    jclass jHResultExceptionClass = env->FindClass("at/bestsolution/uia/HResultException");
+    jclass jHResultExceptionClass = env->FindClass("at/bestsolution/uia/internal/HResultException");
     if (env->ExceptionCheck()) return E_FAIL;
     HResultException.clazz = (jclass) env->NewGlobalRef(jHResultExceptionClass);
     if (env->ExceptionCheck()) return E_FAIL;
