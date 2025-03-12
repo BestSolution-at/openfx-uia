@@ -169,7 +169,7 @@ public interface ITextRangeProvider {
           <li><i>Page</i></li>
           <li><i>Document</i></li>
           </ul>
-          <h3>Range behavior when <i>unit</i> is <code>TextUnit::Format</code></h3>
+          Range behavior when <i>unit</i> is <code>TextUnit::Format</code>
           <code>TextUnit::Format</code> as a <i>unit</i> value positions the boundary of a text range to expand or move the range based on shared text attributes (format) of the text within the range. However, using the format text unit should not move or expand a text range across the boundary of an embedded object, such as an image or hyperlink. For more info, see UI Automation Text Units or Text and TextRange Control Patterns.
 
      *
