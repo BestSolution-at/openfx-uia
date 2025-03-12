@@ -65,7 +65,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import uia.sample.Sample;
 
-@SuppressWarnings("restriction")
 public class SimpleTextProviderWithAttributes implements Sample {
 
     class TextPart implements TextSpan {
@@ -85,9 +84,7 @@ public class SimpleTextProviderWithAttributes implements Sample {
         }
 
         @Override
-        @SuppressWarnings("deprecation")
         public Object getFont() {
-            // return font.impl_getNativeFont();
             return com.sun.javafx.scene.text.FontHelper.getNativeFont(font);
         }
 

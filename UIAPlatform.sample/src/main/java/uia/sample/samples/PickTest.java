@@ -30,7 +30,6 @@ import java.util.List;
 import at.bestsolution.uia.IUIAElement;
 import at.bestsolution.uia.IUIAVirtualRootElement;
 import at.bestsolution.uia.UIA;
-import at.bestsolution.uia.internal.PlatformBoundsUtil;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.AccessibleAttribute;
@@ -42,7 +41,7 @@ import uia.sample.Sample;
 
 public class PickTest implements Sample {
 
-    class PickUIAElement implements IUIAElement, IUIAVirtualRootElement {
+    class PickUIAElement implements IUIAVirtualRootElement {
         PickArea pane;
 
 

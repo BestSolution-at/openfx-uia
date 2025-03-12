@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -71,13 +71,13 @@ public class PlatformLauncher {
     }
 
     static String getJavaBinary() {
-        Path jdk8fx = Paths.get(System.getenv("JDK8FX"));
+        Path jdk8fx = Paths.get(System.getenv("JDK17FX"));
         Path java = jdk8fx.resolve("bin/java");
         return java.toString();
     }
 
     static boolean checkJDK() {
-        String jdk8fx = System.getenv("JDK8FX");
+        String jdk8fx = System.getenv("JDK17FX");
         if (jdk8fx == null) {
             return false;
         }
@@ -89,18 +89,23 @@ public class PlatformLauncher {
     }
 
     public static void main(String[] args) throws IOException {
-       
+
         if (!checkJDK()) {
             System.out.println("The environment variable JDK8FX must point to your Java 8 JDK with FX for this to work.");
             System.exit(-1);
         }
-         
+
         try {
             List<String> commandLine = Arrays.asList(
-                getJavaBinary(), 
+                getJavaBinary(),
                 "-javaagent:"+agent,
                 "-cp", getClasspath(),
                 "-Duia.log="+Boolean.getBoolean("uia.log"),
+                "--add-exports=javafx.graphics/com.sun.javafx.scene.text=ALL-UNNAMED",
+                "--add-exports=javafx.graphics/com.sun.javafx.geom=ALL-UNNAMED",
+                "--add-exports=javafx.graphics/com.sun.javafx.geom.transform=ALL-UNNAMED",
+                "--add-exports=javafx.graphics/com.sun.javafx.font=ALL-UNNAMED",
+                "--add-exports=javafx.graphics/com.sun.javafx.text=ALL-UNNAMED",
                 "uia.sample.Simple"
             );
             System.err.println("Launching " + commandLine);
