@@ -91,7 +91,7 @@ public class PlatformLauncher {
     public static void main(String[] args) throws IOException {
 
         if (!checkJDK()) {
-            System.out.println("The environment variable JDK8FX must point to your Java 8 JDK with FX for this to work.");
+            System.out.println("The environment variable JDK17FX must point to your Java 17 JDK with FX for this to work.");
             System.exit(-1);
         }
 
