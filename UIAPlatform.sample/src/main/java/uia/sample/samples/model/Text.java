@@ -16,7 +16,6 @@ import uia.sample.samples.model.TextSupport.Glyph;
 import uia.sample.samples.model.TextSupport.GlyphData;
 
 
-@SuppressWarnings("restriction")
 public class Text extends BaseModel {
 
     public static interface IFragment {
@@ -39,9 +38,7 @@ public class Text extends BaseModel {
             }
 
             @Override
-            @SuppressWarnings("deprecation")
             public Object getFont() {
-                // return font.impl_getNativeFont();
                 return com.sun.javafx.scene.text.FontHelper.getNativeFont(font);
             }
 

@@ -1,7 +1,5 @@
 package uia.sample.samples.vlist;
 
-import java.sql.Struct;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;

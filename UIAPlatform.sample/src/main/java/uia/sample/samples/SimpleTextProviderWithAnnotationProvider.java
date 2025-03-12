@@ -73,7 +73,6 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import uia.sample.Sample;
 
-@SuppressWarnings("restriction")
 public class SimpleTextProviderWithAnnotationProvider implements Sample {
 
     class Annotation implements IUIAElement, IAnnotationProvider {
@@ -152,9 +151,7 @@ public class SimpleTextProviderWithAnnotationProvider implements Sample {
         }
 
         @Override
-        @SuppressWarnings("deprecation")
         public Object getFont() {
-            // return font.impl_getNativeFont();
             return com.sun.javafx.scene.text.FontHelper.getNativeFont(font);
         }
 

@@ -44,6 +44,8 @@ compileJava {
 
 javadoc {
     exclude 'com/sun/glass/ui/uia/**'
+
+    exclude 'at/bestsolution/uia/internal/**'
 }
 
 

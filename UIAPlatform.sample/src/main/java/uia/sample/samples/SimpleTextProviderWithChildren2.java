@@ -64,7 +64,6 @@ import uia.sample.Sample;
 import uia.sample.text.LayoutHelper;
 import uia.sample.text.LayoutHelper.Embedded;
 
-@SuppressWarnings("restriction")
 public class SimpleTextProviderWithChildren2 implements Sample {
 
     // class TextPart implements TextSpan {
