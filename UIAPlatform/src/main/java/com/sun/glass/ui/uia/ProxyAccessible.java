@@ -13,7 +13,7 @@
  *
  * This software is released under the terms of the
  *
- *                  "GNU General Public License, Version 2 
+ *                  "GNU General Public License, Version 2
  *                         with classpath exception"
  *
  * and may only be distributed and used under the terms of the
@@ -113,7 +113,7 @@ public class ProxyAccessible extends Accessible {
             } else {
                 return ProxyAccessibleRegistry.getInstance().getVirtualAccessible(this, focusDelegate);
             }
-            
+
         }
         return null;
     }
@@ -121,9 +121,9 @@ public class ProxyAccessible extends Accessible {
     public static void requireLibrary() {
 
     }
-    
+
     private static native void _initIDs();
-    
+
     static {
       NativeLibrary.require();
         _initIDs();
@@ -144,19 +144,19 @@ public class ProxyAccessible extends Accessible {
     private void saveCreationStack() {
         src = Thread.currentThread().getStackTrace();
     }
-    
+
     /*package*/ ProxyAccessible() {
       this.num = next++;
-      
+
       this.peer = _createProxyAccessible();
       if (this.peer == 0L) {
         throw new RuntimeException("could not create platform accessible");
       }
-      
+
       ProxyAccessibleRegistry.getInstance().registerNative(this, peer);
-      
+
       glass = new WinAccessible(this);
-      
+
       //LOG.debug(this, () -> "created. (glass)");
 
         saveCreationStack();
@@ -176,7 +176,7 @@ public class ProxyAccessible extends Accessible {
         } else {
             glassRoot = context.glassRoot;
         }
-        
+
         this.peer = _createProxyAccessible();
         if (this.peer == 0L) {
             throw new RuntimeException("could not create platform accessible");
@@ -346,11 +346,11 @@ public class ProxyAccessible extends Accessible {
 		public Object run() {
 			Object result = getEventHandler().getAttribute(AccessibleAttribute.TEXT, "getProvider", providerType);
 			if (result != null) {
-				
+
 				if (result instanceof String) {
 					return null;
 				}
-				
+
 				try {
 					providerType.cast(result);
 				} catch (Exception e) {
@@ -371,11 +371,11 @@ public class ProxyAccessible extends Accessible {
 		public Object run() {
             Object result = node.queryAccessibleAttribute(AccessibleAttribute.TEXT, "getProvider", providerType);
 			if (result != null) {
-				
+
 				if (result instanceof String) {
 					return null;
 				}
-				
+
 				try {
 					providerType.cast(result);
 				} catch (Exception e) {
@@ -591,14 +591,20 @@ public class ProxyAccessible extends Accessible {
     /***********************************************/
     private void IRawElementProviderAdviseEvents_AdviseEventAdded(int eventId, long propertyIDs) {
         guardVoid(() -> {
-            checkGlass();
-            glass.AdviseEventAdded(eventId, propertyIDs);
+            if (glass != null) {
+                glass.AdviseEventAdded(eventId, propertyIDs);
+            } else {
+                LOG.info(this, () -> "IRawElementProviderAdviseEvents_AdviseEventAdded(" + eventId + ", " + propertyIDs + ") was called.");
+            }
         });
     }
     private void IRawElementProviderAdviseEvents_AdviseEventRemoved(int eventId, long propertyIDs) {
         guardVoid(() -> {
-            checkGlass();
-            glass.AdviseEventRemoved(eventId, propertyIDs);
+            if (glass != null){
+                glass.AdviseEventRemoved(eventId, propertyIDs);
+            } else {
+                LOG.info(this, () -> "IRawElementProviderAdviseEvents_AdviseEventRemoved(" + eventId + ", " + propertyIDs + ") was called.");
+            }
         });
     }
 
@@ -699,7 +705,7 @@ public class ProxyAccessible extends Accessible {
         );
     }
     private long ITextProvider_RangeFromChild(long childElement) {
-        return InstanceTracker.withReason("ITextProvider_RangeFromChild", () -> 
+        return InstanceTracker.withReason("ITextProvider_RangeFromChild", () ->
             callProviderLongW(NativeITextProvider.class, p -> p.RangeFromChild(childElement), g -> g.RangeFromChild(childElement))
         );
     }
@@ -894,16 +900,16 @@ public class ProxyAccessible extends Accessible {
         return callProviderBoolean(NativeIWindowProvider.class, provider -> provider.WaitForInputIdle(milliseconds));
     }
 
-    
+
     // IDockProvider
-    private int     DockProvider_get_DockPosition() { 
+    private int     DockProvider_get_DockPosition() {
         return callProviderInt(NativeIDockProvider.class, NativeIDockProvider::get_DockPosition);
     }
     private void    DockProvider_SetDockPosition(int dockPosition) {
         callVoidProvider(NativeIDockProvider.class, provider -> provider.SetDockPosition(dockPosition));
     }
     // IAnnotationProvider
-    private int     IAnnotationProvider_get_AnnotationTypeId() { 
+    private int     IAnnotationProvider_get_AnnotationTypeId() {
         return callProviderInt(NativeIAnnotationProvider.class, NativeIAnnotationProvider::get_AnnotationTypeId);
     }
     private String  IAnnotationProvider_get_AnnotationTypeName()  {
@@ -956,7 +962,7 @@ public class ProxyAccessible extends Accessible {
     }
     private String IStylesProvider_get_FillPatternStyle() {
         return callProvider(NativeIStylesProvider.class, NativeIStylesProvider::get_FillPatternStyle);
-    }   
+    }
     private String IStylesProvider_get_Shape() {
         return callProvider(NativeIStylesProvider.class, NativeIStylesProvider::get_Shape);
     }
@@ -972,7 +978,7 @@ public class ProxyAccessible extends Accessible {
         return callProviderLong(NativeITextChildProvider.class, NativeITextChildProvider::get_TextContainer);
     }
     private long ITextChildProvider_get_TextRange() {
-        return InstanceTracker.withReason("ITextChildProvider_get_TextRange", () -> 
+        return InstanceTracker.withReason("ITextChildProvider_get_TextRange", () ->
             callProviderLong(NativeITextChildProvider.class, NativeITextChildProvider::get_TextRange)
         );
     }
@@ -982,8 +988,8 @@ public class ProxyAccessible extends Accessible {
         public boolean isActive;
         public long range;
     }
-    private NCaretRangeResult   ITextProvider2_GetCaretRange() { 
-        return InstanceTracker.withReason("ITextProvider2_GetCaretRange", () -> 
+    private NCaretRangeResult   ITextProvider2_GetCaretRange() {
+        return InstanceTracker.withReason("ITextProvider2_GetCaretRange", () ->
             callProvider(NativeITextProvider2.class, NativeITextProvider2::GetCaretRange)
         );
     }
@@ -1135,7 +1141,7 @@ public class ProxyAccessible extends Accessible {
             }
         });
     }
-    
+
     <P, R> R callProvider(Class<P> providerType, Function<P, R> method) {
         return guardObject(() -> {
             P provider = getNativeProvider(providerType);
@@ -1165,10 +1171,10 @@ public class ProxyAccessible extends Accessible {
                 return method.applyAsLong(provider);
             } else {
                 throw new HResultException(HResultException.E_NOTIMPL);
-            } 
+            }
         });
     }
-   
+
     <P> long[] callProviderLongArrayW(Class<P> providerType, ToLongArrayFunction<P> method, ToLongArrayFunction<WinAccessible> alternative) {
         return guardLongArray(() -> {
             P provider = getNativeProvider(providerType);
@@ -1189,7 +1195,7 @@ public class ProxyAccessible extends Accessible {
             } else {
                 checkGlass();
                 return glassMethod.applyAsInt(glass);
-            } 
+            }
         });
     }
 
@@ -1200,7 +1206,7 @@ public class ProxyAccessible extends Accessible {
                 return method.applyAsInt(provider);
             } else {
                 throw new HResultException(HResultException.E_NOTIMPL);
-            } 
+            }
         });
     }
 
@@ -1213,7 +1219,7 @@ public class ProxyAccessible extends Accessible {
             } else {
                 checkGlass();
                 return glassMethod.applyAsDouble(glass);
-            } 
+            }
         });
     }
 
@@ -1224,11 +1230,11 @@ public class ProxyAccessible extends Accessible {
                 return method.applyAsDouble(provider);
             } else {
                 throw new HResultException(HResultException.E_NOTIMPL);
-            } 
+            }
         });
     }
 
-    
+
     <P> boolean callProviderBooleanW(Class<P> providerType, ToBooleanFunction<P> method, ToBooleanFunction<WinAccessible> alternative) {
         return guardBoolean(() -> {
             P provider = getNativeProvider(providerType);
@@ -1237,7 +1243,7 @@ public class ProxyAccessible extends Accessible {
             } else {
                 checkGlass();
                 return alternative.applyAsBoolean(glass);
-            } 
+            }
         });
     }
 
@@ -1248,7 +1254,7 @@ public class ProxyAccessible extends Accessible {
                 return method.applyAsBoolean(provider);
             } else {
                 throw new HResultException(HResultException.E_NOTIMPL);
-            } 
+            }
         });
     }
 
