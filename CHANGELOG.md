@@ -15,7 +15,6 @@
 
 - fix calling glass on AdviseEvent* API even if it is an uia accessible
 
-
 ## Release 1.2.2 (2024-10-22)
 
 ### Changes

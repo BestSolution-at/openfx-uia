@@ -12,7 +12,11 @@ Full UIA Support for OpenJFX
  The agent adds `UIAPlatform.core` to the ext classpath and hooks the Accessible creation mechanism of javafx, while `UIAPlatform` contains the library and provides the API.
 
  `UIAPlatform.sample` contains some samples and   
- `UIAPlatform.fullsample` contains a self running jar launcher for the samples with all dependencies. It only needs the environment variable `JDK8FX` set to your java 8 + fx home.
+ `UIAPlatform.fullsample` contains a self running jar launcher for the samples with all dependencies. It only needs the environment variable `JDK17FX` set to your java 17 + fx home.
+
+# Jigsaw Notes
+
+ The agent now also exports the required internal packages from the javafx modules. No --add-exports is required unless your application code needs it.
 
 # Usage
 
@@ -91,10 +95,3 @@ For how to use UIA look at the Microsoft documentation (here is a link to the [C
 
  # Development Notes
  When launching via gradle the `--no-daemon` flag helps with the initial focus of the launched application. If omitted it behaves differently compared to starting by double clicking an icon.
-
-
- # Dev environment
-
- ## jdk
-`winget install Azul.ZuluFX.8.JDK`
-`$env:JDK8FX="C:\Program Files\Zulu\zulu-8"`
