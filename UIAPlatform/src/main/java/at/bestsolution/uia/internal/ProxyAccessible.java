@@ -643,14 +643,20 @@ public class ProxyAccessible extends Accessible {
     /***********************************************/
     private void IRawElementProviderAdviseEvents_AdviseEventAdded(int eventId, long propertyIDs) {
         guardVoid(() -> {
-            checkGlass();
-            glass.AdviseEventAdded(eventId, propertyIDs);
+            if (glass != null) {
+                glass.AdviseEventAdded(eventId, propertyIDs);
+            } else {
+                LOG.info(this, () -> "IRawElementProviderAdviseEvents_AdviseEventAdded(" + eventId + ", " + propertyIDs + ") was called.");
+            }
         });
     }
     private void IRawElementProviderAdviseEvents_AdviseEventRemoved(int eventId, long propertyIDs) {
         guardVoid(() -> {
-            checkGlass();
-            glass.AdviseEventRemoved(eventId, propertyIDs);
+            if (glass != null){
+                glass.AdviseEventRemoved(eventId, propertyIDs);
+            } else {
+                LOG.info(this, () -> "IRawElementProviderAdviseEvents_AdviseEventRemoved(" + eventId + ", " + propertyIDs + ") was called.");
+            }
         });
     }
 
