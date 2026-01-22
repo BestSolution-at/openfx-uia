@@ -340,16 +340,14 @@ public final class WinAccessible17 extends Accessible implements IWinAccessible 
                 break;
             }
             case INDETERMINATE: {
-                Object role = getAttribute(ROLE);
-                if (role == AccessibleRole.CHECK_BOX || role == AccessibleRole.CHECK_BOX_TREE_ITEM) {
+                if (getAttribute(ROLE) == AccessibleRole.CHECK_BOX) {
                     notifyToggleState();
                 }
                 break;
             }
             case SELECTED: {
                 Object role = getAttribute(ROLE);
-                if (role == AccessibleRole.CHECK_BOX || role == AccessibleRole.TOGGLE_BUTTON
-                        || role == AccessibleRole.CHECK_BOX_TREE_ITEM) {
+                if (role == AccessibleRole.CHECK_BOX || role == AccessibleRole.TOGGLE_BUTTON) {
                     notifyToggleState();
                     break;
                 }
@@ -404,24 +402,16 @@ public final class WinAccessible17 extends Accessible implements IWinAccessible 
                     WinVariant vn = new WinVariant();
                     vn.vt = WinVariant.VT_BSTR;
                     vn.bstrVal = value;
+                    if (getAttribute(ROLE) == AccessibleRole.SPINNER) {
+                        UiaRaiseAutomationPropertyChangedEvent(peer, UIA_NamePropertyId, vo, vn);
+                    } else {
                     /* Combo and Text both implement IValueProvider */
                     UiaRaiseAutomationPropertyChangedEvent(peer, UIA_ValueValuePropertyId, vo, vn);
+                    }
                 }
 
                 if (selectionRange != null || documentRange != null) {
                     UiaRaiseAutomationEvent(peer, UIA_Text_TextChangedEventId);
-                }
-                break;
-            case VALUE_STRING:
-                String val = (String)getAttribute(VALUE_STRING);
-                if (val != null) {
-                    WinVariant vo = new WinVariant();
-                    vo.vt = WinVariant.VT_BSTR;
-                    vo.bstrVal = "";
-                    WinVariant vn = new WinVariant();
-                    vn.vt = WinVariant.VT_BSTR;
-                    vn.bstrVal = val;
-                    UiaRaiseAutomationPropertyChangedEvent(peer, UIA_ValueValuePropertyId, vo, vn);
                 }
                 break;
             case EXPANDED: {
@@ -501,7 +491,6 @@ public final class WinAccessible17 extends Accessible implements IWinAccessible 
                 case LIST_ITEM: return getContainerAccessible(AccessibleRole.LIST_VIEW);
                 case TAB_ITEM: return getContainerAccessible(AccessibleRole.TAB_PANE);
                 case PAGE_ITEM: return getContainerAccessible(AccessibleRole.PAGINATION);
-                case CHECK_BOX_TREE_ITEM:
                 case TREE_ITEM: return getContainerAccessible(AccessibleRole.TREE_VIEW);
                 case TREE_TABLE_ROW:
                 case TREE_TABLE_CELL: return getContainerAccessible(AccessibleRole.TREE_TABLE_VIEW);
@@ -548,7 +537,6 @@ public final class WinAccessible17 extends Accessible implements IWinAccessible 
             case COMBO_BOX: return UIA_ComboBoxControlTypeId;
             case HYPERLINK: return UIA_HyperlinkControlTypeId;
             case TREE_VIEW: return UIA_TreeControlTypeId;
-            case CHECK_BOX_TREE_ITEM:
             case TREE_ITEM: return UIA_TreeItemControlTypeId;
             case PROGRESS_INDICATOR: return UIA_ProgressBarControlTypeId;
             case TOOL_BAR: return UIA_ToolBarControlTypeId;
@@ -602,7 +590,6 @@ public final class WinAccessible17 extends Accessible implements IWinAccessible 
                 }
                 break;
             }
-            case CHECK_BOX_TREE_ITEM:
             case TREE_ITEM: {
                 Integer index = (Integer)getAttribute(INDEX);
                 if (index != null) {
@@ -700,12 +687,6 @@ public final class WinAccessible17 extends Accessible implements IWinAccessible 
             case TREE_VIEW:
                 impl = patternId == UIA_SelectionPatternId ||
                         patternId == UIA_ScrollPatternId;
-                break;
-            case CHECK_BOX_TREE_ITEM:
-                impl = patternId == UIA_SelectionItemPatternId ||
-                        patternId == UIA_ExpandCollapsePatternId ||
-                        patternId == UIA_ScrollItemPatternId ||
-                        patternId == UIA_TogglePatternId;
                 break;
             case TREE_ITEM:
                 impl = patternId == UIA_SelectionItemPatternId ||
@@ -880,7 +861,6 @@ public final class WinAccessible17 extends Accessible implements IWinAccessible 
                     switch (role) {
                         case TITLED_PANE: description = "title pane"; break;
                         case PAGE_ITEM: description = "page"; break;
-                        case DIALOG: description = "dialog"; break;
                         default:
                     }
                 }
@@ -947,12 +927,6 @@ public final class WinAccessible17 extends Accessible implements IWinAccessible 
                 }
                 break;
             }
-            case UIA_IsDialogPropertyId: {
-                AccessibleRole role = (AccessibleRole) getAttribute(ROLE);
-                variant = new WinVariant();
-                variant.vt = WinVariant.VT_BOOL;
-                variant.boolVal = (role == AccessibleRole.DIALOG);
-            } break;
             case UIA_IsContentElementPropertyId:
             case UIA_IsControlElementPropertyId: {
                 //TODO how to handle ControlElement versus ContentElement
@@ -993,15 +967,6 @@ public final class WinAccessible17 extends Accessible implements IWinAccessible 
                 variant = new WinVariant();
                 variant.vt = WinVariant.VT_BSTR;
                 variant.bstrVal = "JavaFXProvider";
-                break;
-            }
-            case UIA_ToggleToggleStatePropertyId: {
-                AccessibleRole role = (AccessibleRole) getAttribute(ROLE);
-                if (role == AccessibleRole.CHECK_BOX_TREE_ITEM) {
-                    variant = new WinVariant();
-                    variant.vt = WinVariant.VT_I4;
-                    variant.lVal = get_ToggleState();
-                }
                 break;
             }
             default:
@@ -1104,8 +1069,7 @@ public final class WinAccessible17 extends Accessible implements IWinAccessible 
         if (isDisposed()) return 0;
         AccessibleRole role = (AccessibleRole)getAttribute(ROLE);
         /* special case for the tree item hierarchy, as expected by Windows */
-        boolean treeCell = (role == AccessibleRole.TREE_ITEM
-                            || role == AccessibleRole.CHECK_BOX_TREE_ITEM);
+        boolean treeCell = role == AccessibleRole.TREE_ITEM;
         Node node = null;
         switch (direction) {
             case NavigateDirection_Parent: {
@@ -1482,7 +1446,6 @@ public final class WinAccessible17 extends Accessible implements IWinAccessible 
                     executeAction(AccessibleAction.FIRE);
                     break;
                 case LIST_ITEM:
-                case CHECK_BOX_TREE_ITEM:
                 case TREE_ITEM:
                 case TABLE_CELL:
                 case TREE_TABLE_CELL:
@@ -1676,16 +1639,6 @@ public final class WinAccessible17 extends Accessible implements IWinAccessible 
 
     public int get_ToggleState() {
         if (isDisposed()) return 0;
-        if (getAttribute(ROLE) == AccessibleRole.CHECK_BOX_TREE_ITEM) {
-            ToggleState toggleState = (ToggleState)getAttribute(TOGGLE_STATE);
-            if (toggleState == ToggleState.INDETERMINATE) {
-                return ToggleState_Indeterminate;
-            } else if (toggleState == ToggleState.CHECKED) {
-                return ToggleState_On;
-            } else {
-                return ToggleState_Off;
-            }
-        }
         if (Boolean.TRUE.equals(getAttribute(INDETERMINATE))) {
             return ToggleState_Indeterminate;
         }
@@ -2012,7 +1965,6 @@ public final class WinAccessible17 extends Accessible implements IWinAccessible 
                 }
                 break;
             }
-            case CHECK_BOX_TREE_ITEM:
             case TREE_ITEM: {
                 Integer index = (Integer)getAttribute(INDEX);
                 if (index != null) {
