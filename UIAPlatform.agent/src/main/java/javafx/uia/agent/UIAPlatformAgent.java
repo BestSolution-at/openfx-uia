@@ -66,6 +66,22 @@ public class UIAPlatformAgent {
         return findClass(clazz).map(Class::getModule);
     }
 
+    private static Module findGraphicModule() {
+        try {
+            return ModuleLayer.boot().findModule("javafx.graphics").orElseThrow();
+        } catch (Throwable t) {
+            throw new IllegalStateException("Module 'javafx.graphics' required, but not found!");
+        }
+    }
+
+    private static Module findPlatformModule() {
+        try {
+            return findModuleFromClass("at.bestsolution.uia.UIA").orElseThrow();
+        } catch (Throwable t) {
+            throw new IllegalStateException("UIAPlatform-*.jar not on classpath!");
+        }
+    }
+
     private static void fixModules(Instrumentation instrumentation) {
         LOG.debug(() -> "patching module exports / opens");
 
@@ -73,10 +89,10 @@ public class UIAPlatformAgent {
 
         Module coreModule = findModuleFromClass("at.bestsolution.uia.core.AccessibleFactory").orElseThrow();
         LOG.info(() -> "loaded " + coreModule);
-        Module platformModule = findModuleFromClass("at.bestsolution.uia.UIA").orElseThrow();
+        Module platformModule = findPlatformModule();
         LOG.info(() -> "loaded " + platformModule);
 
-        Module graphicsModule =  ModuleLayer.boot().findModule("javafx.graphics").orElseThrow();
+        Module graphicsModule = findGraphicModule();
         LOG.info(() -> "loaded " + graphicsModule);
 
         Set<Module> extraReads = new HashSet<>();
