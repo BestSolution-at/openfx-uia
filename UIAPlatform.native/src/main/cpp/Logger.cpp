@@ -42,7 +42,11 @@ Logger::Logger(const char* name) {
 }
 
 Logger::~Logger() {
-  GetEnv()->DeleteGlobalRef(jLogger);
+  auto env = GetEnv();
+  if (env != nullptr) {
+    // in case the jvm shuts down the env is gone
+    env->DeleteGlobalRef(jLogger);
+  }
 }
 
 void Logger::log(const LogLevel& level, const char* msg, std::source_location location) {

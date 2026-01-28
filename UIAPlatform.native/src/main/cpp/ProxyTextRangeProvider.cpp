@@ -277,3 +277,16 @@ extern "C" JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_ProxyTextRan
     ProxyTextRangeProvider* p = reinterpret_cast<ProxyTextRangeProvider*>(provider);
     p->Release();
 }
+
+extern "C" JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_ProxyTextRangeProvider__1AddRef
+  (JNIEnv *env, jobject object, jlong provider)
+{
+    ProxyTextRangeProvider* p = reinterpret_cast<ProxyTextRangeProvider*>(provider);
+    p->AddRef();
+}
+extern "C" JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_ProxyTextRangeProvider__1Release
+  (JNIEnv *env, jobject object, jlong provider)
+{
+    ProxyTextRangeProvider* p = reinterpret_cast<ProxyTextRangeProvider*>(provider);
+    p->Release();
+}

@@ -73,6 +73,9 @@ public class ProxyTextRangeProvider {
     /* Releases the GlassTextRangeProvider and deletes the GlobalRef */
     private native void _destroyTextRangeProvider(long textRangeProvider);
 
+    private native void _Release(long textRangeProvider);
+    private native void _AddRef(long textRangeProvider);
+
 
     private ProxyAccessible accessible;
     private long peer;
@@ -173,10 +176,18 @@ public class ProxyTextRangeProvider {
         peer = 0L;
     }
 
+    /** calls the native AddRef */
+    public void AddRef() {
+      _AddRef(peer);
+    }
+    /** calls the native Release */
+    public void Release() {
+      _Release(peer);
+    }
+
     private void onNativeDelete() {
-    //  LOG.debug(this, () -> "TextRange was deleted by refcount.");
       if (this.nativeDeleteCallback != null) {
-        this.nativeDeleteCallback.run();;
+        this.nativeDeleteCallback.run();
         this.nativeDeleteCallback = null;
       }
     }

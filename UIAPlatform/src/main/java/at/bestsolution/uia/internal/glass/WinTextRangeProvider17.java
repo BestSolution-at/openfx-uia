@@ -28,8 +28,6 @@ package at.bestsolution.uia.internal.glass;
 import static javafx.scene.AccessibleAttribute.*;
 import java.text.BreakIterator;
 
-import com.sun.javafx.util.Utils;
-
 import at.bestsolution.uia.internal.Logger;
 import at.bestsolution.uia.internal.LoggerFactory;
 import javafx.geometry.Bounds;
@@ -116,35 +114,6 @@ class WinTextRangeProvider17 implements IWinTextRangeProvider {
         // peer = 0L;
     }
 
-    private void validateRange(String text) {
-        if (text == null) {
-            start = end = 0;
-            return;
-        }
-
-        int length = text.length();
-        start = Utils.clamp(0, start, length);
-        end = Utils.clamp(start, end, length);
-    }
-
-    /**
-     * In the context of substrings, this method calculates the end index based on the start index,
-    * requested string length, and the maximum end index. <code>0 <= start <= end <= length</code>;
-    * see {@link #validateRange(String)}.
-    *
-    * @param startIndex The start index in a string. Needs to be 0 or more (not checked in the code).
-    * @param length The requested length of a string when starting from "start".
-    *               Negative numbers are treated as full length.
-    * @param endIndex The maximum end index to return. Needs to be equal or greater than startIndex
-    *                    (not checked in the code).
-    */
-    static int getEndIndex(int startIndex, int length, int endIndex) {
-        if (length < 0 || (endIndex - startIndex) <= length) {
-            return endIndex;
-        }
-        return startIndex + length;
-    }
-
     public void setRange(int start, int end) {
         this.start = start;
         this.end = end;
@@ -203,7 +172,6 @@ class WinTextRangeProvider17 implements IWinTextRangeProvider {
         if (text == null) return;
         int length = text.length();
         if (length == 0) return;
-        validateRange(text);
 
         switch (unit) {
             case TextUnit_Character: {
@@ -275,7 +243,8 @@ class WinTextRangeProvider17 implements IWinTextRangeProvider {
         }
 
         /* Always ensure range consistency */
-        validateRange(text);
+        start = Math.max(0, Math.min(start, length));
+        end = Math.max(start, Math.min(end, length));
     }
 
     public long FindAttribute(int attributeId, WinVariant val, boolean backward) {
@@ -361,7 +330,6 @@ class WinTextRangeProvider17 implements IWinTextRangeProvider {
         String text = (String)getAttribute(TEXT);
         if (text == null) return null;
         int length = text.length();
-        validateRange(text);
 
         /* Narrator will not focus an empty text control if the bounds are NULL */
         if (length == 0) return new double[0];
@@ -409,8 +377,7 @@ class WinTextRangeProvider17 implements IWinTextRangeProvider {
     public String GetText(int maxLength) {
         String text = (String)getAttribute(TEXT);
         if (text == null) return null;
-        validateRange(text);
-        int endOffset = getEndIndex(start, maxLength, end);
+        int endOffset = maxLength != -1 ? Math.min(end, start + maxLength) : end;
 //        System.out.println("+GetText [" + text.substring(start, endOffset)+"]");
         return text.substring(start, endOffset);
     }
@@ -514,7 +481,8 @@ class WinTextRangeProvider17 implements IWinTextRangeProvider {
         }
 
         /* Always ensure range consistency */
-        validateRange(text);
+        start = Math.max(0, Math.min(start, length));
+        end = Math.max(start, Math.min(end, length));
         return actualCount;
     }
 
@@ -523,7 +491,6 @@ class WinTextRangeProvider17 implements IWinTextRangeProvider {
         String text = (String)getAttribute(TEXT);
         if (text == null) return 0;
         int length = text.length();
-        validateRange(text);
 
         int actualCount = 0;
         int offset = endpoint == TextPatternRangeEndpoint_Start ? start : end;
@@ -619,7 +586,8 @@ class WinTextRangeProvider17 implements IWinTextRangeProvider {
         }
 
         /* Always ensure range consistency */
-        validateRange(text);
+        start = Math.max(0, Math.min(start, length));
+        end = Math.max(start, Math.min(end, length));
         return actualCount;
     }
 
@@ -639,7 +607,8 @@ class WinTextRangeProvider17 implements IWinTextRangeProvider {
         }
 
         /* Always ensure range consistency */
-        validateRange(text);
+        start = Math.max(0, Math.min(start, length));
+        end = Math.max(start, Math.min(end, length));
     }
 
     public void Select() {
