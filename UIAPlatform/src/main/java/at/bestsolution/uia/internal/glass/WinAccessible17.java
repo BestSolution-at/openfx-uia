@@ -1281,8 +1281,10 @@ public final class WinAccessible17 extends Accessible implements IWinAccessible 
             case TEXT_FIELD:
             case TEXT_AREA: {
                 if (selectionRange == null) {
-                    // selectionRange = new WinTextRangeProvider(this);
                     selectionRange = ProxyTextRangeProvider.wrap(proxy, new WinTextRangeProvider17(this));
+                    selectionRange.setOnNativeDelete(() -> {
+                        selectionRange = null;
+                    });
                 }
                 Integer result = (Integer)getAttribute(SELECTION_START);
                 int start = result != null ? result : 0;
@@ -1301,6 +1303,7 @@ public final class WinAccessible17 extends Accessible implements IWinAccessible 
                 } else {
                     selectionRange.glassImpl.setRange(0, 0);
                 }
+                selectionRange.AddRef();
                 return new long[] {selectionRange.getNativeProvider()};
             }
             default:
@@ -1505,10 +1508,14 @@ public final class WinAccessible17 extends Accessible implements IWinAccessible 
         if (isDisposed()) return 0;
         if (documentRange == null) {
             documentRange = ProxyTextRangeProvider.wrap(proxy, new WinTextRangeProvider17(this));
+            documentRange.setOnNativeDelete(() -> {
+                documentRange = null;
+            });
         }
         String text = (String)getAttribute(TEXT);
         if (text == null) return 0;
         documentRange.glassImpl.setRange(0, text.length());
+        documentRange.AddRef();
         return documentRange.getNativeProvider();
     }
 

@@ -79,6 +79,18 @@ public class LoggerFactory {
       this.name = name;
     }
 
+    private String leftPad(String value, int length) {
+      if (value.length() >= length) {
+        return value;
+      }
+      StringBuilder sb = new StringBuilder();
+      while (sb.length() < length - value.length()) {
+        sb.append(' ');
+      }
+      sb.append(value);
+      return sb.toString();
+    }
+
     @Override
     public void log(Object source, Level level, Supplier<String> message, Throwable e, LocationData loc) {
       if (!isLevel(level)) {
@@ -87,9 +99,9 @@ public class LoggerFactory {
       try {
         String lang = loc != null && loc.lang != null ? loc.lang + " " : "";
         String location = loc != null ? loc.functionName + "("+loc.fileName+":"+loc.lineNumber+"): " : "";
-        System.err.println(lang + "[" + level + "] " + name + " " + location + " " + withSource(message, source).get());
+        System.err.println(lang + "[" + leftPad(level.toString(), 7) + "] " + name + " " + location + " " + withSource(message, source).get());
         if (e != null) {
-          System.err.print(lang + "[" + level + "] ");
+          System.err.print(lang + "[" + leftPad(level.toString(), 7) + "]");
           e.printStackTrace();
         }
       } catch (Exception ex) {
