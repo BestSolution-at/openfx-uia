@@ -1,5 +1,11 @@
 # OpenFX-UIA Changelog
 
+## Release 1.2.4 (2026-03-17)
+
+### Changes
+
+- add null guard to GetPatternProvider
+
 ## Release 1.2.3 (2025-03-13)
 
 ### Changes
