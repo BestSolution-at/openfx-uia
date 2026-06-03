@@ -115,7 +115,7 @@ public class UIAPlatformAgent {
                             }
                         }
                         
-                return classfileBuffer;
+                return null;
             }
             
         };
