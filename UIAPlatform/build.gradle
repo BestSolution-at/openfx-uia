@@ -22,13 +22,30 @@ java {
     toolchain {
         // since auto detection is disabled only the env var JDK8FX is picked up as java toolchain (see gradle.properties)
         // it seems not possible to query for toolchains with included JavaFX...
-        languageVersion = JavaLanguageVersion.of(8)
+        languageVersion = JavaLanguageVersion.of(17)
     }
+}
+
+compileJava {
+    // for Screen, Accessible, View
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.glass.ui=ALL-UNNAMED'
+    // for TKStage
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED'
+    // for WindowStage, QuantumToolkit
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.tk.quantum=ALL-UNNAMED'
+    // for NodeHelper, SceneHelper
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.scene=ALL-UNNAMED'
+    // for WindowHelper
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.stage=ALL-UNNAMED'
+    // for Utils
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.util=ALL-UNNAMED'
 }
 
 
 javadoc {
     exclude 'com/sun/glass/ui/uia/**'
+
+    exclude 'at/bestsolution/uia/internal/**'
 }
 
 
@@ -44,7 +61,7 @@ dependencies {
 
 task writeServiceFiles() {
     var services = [
-        "com.sun.glass.ui.uia.IAccessibleFactory": "com.sun.glass.ui.uia.UIAAccessibleFactory",
+        "at.bestsolution.uia.core.IAccessibleFactory": "at.bestsolution.uia.internal.UIAAccessibleFactory",
     ]
 
     services.each {
@@ -60,7 +77,7 @@ task writeServiceFiles() {
 jar {
     dependsOn configurations.debugDll
     from configurations.debugDll.files
-    
+
     manifest {
         attributes('Git-Hash':"${gitHash}")
         attributes('Git-Version': "${gitVersion}")

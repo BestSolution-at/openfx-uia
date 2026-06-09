@@ -8,9 +8,23 @@ java {
     toolchain {
         // since auto detection is disabled only the env var JDK8FX is picked up as java 8 toolchain (see gradle.properties)
         // it seems not possible to query for toolchains with included JavaFX...
-        languageVersion = JavaLanguageVersion.of(8)
+        languageVersion = JavaLanguageVersion.of(17)
+
+
     }
 }
+
+compileJava {
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.text=ALL-UNNAMED'
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.geom=ALL-UNNAMED'
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.geom.transform=ALL-UNNAMED'
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.scene.text=ALL-UNNAMED'
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED'
+
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.scene.text=ALL-UNNAMED'
+    options.compilerArgs << '--add-exports' << 'javafx.graphics/com.sun.javafx.font=ALL-UNNAMED'
+}
+
 
 jar {
     manifest {
@@ -26,6 +40,7 @@ repositories {
 
 configurations {
     agent
+    patch
     includedJars
     withLogging
 }
@@ -35,7 +50,9 @@ dependencies {
     agent project(":UIAPlatform.agent")
 
     includedJars project(":UIAPlatform.agent")
+    includedJars project(":UIAPlatform.core")
     includedJars project(":UIAPlatform")
+
 
     withLogging project(":UIAPlatform.logger")
     withLogging 'org.slf4j:slf4j-api:2.0.0-alpha7'
@@ -44,6 +61,9 @@ dependencies {
 
 def getAgentJar() {
     configurations.agent.files[0]
+}
+def getPatchJar() {
+    configurations.patch.files[0]
 }
 
 sourceSets {
@@ -90,6 +110,7 @@ task runWithAgentWithLogging(type: JavaExec) {
     systemProperties "uia.loglevel": 0
     jvmArgs "-javaagent:${getAgentJar()}"
     // jvmArgs "-verbose:jni"
+
 }
 
 task runWithAgent(type: JavaExec) {
@@ -99,7 +120,7 @@ task runWithAgent(type: JavaExec) {
 	  description = 'Runs the sample with the glass platfrom configured'
 
     javaLauncher = javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(8)
+        languageVersion = JavaLanguageVersion.of(17)
     }
 
     classpath sourceSets.main.runtimeClasspath
@@ -107,8 +128,35 @@ task runWithAgent(type: JavaExec) {
 
     systemProperties "uia.log": true
     systemProperties "uia.loglevel": 1
+    //jvmArgs ""
     jvmArgs "-javaagent:${getAgentJar()}"
     // jvmArgs "-verbose:jni"
+
+    // from UIAPlatform
+    // everything should be configured by agent
+    //jvmArgs "--add-exports=javafx.graphics/com.sun.glass.ui=ALL-UNNAMED"
+    // jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED"
+    // jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.tk.quantum=ALL-UNNAMED"
+
+    //jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.scene=ALL-UNNAMED"
+
+    // from sample
+    jvmArgs "--add-exports=javafx.controls/javafx.scene.control.skin=ALL-UNNAMED"
+
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.text=ALL-UNNAMED"
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.geom=ALL-UNNAMED"
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.geom.transform=ALL-UNNAMED"
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.scene.text=ALL-UNNAMED"
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.tk=ALL-UNNAMED"
+
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.scene.text=ALL-UNNAMED"
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.font=ALL-UNNAMED"
+
+    jvmArgs "--add-exports=javafx.graphics/com.sun.javafx.stage=ALL-UNNAMED"
+
+    // jvmArgs "--add-opens=javafx.graphics/com.sun.javafx.tk.quantum=ALL-UNNAMED"
+    // jvmArgs "--add-opens=javafx.graphics/javafx.scene=ALL-UNNAMED"
+
 }
 
 task debugWithAgent(type: JavaExec) {

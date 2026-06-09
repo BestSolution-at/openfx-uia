@@ -3,12 +3,12 @@ package uia.sample.samples.model;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import at.bestsolution.uia.ControlType;
+import at.bestsolution.uia.ITextChildProvider;
+import at.bestsolution.uia.ITextRangeProvider;
+import at.bestsolution.uia.IUIAElement;
+import at.bestsolution.uia.IUIAVirtualElement;
 import javafx.geometry.Bounds;
-import javafx.uia.ControlType;
-import javafx.uia.ITextChildProvider;
-import javafx.uia.ITextRangeProvider;
-import javafx.uia.IUIAElement;
-import javafx.uia.IUIAVirtualElement;
 
 public class UIAPage extends Text implements IUIAVirtualElement, ITextChildProvider {
 

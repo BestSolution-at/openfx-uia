@@ -1,0 +1,73 @@
+How found:	Selected from tree...
+Name:	"VList"
+ControlType:	UIA_ListItemControlTypeId (0xC357)
+LocalizedControlType:	"list item"
+BoundingRectangle:	{l:482 t:358 r:728 b:380}
+IsEnabled:	true
+IsKeyboardFocusable:	true
+HasKeyboardFocus:	true
+ProcessId:	19672
+RuntimeId:	[2A.B0A08.4.3]
+AutomationId:	"JavaFX3"
+IsControlElement:	true
+IsContentElement:	true
+ProviderDescription:	"[pid:19672,providerId:0x0 Main(parent link):JavaFXProvider (unmanaged:UIAPlatform.dll)]"
+IsPassword:	false
+HelpText:	""
+IsDialog:	false
+LegacyIAccessible.ChildId:	0
+LegacyIAccessible.DefaultAction:	"Double Click"
+LegacyIAccessible.Description:	""
+LegacyIAccessible.Help:	""
+LegacyIAccessible.KeyboardShortcut:	""
+LegacyIAccessible.Name:	"VList"
+LegacyIAccessible.Role:	list item (0x22)
+LegacyIAccessible.State:	focused,focusable,selectable (0x300004)
+LegacyIAccessible.Value:	""
+SelectionItem.IsSelected:	false
+SelectionItem.SelectionContainer:	"" list
+IsAnnotationPatternAvailable:	false
+IsDragPatternAvailable:	false
+IsDockPatternAvailable:	false
+IsDropTargetPatternAvailable:	false
+IsExpandCollapsePatternAvailable:	false
+IsGridItemPatternAvailable:	false
+IsGridPatternAvailable:	false
+IsInvokePatternAvailable:	false
+IsItemContainerPatternAvailable:	false
+IsLegacyIAccessiblePatternAvailable:	true
+IsMultipleViewPatternAvailable:	false
+IsObjectModelPatternAvailable:	false
+IsRangeValuePatternAvailable:	false
+IsScrollItemPatternAvailable:	true
+IsScrollPatternAvailable:	false
+IsSelectionItemPatternAvailable:	true
+IsSelectionPatternAvailable:	false
+IsSpreadsheetItemPatternAvailable:	false
+IsSpreadsheetPatternAvailable:	false
+IsStylesPatternAvailable:	false
+IsSynchronizedInputPatternAvailable:	false
+IsTableItemPatternAvailable:	false
+IsTablePatternAvailable:	false
+IsTextChildPatternAvailable:	false
+IsTextEditPatternAvailable:	false
+IsTextPatternAvailable:	false
+IsTextPattern2Available:	false
+IsTogglePatternAvailable:	false
+IsTransformPatternAvailable:	false
+IsTransform2PatternAvailable:	false
+IsValuePatternAvailable:	false
+IsVirtualizedItemPatternAvailable:	false
+IsWindowPatternAvailable:	false
+IsCustomNavigationPatternAvailable:	false
+IsSelectionPattern2Available:	false
+FirstChild:	"VList" text
+LastChild:	"VList" text
+Next:	"All Dummy Providers" list item
+Previous:	[null]
+Other Props:	Object has no additional properties
+Children:	"VList" text
+Ancestors:	"" list
+	"Simple UIA samples" window
+	"Desktop 1" pane
+	[ No Parent ]

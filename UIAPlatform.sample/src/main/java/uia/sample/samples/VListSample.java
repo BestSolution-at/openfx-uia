@@ -24,11 +24,11 @@ public class VListSample implements Sample {
         return new Label("List");
     }
 
-        
+
 
     @Override
     public Node getSample() {
-        List<String> data = IntStream.range(0, 400).mapToObj(i -> "Item "+ i).collect(Collectors.toList());
+        List<String> data = IntStream.range(0, 40_000).mapToObj(i -> "Item "+ i).collect(Collectors.toList());
         VList<String> list = new VList<>(model -> model);
         list.getItems().addAll(data);
         return list;
@@ -38,5 +38,5 @@ public class VListSample implements Sample {
     public Node getControls() {
         return null;
     }
-    
+
 }

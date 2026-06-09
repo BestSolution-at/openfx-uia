@@ -29,9 +29,6 @@ package uia.sample;
 import java.util.Arrays;
 import java.util.List;
 
-
-//import com.sun.glass.ui.uia.AccessibleMonitor;
-
 import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
@@ -47,6 +44,7 @@ import javafx.stage.Stage;
 import uia.sample.samples.AllDummyProviders;
 import uia.sample.samples.CanvasWithVirtualChildren;
 import uia.sample.samples.DocumentModelSample;
+import uia.sample.samples.PickTest;
 import uia.sample.samples.SimpleAsyncContentLoadedEvent;
 import uia.sample.samples.SimpleIDockProvider;
 import uia.sample.samples.SimpleIExpandCollapseProvider;
@@ -96,6 +94,7 @@ public class Simple extends Application {
         root.setPrefSize(800, 600);
 
         List<Sample> samples = Arrays.asList(
+            new PickTest(),
             new VListSample(),
             new AllDummyProviders(),
             new SimpleUIAElement(),

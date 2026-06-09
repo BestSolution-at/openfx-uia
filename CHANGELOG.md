@@ -1,5 +1,14 @@
 # OpenFX-UIA Changelog
 
+## Release 2.0.0 (TBD)
+
+### Breaking changes
+
+- Minimum required Java Version increased to 17
+- package change to `at.bestsolution.uia`
+- removed `NoA11YScene` due to java internal package dependency.
+- removed `AccessibleMonitor`
+
 ## Release 1.2.5 (2026-06-09)
 
 ### Changes
