@@ -1,6 +1,6 @@
 # OpenFX-UIA Changelog
 
-## Release 1.2.5 (TBA)
+## Release 1.2.5 (2026-06-09)
 
 ### Changes
 
