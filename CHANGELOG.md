@@ -1,5 +1,11 @@
 # OpenFX-UIA Changelog
 
+## Release 1.2.5 (TBA)
+
+### Changes
+
+- changed agent class rewrite behaviour: Transformer now returns `null` to indicate nothing was changed instead of the full byte code.
+
 ## Release 1.2.4 (2026-03-17)
 
 ### Changes
