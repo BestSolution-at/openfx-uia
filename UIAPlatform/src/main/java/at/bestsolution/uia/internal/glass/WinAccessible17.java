@@ -306,15 +306,7 @@ public final class WinAccessible17 extends Accessible implements IWinAccessible 
                     // This is a Scene
                     long focus = GetFocus();
                     if (focus != 0) {
-                        ProxyAccessible p = ProxyAccessibleRegistry.getInstance().getByNative(focus);
-                        LOG.debug(this, () -> "focus target: " + p);
-                        ProxyAccessible focusDelegate = p.getFocusDelegate();
-                        if (focusDelegate != null) {
-                            LOG.debug(this, () -> "focus delegate: " + focusDelegate);
-                            UiaRaiseAutomationEvent(focusDelegate.getNativeAccessible(), UIA_AutomationFocusChangedEventId);
-                        } else {
-                            UiaRaiseAutomationEvent(focus, UIA_AutomationFocusChangedEventId);
-                        }
+                        UiaRaiseAutomationEvent(focus, UIA_AutomationFocusChangedEventId);
                     }
                 } else {
                     // This is a Scene.transientFocusContainer
@@ -1216,12 +1208,26 @@ public final class WinAccessible17 extends Accessible implements IWinAccessible 
     }
 
     public long GetFocus() {
-        if (isDisposed()) return 0;
+        if (isDisposed()) {
+            return 0;
+        }
         Node node = (Node)getAttribute(FOCUS_NODE);
-        if (node == null) return 0L;
-        Node item = (Node)getAccessible(node).getAttribute(FOCUS_ITEM);
-        if (item != null) return getNativeAccessible(item);
-        return getNativeAccessible(node);
+        
+        if (node == null) {
+            return 0L;
+        }
+        
+        long focus = getNativeAccessible(node);
+        
+        ProxyAccessible p = ProxyAccessibleRegistry.getInstance().getByNative(focus);
+        ProxyAccessible focusDelegate = p.getFocusDelegate();
+        if (focusDelegate != null) {
+            LOG.debug(this, () -> "GET focus delegate: " + focusDelegate);
+            return focusDelegate.getNativeAccessible();
+        } else {
+            LOG.debug(this, () -> "GET focus: " + focusDelegate);
+            return focus;
+        }
     }
 
     /***********************************************/
