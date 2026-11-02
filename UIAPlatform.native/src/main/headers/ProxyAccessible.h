@@ -74,6 +74,8 @@ class ProxyAccessible :
 
 public:
     ProxyAccessible(JNIEnv* env, jobject jAccessible);
+    
+    void Dispose(JNIEnv* env);
 
     jobject get_jobject();
 

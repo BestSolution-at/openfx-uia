@@ -239,10 +239,12 @@ ProxyAccessible::ProxyAccessible(JNIEnv* env, jobject jAccessible)
 }
 
 ProxyAccessible::~ProxyAccessible() {
-    JNIEnv* env = GetEnv();
-    if (env) env->DeleteGlobalRef(m_jAccessible);
+    if (m_jAccessible) {
+        JNIEnv* env = GetEnv();
+        if (env) env->DeleteGlobalRef(m_jAccessible);
+        m_jAccessible = NULL;
+    }
     GlassCounter::DecrementAccessibility();
-
     m_log.trace() << "ProxyAccessible destroyed." << std::endl;
 }
 
@@ -1372,7 +1374,18 @@ JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_ProxyAccessible__1destr
 (JNIEnv* env, jobject jAccessible, jlong winAccessible)
 {
     ProxyAccessible* acc = reinterpret_cast<ProxyAccessible*>(winAccessible);
+    if (!acc) return;
+
+    UiaDisconnectProvider(acc);
+    acc->Dispose(env);
     acc->Release();
+}
+
+void ProxyAccessible::Dispose(JNIEnv* env) {
+    if (m_jAccessible) {
+        env->DeleteGlobalRef(m_jAccessible);
+        m_jAccessible = NULL;
+    }
 }
 
 /*
