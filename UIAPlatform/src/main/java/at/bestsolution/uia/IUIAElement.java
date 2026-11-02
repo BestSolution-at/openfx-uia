@@ -26,6 +26,8 @@ package at.bestsolution.uia;
 
 import java.util.function.Consumer;
 
+import at.bestsolution.uia.internal.ProxyAccessible;
+import at.bestsolution.uia.internal.ProxyAccessibleRegistry;
 import javafx.geometry.Bounds;
 
 /**
@@ -117,6 +119,13 @@ public interface IUIAElement extends IInitable {
 
     default IUIAElement GetFocusDelegate() {
         return this;
+    }
+    
+    default void dipose() {
+        ProxyAccessible instance = ProxyAccessibleRegistry.getInstance().findAccessible(this);
+        if (instance != null ) {
+            instance.dispose();
+        }
     }
 
 }
