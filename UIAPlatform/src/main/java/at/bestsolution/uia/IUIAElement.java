@@ -121,7 +121,7 @@ public interface IUIAElement extends IInitable {
         return this;
     }
     
-    default void dipose() {
+    default void dispose() {
         ProxyAccessible instance = ProxyAccessibleRegistry.getInstance().findAccessible(this);
         if (instance != null ) {
             instance.dispose();
