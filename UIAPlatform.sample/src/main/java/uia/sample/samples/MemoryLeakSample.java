@@ -60,7 +60,7 @@ public class MemoryLeakSample implements Sample {
     private IntegerProperty memoryLeaks = new SimpleIntegerProperty(0);
 
     class MyLabel extends Label {
-        final UIASampleRootElement uia = new UIASampleRootElement(this);
+        final MyUIAElement uia = new MyUIAElement(this);
         
         MyLabel() {
             this.setFocusTraversable(true);
@@ -90,7 +90,7 @@ public class MemoryLeakSample implements Sample {
             "2. Focus any item (keyboard or mouse-press)\n" +
             "3. IUIAElements gets initialized and memory-leak counter is increased\n" +
             "4. Remove Items\n"+
-            "5. Open visual-vm and check how many objects of type UIASampleRootElement are still in the memory");
+            "5. Open visual-vm and check how many objects of type MyUIAElement are still in the memory");
         desc.setWrapText(true);
         
         HBox hbox = new HBox();
@@ -145,12 +145,11 @@ public class MemoryLeakSample implements Sample {
     }
     
 
-    private class UIASampleRootElement implements IUIAVirtualRootElement {
+    private class MyUIAElement implements IUIAElement {
         final Node node;
-        final List<IUIAElement> childs = new ArrayList<>();
         private BooleanProperty initialized = new SimpleBooleanProperty();
         
-        UIASampleRootElement (Node node) {
+        MyUIAElement (Node node) {
         	this.node = node;
         }
 
@@ -168,29 +167,5 @@ public class MemoryLeakSample implements Sample {
             initialized.set(true);
         }
         
-        @Override
-        public ControlType getControlType() {
-            return ControlType.UIA_ButtonControlTypeId;
-        }
-        
-        @Override
-        public IUIAElement GetFocusDelegate() {
-            return this;
-        }
-        
-        @Override
-        public IUIAElement getFocus() {
-            return this;
-        }
-
-        @Override
-        public List<IUIAElement> getChildren() {
-            return childs;
-        }
-
-        @Override
-        public IUIAElement getChildFromPoint(Point2D point) {
-            return null;
-        }
     };
 }
