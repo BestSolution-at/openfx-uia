@@ -90,6 +90,15 @@ task phatJar(type: Jar) {
     }
 }
 
+def fxExports = [
+    'com.sun.javafx.text',
+    'com.sun.javafx.geom',
+    'com.sun.javafx.geom.transform',
+    'com.sun.javafx.scene.text',
+    'com.sun.javafx.tk',
+    'com.sun.javafx.font'
+]
+
 task runWithAgentWithLogging(type: JavaExec) {
     dependsOn configurations.agent
 
@@ -100,8 +109,13 @@ task runWithAgentWithLogging(type: JavaExec) {
 	  description = 'Runs the sample with the glass platfrom configured'
 
     javaLauncher = javaToolchains.launcherFor {
-        languageVersion = JavaLanguageVersion.of(8)
+        languageVersion = JavaLanguageVersion.of(17)
     }
+
+    fxExports.each { pkg ->
+        jvmArgs '--add-exports', "javafx.graphics/${pkg}=ALL-UNNAMED"
+    }
+    jvmArgs '--add-opens=javafx.graphics/com.sun.javafx.text=ALL-UNNAMED'
 
     classpath sourceSets.main.runtimeClasspath
     mainClass = 'uia.sample.Simple'
