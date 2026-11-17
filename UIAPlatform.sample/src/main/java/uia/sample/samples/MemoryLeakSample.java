@@ -166,9 +166,7 @@ public class MemoryLeakSample implements Sample {
         
         @Override
         public void initialize(IInitContext init) {
-        	IEvent automationFocusChanged = init.addEvent( StandardEventIds.UIA_AutomationFocusChangedEventId );
         	init.addHasKeyboardFocusProperty(() -> true );
-        	automationFocusChanged.fire();
             initialized.set(true);
         }
         
