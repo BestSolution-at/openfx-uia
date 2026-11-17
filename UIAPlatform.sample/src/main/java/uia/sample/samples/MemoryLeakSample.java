@@ -24,25 +24,20 @@
  */
 package uia.sample.samples;
 
+import com.sun.jna.Native;
+import com.sun.jna.win32.StdCallLibrary;
+
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import at.bestsolution.uia.ControlType;
-import at.bestsolution.uia.IEvent;
 import at.bestsolution.uia.IInitContext;
-import at.bestsolution.uia.IProperty;
 import at.bestsolution.uia.IUIAElement;
-import at.bestsolution.uia.IUIAVirtualRootElement;
-import at.bestsolution.uia.StandardEventIds;
 import at.bestsolution.uia.UIA;
-import javafx.beans.binding.Bindings;
-import javafx.beans.binding.StringBinding;
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleBooleanProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.geometry.Bounds;
-import javafx.geometry.Point2D;
 import javafx.geometry.Pos;
 import javafx.scene.AccessibleAttribute;
 import javafx.scene.Node;
@@ -50,7 +45,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.util.Subscription;
+import one.jpro.jmemorybuddy.JMemoryBuddyLive;
 import uia.sample.Sample;
 
 public class MemoryLeakSample implements Sample {
@@ -58,7 +53,7 @@ public class MemoryLeakSample implements Sample {
     
     private VBox root = new VBox();
     private ArrayList<MyLabel> uiaElements = new ArrayList<>();	 
-    private IntegerProperty memoryLeaks = new SimpleIntegerProperty(0);
+    private Label leaksLabel = new Label();
 
     class MyLabel extends Label {
         final MyUIAElement uia = new MyUIAElement(this);
@@ -67,11 +62,7 @@ public class MemoryLeakSample implements Sample {
             this.setFocusTraversable(true);
             this.setOnMousePressed( evt -> requestFocus());
             uia.initialized.subscribe( val  -> {
-                if( val ) {
-                    memoryLeaks.set(memoryLeaks.get() + 1 );
-                }
                 this.setText("Item - " + (uia.initialized.get() ? "initialized" : "not initialized"));
-                
             });
         }
         
@@ -85,34 +76,39 @@ public class MemoryLeakSample implements Sample {
     }
 
 
-
     public MemoryLeakSample() {
-        desc = new Label( "0. Make sure Windows-Narrator is running\n" +
-            "1. Add-Items\n" +
-            "2. Focus any item (keyboard or mouse-press)\n" +
-            "3. IUIAElements gets initialized and memory-leak counter is increased\n" +
-            "4. Remove Items\n"+
-            "5. Open visual-vm and check how many objects of type MyUIAElement are still in the memory");
-        desc.setWrapText(true);
+        desc = new Label( computeDesc() );
         
         HBox hbox = new HBox();
         hbox.setAlignment(Pos.CENTER_LEFT);
         hbox.setSpacing(20);
-        root.getChildren().add(hbox);
+        root.getChildren().addAll(hbox, leaksLabel );
         root.setSpacing(20);
         
-        Button add = new Button("add");
+        Button add = new Button("Add Item");
         add.setOnAction( evt -> onAdd());
         
-        Button remove = new Button("remove");
+        Button remove = new Button("Clear");
         remove.setOnAction( evt -> onRemove());
         
-        
-        StringBinding leaksLabelText = Bindings.createStringBinding(() -> "Memory-Leaks Counter: " + memoryLeaks.get(), memoryLeaks);
-        Label leaksLabel = new Label();
-        leaksLabel.textProperty().bind(leaksLabelText);
-        
-        hbox.getChildren().addAll(add, remove, leaksLabel);
+        hbox.getChildren().addAll(add, remove);
+    }
+    
+    private String computeDesc() {
+        StringBuilder result = new StringBuilder();
+        result.append("1. Add-Items\n");
+        result.append("2. Clear\n");
+        result.append("3. No leaks\n");
+        result.append("\n");
+        result.append("4. Add-Items\n");
+        result.append("5. Focus the item\n");
+        result.append("6. Clear\n");
+        result.append("7. Object still in memory\n");
+        result.append("\n");
+        result.append("\n");
+        result.append("UIA-Client running: \n");
+        result.append( UiaCore.INSTANCE.UiaClientsAreListening());
+        return result.toString();
     }
     
     private void onAdd() {
@@ -124,6 +120,31 @@ public class MemoryLeakSample implements Sample {
     private void onRemove() {
         root.getChildren().removeAll(uiaElements);
         uiaElements.clear();
+        
+        checkLeak();
+    }
+    
+    private void checkLeak() {
+        leaksLabel.setText("Checking...");
+        Thread t = new Thread(() -> {
+            try {
+                for (int i = 0; i < 3; i++) {
+                    System.gc();
+                    Thread.sleep(300);
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+            var report = JMemoryBuddyLive.getReport();
+            String text = report.uncollectedEntries.isEmpty()
+                    ? "No leaks"
+                    : "Uncollected:\n" + report.uncollectedEntries.stream()
+                            .map(entry -> entry.name)
+                            .collect(Collectors.joining("\n"));
+            Platform.runLater(() -> leaksLabel.setText(text));
+        }, "leak-check");
+        t.setDaemon(true);
+        t.start();
     }
 
     @Override
@@ -152,7 +173,8 @@ public class MemoryLeakSample implements Sample {
         private BooleanProperty initialized = new SimpleBooleanProperty();
         
         MyUIAElement (Node node) {
-        	this.node = node;
+            this.node = node;
+            JMemoryBuddyLive.markCollectable("MyUIAElement@" + System.identityHashCode(this), this);
         }
 
         @Override
@@ -171,4 +193,9 @@ public class MemoryLeakSample implements Sample {
         }
         
     };
+    
+    interface UiaCore extends StdCallLibrary {
+        UiaCore INSTANCE = Native.load("UIAutomationCore", UiaCore.class);
+        boolean UiaClientsAreListening();
+    }
 }

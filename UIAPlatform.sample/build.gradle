@@ -47,6 +47,9 @@ configurations {
 
 dependencies {
     implementation project(":UIAPlatform")
+    implementation 'one.jpro:jmemorybuddy:0.6.0'
+    implementation 'net.java.dev.jna:jna:5.14.0'
+    
     agent project(":UIAPlatform.agent")
 
     includedJars project(":UIAPlatform.agent")
@@ -57,6 +60,39 @@ dependencies {
     withLogging project(":UIAPlatform.logger")
     withLogging 'org.slf4j:slf4j-api:2.0.0-alpha7'
     withLogging 'org.slf4j:slf4j-simple:2.0.0-alpha7'
+    
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.2'    
+    testImplementation 'org.testfx:testfx-core:4.0.18'
+    testImplementation 'org.testfx:testfx-junit5:4.0.18'
+}
+
+
+def fxExports = [
+    'com.sun.javafx.text',
+    'com.sun.javafx.geom',
+    'com.sun.javafx.geom.transform',
+    'com.sun.javafx.scene.text',
+    'com.sun.javafx.tk',
+    'com.sun.javafx.font'
+]
+
+test {
+    useJUnitPlatform()
+
+    dependsOn configurations.agent
+    dependsOn configurations.withLogging
+
+    jvmArgs '--add-opens=javafx.graphics/com.sun.javafx.application=ALL-UNNAMED'
+    jvmArgs "-javaagent:${getAgentJar()}"
+
+    systemProperties "uia.log": true
+    systemProperties "uia.loglevel": 0
+
+    testLogging {
+        events "failed", "standardError"
+        exceptionFormat "full"
+        showStandardStreams = true
+    }
 }
 
 def getAgentJar() {
@@ -89,15 +125,6 @@ task phatJar(type: Jar) {
         attributes 'Main-Class': 'uia.sample.PlatformLauncher'
     }
 }
-
-def fxExports = [
-    'com.sun.javafx.text',
-    'com.sun.javafx.geom',
-    'com.sun.javafx.geom.transform',
-    'com.sun.javafx.scene.text',
-    'com.sun.javafx.tk',
-    'com.sun.javafx.font'
-]
 
 task runWithAgentWithLogging(type: JavaExec) {
     dependsOn configurations.agent
