@@ -33,6 +33,7 @@ import at.bestsolution.uia.IInitContext;
 import at.bestsolution.uia.IProperty;
 import at.bestsolution.uia.IUIAElement;
 import at.bestsolution.uia.IUIAVirtualRootElement;
+import at.bestsolution.uia.StandardEventIds;
 import at.bestsolution.uia.UIA;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.StringBinding;
@@ -164,6 +165,9 @@ public class MemoryLeakSample implements Sample {
         
         @Override
         public void initialize(IInitContext init) {
+        	IEvent automationFocusChanged = init.addEvent( StandardEventIds.UIA_AutomationFocusChangedEventId );
+        	init.addHasKeyboardFocusProperty(() -> true );
+        	automationFocusChanged.fire();
             initialized.set(true);
         }
         
