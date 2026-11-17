@@ -86,7 +86,8 @@ public class MemoryLeakSample implements Sample {
 
 
     public MemoryLeakSample() {
-        desc = new Label("1. Add-Items\n" +
+        desc = new Label( "0. Make sure Windows-Narrator is running\n" +
+            "1. Add-Items\n" +
             "2. Focus any item (keyboard or mouse-press)\n" +
             "3. IUIAElements gets initialized and memory-leak counter is increased\n" +
             "4. Remove Items\n"+
