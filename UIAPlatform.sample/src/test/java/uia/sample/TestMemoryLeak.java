@@ -55,38 +55,30 @@ class TestMemoryLeak {
 
     @Test
     void testIUIAElementMemoryLeak(FxRobot robot) {
-        MyLabel control = new MyLabel();
-        control.setText("Test");
-        robot.interact(() -> root.getChildren().add(control));
-        robot.sleep(300);
-        robot.interact(() -> control.requestFocus());
-        robot.sleep(300);
-        
-        //Only passes when uia-client is running in the background
-        Assertions.assertTrue(control.uia.initialized.get());
-        
-        robot.interact(() ->root.getChildren().remove(control));
-        
-        robot.interact(() -> JMemoryBuddy.memoryTest( checker -> checker.assertCollectable( control ) ));
+        JMemoryBuddy.memoryTest(checker -> {
+            final MyLabel control = new MyLabel();
+            control.setText("Test");
+            robot.interact(() ->  root.getChildren().add(control));
+           
+            robot.sleep(300);
+            robot.interact(() -> control.requestFocus());
+            robot.sleep(300);
+            
+            Assertions.assertTrue(control.uia.initialized.get());
+            robot.interact(() ->  root.getChildren().remove(control));
+            
+            robot.sleep(300);
+            checker.assertCollectable(control.uia);
+        });
     }
 	
 
     class MyLabel extends Label {
         final MyUIAElement uia = new MyUIAElement(this);
-        
-        MyLabel() {
-        	 this.setFocusTraversable(true);
-             this.setOnMousePressed( evt -> requestFocus());
-             uia.initialized.subscribe( val  -> {
-                 this.setText("Item - " + (uia.initialized.get() ? "initialized" : "not initialized"));
-                 
-             });
-        }
        
         @Override
         public Object queryAccessibleAttribute(AccessibleAttribute attribute, Object... parameters) {
             if (UIA.isUIAQuery(attribute, parameters)) {
-            	System.out.println(" uia call ");
                 return uia;
             }
             return super.queryAccessibleAttribute(attribute, parameters);
