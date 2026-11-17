@@ -1,5 +1,9 @@
 # OpenFX-UIA Changelog
 
+## Release 2.0.1 (2026-09-16)
+
+Fixes #39
+
 ## Release 2.0.0 (2026-06-09)
 
 ### Breaking changes
