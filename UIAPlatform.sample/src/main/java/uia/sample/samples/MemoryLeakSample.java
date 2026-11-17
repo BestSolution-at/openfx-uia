@@ -55,9 +55,9 @@ import uia.sample.Sample;
 public class MemoryLeakSample implements Sample {
     Label desc;
     
-    private VBox root = new VBox();
-    private ArrayList<MyLabel> uiaElements = new ArrayList<>();	 
-    private IntegerProperty memoryLeaks = new SimpleIntegerProperty(0);
+    private final VBox root = new VBox();
+    private final ArrayList<MyLabel> uiaElements = new ArrayList<>();	 
+    private final IntegerProperty memoryLeaks = new SimpleIntegerProperty(0);
 
     class MyLabel extends Label {
         final MyUIAElement uia = new MyUIAElement(this);
@@ -148,7 +148,7 @@ public class MemoryLeakSample implements Sample {
 
     private class MyUIAElement implements IUIAElement {
         final Node node;
-        private BooleanProperty initialized = new SimpleBooleanProperty();
+        private final BooleanProperty initialized = new SimpleBooleanProperty();
         
         MyUIAElement (Node node) {
         	this.node = node;
@@ -161,11 +161,13 @@ public class MemoryLeakSample implements Sample {
 
         @Override
         public void SetFocus() {
+            //empty
         }
         
         @Override
         public void initialize(IInitContext init) {
             initialized.set(true);
+            init.addHasKeyboardFocusProperty(() -> true );
         }
         
     };
