@@ -149,8 +149,10 @@ public class MemoryLeakIssue extends Application {
         simpleContent.getChildren().clear();
         virtualUiaChildren.clear();
         
-        rootUIANode.uia.StructureChanged.fire( StructureChangeType.ChildrenInvalidated, null );
-       
+        if(rootUIANode.uia.structureChanged != null) {
+            rootUIANode.uia.structureChanged.fire( StructureChangeType.ChildrenInvalidated, null );
+        }
+        
         checkLeak();
     }
     
@@ -200,7 +202,6 @@ public class MemoryLeakIssue extends Application {
     class RootUiaNode extends Label {
         final MyUIARootElement uia = new MyUIARootElement(this);
         
-        
         RootUiaNode() {
             this.setFocusTraversable(true);
             this.setOnMousePressed( evt -> requestFocus());
@@ -224,11 +225,12 @@ public class MemoryLeakIssue extends Application {
         }
     }
     
-    private class MyUIARootElement extends MyUIAElement implements IUIAVirtualRootElement {
+    private class MyUIARootElement implements IUIAVirtualRootElement {
         IStructureChangedEvent structureChanged;
+        Node node;
         
         MyUIARootElement (Node node) {
-            super(node);
+            this.node = node;
         }
         
         @Override
@@ -250,7 +252,6 @@ public class MemoryLeakIssue extends Application {
         public void initialize(IInitContext init) {
             structureChanged = init.addStructureChangedEvent();
             init.addHasKeyboardFocusProperty(() -> true );
-            initialized.set(true);
         }
 
         @Override

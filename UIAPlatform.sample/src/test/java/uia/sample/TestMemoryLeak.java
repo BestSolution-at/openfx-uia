@@ -92,7 +92,7 @@ class TestMemoryLeak {
             /**
              * ChildrenInvalidated event needed to make sure IUIAElement is collectible.
              */
-            robot.interact(() ->  uiaRootNode.uia.StructureChanged.fire( StructureChangeType.ChildrenInvalidated, null ) );
+            robot.interact(() ->  uiaRootNode.uia.structureChanged.fire( StructureChangeType.ChildrenInvalidated, null ) );
             
             robot.sleep(300);
             
