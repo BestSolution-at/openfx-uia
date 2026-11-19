@@ -25,6 +25,7 @@
 #include "common.h"
 #include "ProxyTextRangeProvider.h"
 #include "ProxyAccessible.h"
+#include "jni/ScopedEnv.h"
 
 
 #include "InstanceTracker.h"
@@ -59,6 +60,16 @@ static jmethodID mid_onNativeDelete;
 
 static jmethodID mid_ShowContextMenu;
 
+// Release must finish even when Java cleanup or diagnostics throw. Report only
+// exceptions from those callbacks; preserve any exception pending on entry.
+static void reportReleaseException(JNIEnv* env, const char* callback) {
+  if (env->ExceptionCheck()) {
+    fprintf(stderr, "ProxyTextRangeProvider::Release: %s failed\n", callback);
+    env->ExceptionDescribe();
+    env->ExceptionClear();
+  }
+}
+
 ProxyTextRangeProvider::ProxyTextRangeProvider(JNIEnv* env, jobject jTextRangeProvider, ProxyAccessible* glassAccessible)
 : m_refCount(1)
 {
@@ -73,17 +84,14 @@ ProxyTextRangeProvider::ProxyTextRangeProvider(JNIEnv* env, jobject jTextRangePr
 
 ProxyTextRangeProvider::~ProxyTextRangeProvider()
 {
-  JNIEnv* env;
-  HRESULT hr;
-
-  hr = GetEnv(&env);
-  if (SUCCEEDED(hr)) {
+  JNIEnv* env = GetEnv();
+  if (env) {
     env->DeleteGlobalRef(m_jTextRangeProvider);
-    m_glassAccessible->Release();
     InstanceTracker::Get().destroy(this);
-  } else {
-    print_hr(hr);
+    reportReleaseException(env, "tracker destroy");
   }
+  // COM ownership must be released even if the JVM cannot be attached.
+  m_glassAccessible->Release();
 }
 
 jobject ProxyTextRangeProvider::get_jobject() {
@@ -99,12 +107,27 @@ IFACEMETHODIMP_(ULONG) ProxyTextRangeProvider::AddRef() {
 }
 
 IFACEMETHODIMP_(ULONG) ProxyTextRangeProvider::Release() {
-  InstanceTracker::Get().release(this);
+  // Scope starts before diagnostics, which also call Java. It outlives delete
+  // so the global reference and the parent's last reference can be released.
+  uia::jni::ScopedEnv scope(GetJVM());
+  JNIEnv* env = scope.env;
+  jthrowable pending = env ? env->ExceptionOccurred() : nullptr;
+  if (pending) env->ExceptionClear();
+  if (env) {
+    InstanceTracker::Get().release(this);
+    reportReleaseException(env, "tracker release");
+  }
   long val = InterlockedDecrement(&m_refCount);
   if (val == 0) {
-    JNIEnv* env = GetEnv();
-    env->CallVoidMethod(m_jTextRangeProvider, mid_onNativeDelete);
+    if (env) {
+      env->CallVoidMethod(m_jTextRangeProvider, mid_onNativeDelete);
+      reportReleaseException(env, "onNativeDelete");
+    }
     delete this;
+  }
+  if (pending) {
+    env->Throw(pending);
+    env->DeleteLocalRef(pending);
   }
   return val;
 }
