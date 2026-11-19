@@ -30,6 +30,7 @@
 #include <UIAutomation.h>
 #include <jni.h>
 #include "Logger.h"
+#include "JavaPeer.h"
 
 
 #pragma warning( push )
@@ -75,6 +76,9 @@ class ProxyAccessible :
 public:
     ProxyAccessible(JNIEnv* env, jobject jAccessible);
 
+    void Dispose(JNIEnv* env);
+
+    // Returns a local reference owned by the caller's JNI local frame.
     jobject get_jobject();
 
     // IUnknown methods
@@ -273,7 +277,7 @@ private:
     virtual ~ProxyAccessible();
     Logger m_log;
     ULONG m_refCount;
-    jobject m_jAccessible;  // The GlobalRef Java side object
+    JavaPeer m_javaPeer;
 };
 
 #pragma warning( pop )

@@ -226,8 +226,9 @@ public class ProxyAccessible extends Accessible {
         super.dispose();
 
         if (peer != 0L) {
-            _destroyProxyAccessible(peer);
+            long disposedPeer = peer;
             peer = 0L;
+            _destroyProxyAccessible(disposedPeer);
         }
 
         if (glass != null) glass.dispose();

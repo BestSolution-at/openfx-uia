@@ -29,8 +29,8 @@ JavaVM* JNIBridge::GetVM() {
 }
 
 JNIEnv* JNIBridge::GetEnv() {
-  JNIEnv* env;
-  m_vm->GetEnv((void**) &env, JNI_VERSION_1_2);
+  JNIEnv* env = nullptr;
+  if (!m_vm || m_vm->GetEnv((void**) &env, JNI_VERSION_1_2) != JNI_OK) return nullptr;
   return env;
 }
 
