@@ -128,6 +128,7 @@ public class ProxyAccessible extends Accessible {
     }
 
     private long peer;
+    private boolean disposed;
     private IUIAElement uiaElement;
 
     private UIAElementAdapter uiaElementAdapter;
@@ -182,14 +183,22 @@ public class ProxyAccessible extends Accessible {
         ProxyAccessibleRegistry.getInstance().registerNative(this, peer);
 
         this.uiaElement = uiaElement;
-        // no glass instance available
-        if (uiaElement != null) {
+        try {
+            ProxyAccessibleRegistry.getInstance().registerVirtualAccessible(context, uiaElement, this);
             initializeVirtualElement(uiaElement);
+            if (disposed) throw new HResultException(HResultException.UIA_E_ELEMENTNOTAVAILABLE);
+            saveCreationStack();
+        } catch (RuntimeException | Error failure) {
+            try {
+                dispose();
+            } catch (RuntimeException | Error cleanupFailure) {
+                if (failure != cleanupFailure) failure.addSuppressed(cleanupFailure);
+            }
+            throw failure;
         }
 
         //LOG.debug(this, () -> "created. (virtual)");
 
-        saveCreationStack();
     }
 
     public float[] getPlatformBounds(float x, float y, float w, float h) {
@@ -221,38 +230,34 @@ public class ProxyAccessible extends Accessible {
 
     @Override
     public void dispose() {
-        //LOG.debug(this, () -> "DISPOSE " + this);
-
-        super.dispose();
-
-        if (peer != 0L) {
-            long disposedPeer = peer;
-            peer = 0L;
-            _destroyProxyAccessible(disposedPeer);
-        }
-
-        if (glass != null) glass.dispose();
-
-        ProxyAccessibleRegistry.getInstance().unregister(this);
-
-        if (uiaElement instanceof IUIAVirtualRootElement) {
-            IUIAVirtualRootElement root = (IUIAVirtualRootElement) uiaElement;
-            for (IUIAElement child : root.getChildren()) {
-                ProxyAccessible virtual = ProxyAccessibleRegistry.getInstance().findVirtualAccessible(child);
-                if (virtual != null) {
-                    virtual.dispose();
+        if (disposed) return;
+        disposed = true;
+        ProxyAccessibleRegistry registry = ProxyAccessibleRegistry.getInstance();
+        try {
+            super.dispose();
+        } finally {
+            try {
+                if (peer != 0L) {
+                    long disposedPeer = peer;
+                    peer = 0L;
+                    _destroyProxyAccessible(disposedPeer);
                 }
-            }
-        } else if (uiaElement instanceof IUIAVirtualElement) {
-            IUIAVirtualElement root = (IUIAVirtualElement) uiaElement;
-            for (IUIAElement child : root.getChildren()) {
-                ProxyAccessible virtual = ProxyAccessibleRegistry.getInstance().findVirtualAccessible(child);
-                if (virtual != null) {
-                    virtual.dispose();
+            } finally {
+                try {
+                    registry.disposeOwnedVirtuals(this);
+                } finally {
+                    try {
+                        if (glass != null) glass.dispose();
+                    } finally {
+                        registry.unregister(this);
+                    }
                 }
             }
         }
+    }
 
+    boolean isProxyDisposed() {
+        return disposed;
     }
 
     @Override
@@ -306,9 +311,18 @@ public class ProxyAccessible extends Accessible {
     }
 
     private void initializeJavaFXElement(IUIAElement element) {
-        initialize(element);
-
         ProxyAccessibleRegistry.getInstance().registerFXAccessible(element, this);
+        try {
+            initialize(element);
+            if (disposed) throw new HResultException(HResultException.UIA_E_ELEMENTNOTAVAILABLE);
+        } catch (RuntimeException | Error failure) {
+            try {
+                dispose();
+            } catch (RuntimeException | Error cleanupFailure) {
+                if (failure != cleanupFailure) failure.addSuppressed(cleanupFailure);
+            }
+            throw failure;
+        }
     }
 
     private void initializeVirtualElement(IUIAElement element) {

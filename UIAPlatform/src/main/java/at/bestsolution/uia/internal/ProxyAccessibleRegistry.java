@@ -25,12 +25,17 @@
 package at.bestsolution.uia.internal;
 
 import java.util.Comparator;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import at.bestsolution.uia.IUIAElement;
+import at.bestsolution.uia.IUIAVirtualElement;
 
 public class ProxyAccessibleRegistry {
 
@@ -40,8 +45,12 @@ public class ProxyAccessibleRegistry {
 
     // TODO dispose = ?
     private Map<IUIAElement, ProxyAccessible> fxAccessibles = new HashMap<>();
-    // TODO management & dispose
     private Map<IUIAElement, ProxyAccessible> virtualAccessibles = new HashMap<>();
+
+    // Lifecycle ownership is independent of the provider's current getChildren().
+    // Use proxy identity: an application element's equals() is not ownership.
+    private final Map<ProxyAccessible, ProxyAccessible> virtualOwners = new IdentityHashMap<>();
+    private final Map<ProxyAccessible, Set<ProxyAccessible>> ownedVirtuals = new IdentityHashMap<>();
 
 
     private Map<ProxyAccessible, Long> natives = new HashMap<>();
@@ -56,6 +65,12 @@ public class ProxyAccessibleRegistry {
         natives2.values().remove(accessible);
         fxAccessibles.values().remove(accessible);
         virtualAccessibles.values().remove(accessible);
+        ProxyAccessible owner = virtualOwners.remove(accessible);
+        Set<ProxyAccessible> owned = ownedVirtuals.get(owner);
+        if (owned != null) {
+            owned.remove(accessible);
+            if (owned.isEmpty()) ownedVirtuals.remove(owner);
+        }
     }
 
     public List<ProxyAccessible> getAccessibles() {
@@ -76,13 +91,64 @@ public class ProxyAccessibleRegistry {
 
 
     public ProxyAccessible getVirtualAccessible(ProxyAccessible context, IUIAElement element) {
+        if (context.isProxyDisposed()) throw new HResultException(HResultException.UIA_E_ELEMENTNOTAVAILABLE);
+        ProxyAccessible fx = fxAccessibles.get(element);
+        if (fx != null) return fx;
         // Note: intentionally not computeIfAbsent! Since java9 computeIfAbsent throws a ConcurrentModificationException caused by our children initialization
         ProxyAccessible proxy = virtualAccessibles.get(element);
         if (proxy == null) {
             proxy = new ProxyAccessible(context, element);
-            virtualAccessibles.put(element, proxy);
+        } else if (element instanceof IUIAVirtualElement) {
+            // A lookup after reparenting preserves the proxy but transfers ownership.
+            ProxyAccessible parent = findAccessible(((IUIAVirtualElement) element).getParent());
+            if (parent != null) setVirtualOwner(parent, proxy);
         }
         return proxy;
+    }
+
+    void registerVirtualAccessible(ProxyAccessible context, IUIAElement element, ProxyAccessible proxy) {
+        // Publish before initialize(): initializing descendants may look up their parent.
+        virtualAccessibles.put(element, proxy);
+        ProxyAccessible owner = context;
+        if (element instanceof IUIAVirtualElement) {
+            IUIAElement parent = ((IUIAVirtualElement) element).getParent();
+            ProxyAccessible parentProxy = findAccessible(parent);
+            if (parentProxy != null) owner = parentProxy;
+        }
+        setVirtualOwner(owner, proxy);
+    }
+
+    private void setVirtualOwner(ProxyAccessible owner, ProxyAccessible proxy) {
+        if (owner.isProxyDisposed()) throw new HResultException(HResultException.UIA_E_ELEMENTNOTAVAILABLE);
+        for (ProxyAccessible ancestor = owner; ancestor != null; ancestor = virtualOwners.get(ancestor)) {
+            if (ancestor == proxy) throw new IllegalArgumentException("Cyclic virtual element ownership");
+        }
+        ProxyAccessible previous = virtualOwners.get(proxy);
+        if (previous == owner) return;
+        Set<ProxyAccessible> previousChildren = ownedVirtuals.get(previous);
+        if (previousChildren != null) {
+            previousChildren.remove(proxy);
+            if (previousChildren.isEmpty()) ownedVirtuals.remove(previous);
+        }
+        virtualOwners.put(proxy, owner);
+        ownedVirtuals.computeIfAbsent(owner, key -> Collections.newSetFromMap(new IdentityHashMap<>())).add(proxy);
+    }
+
+    void disposeOwnedVirtuals(ProxyAccessible owner) {
+        Set<ProxyAccessible> owned = ownedVirtuals.remove(owner);
+        if (owned == null) return;
+        Throwable failure = null;
+        // Child disposal removes registry entries; don't iterate a live registry view.
+        for (ProxyAccessible child : new ArrayList<>(owned)) {
+            try {
+                child.dispose();
+            } catch (RuntimeException | Error ex) {
+                if (failure == null) failure = ex;
+                else if (failure != ex) failure.addSuppressed(ex);
+            }
+        }
+        if (failure instanceof RuntimeException) throw (RuntimeException) failure;
+        if (failure instanceof Error) throw (Error) failure;
     }
 
     public void ensureExists(ProxyAccessible context, List<IUIAElement> elements) {
