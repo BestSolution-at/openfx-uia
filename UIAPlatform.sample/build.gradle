@@ -234,14 +234,14 @@ fileTree("${project.projectDir}/src/main/java/uia/issues")
         group = 'Issues'
         description = "Runs the issue sample ${className}"
 
-	    javaLauncher = javaToolchains.launcherFor {
-	        languageVersion = JavaLanguageVersion.of(17)
-	    }
-	
-	    fxExports.each { pkg ->
-	        jvmArgs '--add-exports', "javafx.graphics/${pkg}=ALL-UNNAMED"
-	    }
-	    jvmArgs '--add-opens=javafx.graphics/com.sun.javafx.text=ALL-UNNAMED'
+        javaLauncher = javaToolchains.launcherFor {
+            languageVersion = JavaLanguageVersion.of(17)
+        }
+    
+       fxExports.each { pkg ->
+           jvmArgs '--add-exports', "javafx.graphics/${pkg}=ALL-UNNAMED"
+       }
+       jvmArgs '--add-opens=javafx.graphics/com.sun.javafx.text=ALL-UNNAMED'
 
         classpath sourceSets.main.runtimeClasspath
         mainClass = fullClassName

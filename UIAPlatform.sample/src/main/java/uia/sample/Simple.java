@@ -41,7 +41,6 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import uia.issues.MemoryLeakIssue;
 import uia.sample.samples.AllDummyProviders;
 import uia.sample.samples.CanvasWithVirtualChildren;
 import uia.sample.samples.DocumentModelSample;
@@ -94,7 +93,7 @@ public class Simple extends Application {
 
         root.setPrefSize(800, 600);
 
-        List<Sample> samples = Arrays.asList(	
+        List<Sample> samples = Arrays.asList(
             new PickTest(),
             new VListSample(),
             new AllDummyProviders(),
