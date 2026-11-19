@@ -41,7 +41,7 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
-import uia.sample.samples.MemoryLeakSample;
+import uia.issues.MemoryLeakIssue;
 import uia.sample.samples.AllDummyProviders;
 import uia.sample.samples.CanvasWithVirtualChildren;
 import uia.sample.samples.DocumentModelSample;
@@ -121,8 +121,7 @@ public class Simple extends Application {
             new SimpleNotificationEvent(),
             new SimpleAsyncContentLoadedEvent(),
             new SimpleTextEditTextChangedEvent(),
-            new SimpleStructureChangedEvent(),
-            new MemoryLeakSample()
+            new SimpleStructureChangedEvent()
             );
 
         VBox s = new VBox();
