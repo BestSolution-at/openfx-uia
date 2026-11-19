@@ -40,6 +40,7 @@ import at.bestsolution.uia.IEventId;
 import at.bestsolution.uia.IInitContext;
 import at.bestsolution.uia.INotificationEvent;
 import at.bestsolution.uia.IProperty;
+import at.bestsolution.uia.internal.HResultException;
 import at.bestsolution.uia.IPropertyId;
 import at.bestsolution.uia.IStructureChangedEvent;
 import at.bestsolution.uia.ITextEditTextChangedEvent;
@@ -97,10 +98,17 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
                 return id + ".fireChanged("+oldString+", "+newString+")";
             });
 
-            // ensure all reported IVirtualUIAElements are initialized
-            ensureExists(oldValue);
-            ensureExists(newValue);
-            UiaRaiseAutomationPropertyChangedEvent(id, converter.toVariant(oldValue), converter.toVariant(newValue));
+            if (accessible.getNativeAccessible() == 0) return;
+            try {
+                // Preserve normal notification ordering, but don't resurrect a
+                // retired item if a delayed notification arrives after cleanup.
+                ensureExists(oldValue);
+                ensureExists(newValue);
+                UiaRaiseAutomationPropertyChangedEvent(id, converter.toVariant(oldValue), converter.toVariant(newValue));
+            } catch (HResultException failure) {
+                if (failure.getHResult() != HResultException.UIA_E_ELEMENTNOTAVAILABLE) throw failure;
+                LOG.debug(this, () -> "Ignoring a stale virtual-element property notification");
+            }
         }
     }
 

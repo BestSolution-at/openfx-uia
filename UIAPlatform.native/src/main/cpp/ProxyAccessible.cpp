@@ -29,6 +29,7 @@
 #include "GlassTextRangeProvider.h"
 #include "GlassCounter.h"
 #include "ProxyTextRangeProvider.h"
+#include "jni/ScopedEnv.h"
 
 #include <iostream>
 
@@ -231,23 +232,28 @@ static HRESULT PrintAllIUnknowRefCount(SAFEARRAY* array) {
 }
 
 ProxyAccessible::ProxyAccessible(JNIEnv* env, jobject jAccessible)
-    : m_refCount(1), m_log("ProxyAccessible") {
-    m_jAccessible = env->NewGlobalRef(jAccessible);
+    : m_refCount(1), m_log("ProxyAccessible"), m_javaPeer(env, jAccessible) {
     GlassCounter::IncrementAccessibility();
 
     m_log.trace() << "ProxyAccessible created." << std::endl;
 }
 
 ProxyAccessible::~ProxyAccessible() {
+    // Normally already released by Dispose, before Java's owning COM reference.
     JNIEnv* env = GetEnv();
-    if (env) env->DeleteGlobalRef(m_jAccessible);
+    if (env) m_javaPeer.dispose(env);
     GlassCounter::DecrementAccessibility();
-
-    m_log.trace() << "ProxyAccessible destroyed." << std::endl;
+    if (env) m_log.trace() << "ProxyAccessible destroyed." << std::endl;
 }
 
 jobject ProxyAccessible::get_jobject() {
-  return m_jAccessible;
+  auto env = get_env();
+  jobject peer = m_javaPeer.acquire(env);
+  check_and_throw(env);
+  if (!peer) {
+    throw static_cast<HRESULT>(UIA_E_ELEMENTNOTAVAILABLE);
+  }
+  return peer;
 }
 
 /***********************************************/
@@ -260,6 +266,7 @@ IFACEMETHODIMP_(ULONG) ProxyAccessible::AddRef() {
 IFACEMETHODIMP_(ULONG) ProxyAccessible::Release() {
     long val = InterlockedDecrement(&m_refCount);
     if (val == 0) {
+        uia::jni::ScopedEnv scope(GetJVM());
         delete this;
     }
     return val;
@@ -397,6 +404,7 @@ IFACEMETHODIMP ProxyAccessible::get_HostRawElementProvider(IRawElementProviderSi
   IMPL_BEGIN
     assert_arg(ppResult);
     auto env = get_env();
+    LocalFrame frame(env, 10);
     auto pointer = call_long(env, get_jobject(), mid_IRawElementProviderSimple_get_HostRawElementProvider);
     auto hWnd = reinterpret_cast<HWND>(pointer);
     if (IsWindow(hWnd)) {
@@ -423,6 +431,7 @@ IFACEMETHODIMP ProxyAccessible::GetPatternProvider(PATTERNID patternId, IUnknown
   IMPL_BEGIN
     assert_arg(ppResult);
     auto env = get_env();
+    LocalFrame frame(env, 10);
     auto result = call_accessible(env, get_jobject(), mid_IRawElementProviderSimple_GetPatternProvider, _int(patternId));
     if (result != nullptr) result->AddRef();
     *ppResult = static_cast<IRawElementProviderSimple*>(result);
@@ -440,7 +449,7 @@ IFACEMETHODIMP ProxyAccessible::GetPropertyValue(PROPERTYID propertyId, VARIANT*
     auto result = call_object(env, get_jobject(), mid_IRawElementProviderSimple_GetPropertyValue, _int(propertyId));
     fill_variant(env, result, pResult);
   } catch (HRESULT hr) {
-
+    if (hr == UIA_E_ELEMENTNOTAVAILABLE) throw hr;
     try {
       VARIANT v;
       VariantInit(&v);
@@ -530,8 +539,9 @@ IFACEMETHODIMP ProxyAccessible::Invoke() {
 IFACEMETHODIMP ProxyAccessible::GetSelection(SAFEARRAY** ppResult) {
   // GetSelection is both for ITextRangeProvider and ISelectionProvider
   // for now we test by calling GetPatternProvider...
-  IUnknown* textPatternProvider;
-  GetPatternProvider(UIA_TextPatternId, &textPatternProvider);
+  IUnknown* textPatternProvider = nullptr;
+  HRESULT hr = GetPatternProvider(UIA_TextPatternId, &textPatternProvider);
+  if (FAILED(hr)) return hr;
   if (textPatternProvider != NULL) {
     textPatternProvider->Release();
     // got a text pattern
@@ -1372,7 +1382,16 @@ JNIEXPORT void JNICALL Java_at_bestsolution_uia_internal_ProxyAccessible__1destr
 (JNIEnv* env, jobject jAccessible, jlong winAccessible)
 {
     ProxyAccessible* acc = reinterpret_cast<ProxyAccessible*>(winAccessible);
+    if (!acc) return;
+
+    // UIA may retain COM references. Detach Java state now; leave the native
+    // object alive until the last client releases it. Late calls fail locally.
+    acc->Dispose(env);
     acc->Release();
+}
+
+void ProxyAccessible::Dispose(JNIEnv* env) {
+    m_javaPeer.dispose(env);
 }
 
 /*
