@@ -42,7 +42,8 @@ public interface IUIAVirtualElement extends IUIAElement {
     /**
      *
      * @return
-     *   the virtual children of this element.
+     *   the logical virtual children of this element, including offscreen items.
+     *   The bridge uses this list when reconciling structure-change notifications.
      */
     List<IUIAElement> getChildren();
 

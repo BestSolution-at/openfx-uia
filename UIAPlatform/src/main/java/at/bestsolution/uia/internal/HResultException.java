@@ -10,6 +10,7 @@ public class HResultException extends RuntimeException {
     public static final int E_INVALIDARG = 0x80070057;
     public static final int E_FAIL = 0x80004005;
     public static final int E_NOTIMPL = 0x80004001;
+    public static final int UIA_E_ELEMENTNOTAVAILABLE = 0x80040201;
 
     // #define E_JAVAEXCEPTION  MAKE_HRESULT(SEVERITY_ERROR, 0xDE, 1)
     public static final int E_JAVAEXCEPTION = 0x80de0001;

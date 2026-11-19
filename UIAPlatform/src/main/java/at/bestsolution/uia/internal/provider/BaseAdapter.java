@@ -39,6 +39,7 @@ import at.bestsolution.uia.internal.InstanceTracker;
 import at.bestsolution.uia.internal.Logger;
 import at.bestsolution.uia.internal.LoggerFactory;
 import at.bestsolution.uia.internal.ProxyAccessible;
+import at.bestsolution.uia.internal.ProxyAccessibleRegistry;
 import at.bestsolution.uia.internal.ProxyTextRangeProvider;
 import at.bestsolution.uia.internal.winapi.Windows;
 
@@ -61,10 +62,12 @@ public abstract class BaseAdapter<T> {
     }
 
     protected void UiaRaiseAutomationPropertyChangedEvent(IPropertyId propertyId, Variant oldV, Variant newV) {
+        if (accessible.getNativeAccessible() == 0) return;
         ProxyAccessible.UiaRaiseAutomationPropertyChangedEvent(accessible.getNativeAccessible(), propertyId.getNativeValue(), oldV.toWinVariant(), newV.toWinVariant());
     }
 
     protected void UiaRaiseAutomationEvent(IEventId eventId) {
+        if (accessible.getNativeAccessible() == 0) return;
         ProxyAccessible.UiaRaiseAutomationEvent(accessible.getNativeAccessible(), eventId.getNativeValue());
     }
 
@@ -104,9 +107,14 @@ public abstract class BaseAdapter<T> {
     }
 
     protected void UiaRaiseStructureChangedEvent(StructureChangeType structureChangeType, int[] runtimeId) {
+        if (accessible.getNativeAccessible() == 0) return;
         LOG.debug(this, () -> "UiaRaiseStructureChangedEvent(" + structureChangeType + ", " + Arrays.toString(runtimeId) + ")");
-        long result = Windows.UiaRaiseStructureChangedEvent(accessible.getNativeAccessible(), structureChangeType.getNativeValue(), runtimeId);
-        LOG.debug(this, () -> "UiaRaiseStructureChangedEvent => 0x" + Long.toHexString(result));
+        try {
+            long result = Windows.UiaRaiseStructureChangedEvent(accessible.getNativeAccessible(), structureChangeType.getNativeValue(), runtimeId);
+            LOG.debug(this, () -> "UiaRaiseStructureChangedEvent => 0x" + Long.toHexString(result));
+        } finally {
+            ProxyAccessibleRegistry.getInstance().scheduleVirtualReconciliation(accessible);
+        }
     }
 
     protected long wrapNative(ITextRangeProvider textRange) {

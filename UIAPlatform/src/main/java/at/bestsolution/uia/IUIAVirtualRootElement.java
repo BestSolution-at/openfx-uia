@@ -46,7 +46,10 @@ public interface IUIAVirtualRootElement extends IUIAElement {
     /**
      *
      * @return
-     *   the virtual children of this element.
+     *   the logical virtual children of this element, including offscreen items.
+     *   After a structure-change notification, the bridge uses this tree to
+     *   release virtual proxies for items that have been removed. Update the
+     *   logical child lists before firing the notification.
      *   <p>Note: if an element has children its JavaFX children are ignored.</p>
      */
     List<IUIAElement> getChildren();
