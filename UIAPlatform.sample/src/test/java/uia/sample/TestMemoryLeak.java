@@ -37,23 +37,11 @@ import one.jpro.jmemorybuddy.JMemoryBuddy;
 
 @ExtendWith(ApplicationExtension.class)
 class TestMemoryLeak {
-    private VBox root = new VBox();
+    VBox root = new VBox();
     Button button;
-    
-    /**
-     * This loads the uia-client.
-     */
-    interface UiaCore extends StdCallLibrary {
-        UiaCore INSTANCE = Native.load("UIAutomationCore", UiaCore.class);
-        boolean UiaClientsAreListening();
-    }
 
-	
     @Start
     void start(Stage stage) {
-        boolean listening = UiaCore.INSTANCE.UiaClientsAreListening();
-        System.out.println("UIA clients listening: " + listening);
-       
         button = new Button("init focus");
         root.getChildren().add(button);
        
@@ -162,7 +150,7 @@ class TestMemoryLeak {
     
     private class MyUIARootElement extends MyUIAElement implements IUIAVirtualRootElement {
     	ObservableList<IUIAElement> virtualUiaChildren = FXCollections.observableArrayList();
-        IStructureChangedEvent StructureChanged;
+        IStructureChangedEvent structureChanged;
         
         MyUIARootElement (Node node) {
         	super(node);
@@ -176,7 +164,7 @@ class TestMemoryLeak {
         @Override
         public void initialize(IInitContext init) {
         	super.initialize(init);
-            StructureChanged = init.addStructureChangedEvent();
+            structureChanged = init.addStructureChangedEvent();
         }
 
         @Override
@@ -188,8 +176,7 @@ class TestMemoryLeak {
         public IUIAElement getChildFromPoint(Point2D point) {
             return null;
         }
-    
-    };
+    }
     
     private class MyUIAVirtualElement extends MyUIAElement implements IUIAVirtualElement {
         final IUIAElement parent;
@@ -199,7 +186,7 @@ class TestMemoryLeak {
             this.parent = parent;
         }
 
-        List<IUIAElement> childs = new ArrayList<>();
+        private final List<IUIAElement> children = new ArrayList<>();
         
         @Override
         public IUIAElement getParent() {
@@ -208,10 +195,9 @@ class TestMemoryLeak {
 
         @Override
         public List<IUIAElement> getChildren() {
-            return childs;
+            return children;
         }
-    
-    };
+    }
     
     private class MyUIAElement implements IUIAElement {
         final Node node;
@@ -229,6 +215,7 @@ class TestMemoryLeak {
 
         @Override
         public void SetFocus() {
+            //empty
         }
         
         @Override
@@ -236,5 +223,5 @@ class TestMemoryLeak {
             init.addHasKeyboardFocusProperty(() -> true );
             initialized.set(true);
         }
-    };
+    }
 }

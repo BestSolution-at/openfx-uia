@@ -68,14 +68,14 @@ import uia.sample.Sample;
 // Sample to reproduce issue-40
 // https://gitlab.bestsolution.at/justiz/openfx-uia/-/work_items/40
 public class MemoryLeakIssue extends Application {
-    private BorderPane root = new BorderPane();
-    private VBox simpleContent = new VBox();
-    private VBox rootVirtualContent = new VBox();
+    private final BorderPane root = new BorderPane();
+    private final VBox simpleContent = new VBox();
+    private final VBox rootVirtualContent = new VBox();
     
-    private ObservableList<IUIAElement> virtualUiaChildren = FXCollections.observableArrayList();
-    private Label leaksLabel = new Label();
+    private final ObservableList<IUIAElement> virtualUiaChildren = FXCollections.observableArrayList();
+    private final Label leaksLabel = new Label();
     
-    private RootUiaNode rootUIANode = new RootUiaNode();
+    private final RootUiaNode rootUIANode = new RootUiaNode();
     
     @Override
     public void start(Stage primaryStage) throws Exception{
@@ -138,7 +138,6 @@ public class MemoryLeakIssue extends Application {
     
     private void onAdd() {
         UiaNode node = new UiaNode();
-        System.out.println(" simple content add ");
         simpleContent.getChildren().add(node);
     }
     
@@ -147,10 +146,10 @@ public class MemoryLeakIssue extends Application {
     }
     
     private void onRemove() {
-    	simpleContent.getChildren().clear();
-    	virtualUiaChildren.clear();
-    	
-    	rootUIANode.uia.StructureChanged.fire( StructureChangeType.ChildrenInvalidated, null );
+        simpleContent.getChildren().clear();
+        virtualUiaChildren.clear();
+        
+        rootUIANode.uia.StructureChanged.fire( StructureChangeType.ChildrenInvalidated, null );
        
         checkLeak();
     }
@@ -225,13 +224,11 @@ public class MemoryLeakIssue extends Application {
         }
     }
     
-    private class MyUIARootElement implements IUIAVirtualRootElement {
-        final Node node;
-        private BooleanProperty initialized = new SimpleBooleanProperty();
-        private IStructureChangedEvent StructureChanged;
+    private class MyUIARootElement extends MyUIAElement implements IUIAVirtualRootElement {
+        IStructureChangedEvent structureChanged;
         
         MyUIARootElement (Node node) {
-            this.node = node;
+            super(node);
         }
         
         @Override
@@ -246,11 +243,12 @@ public class MemoryLeakIssue extends Application {
 
         @Override
         public void SetFocus() {
+            //
         }
         
         @Override
         public void initialize(IInitContext init) {
-            StructureChanged = init.addStructureChangedEvent();
+            structureChanged = init.addStructureChangedEvent();
             init.addHasKeyboardFocusProperty(() -> true );
             initialized.set(true);
         }
@@ -264,15 +262,14 @@ public class MemoryLeakIssue extends Application {
         public IUIAElement getChildFromPoint(Point2D point) {
             return null;
         }
-    
-    };
+    }
     
     private class MyUIAVirtualElement extends MyUIAElement implements IUIAVirtualElement {
         MyUIAVirtualElement(Node node) {
             super(node);
         }
 
-        List<IUIAElement> childs = new ArrayList<>();
+        private final List<IUIAElement> children = new ArrayList<>();
         
         @Override
         public IUIAElement getParent() {
@@ -281,14 +278,13 @@ public class MemoryLeakIssue extends Application {
 
         @Override
         public List<IUIAElement> getChildren() {
-            return childs;
+            return children;
         }
-    
-    };
+    }
     
     private class MyUIAElement implements IUIAElement {
         final Node node;
-        private BooleanProperty initialized = new SimpleBooleanProperty();
+        final BooleanProperty initialized = new SimpleBooleanProperty();
         List<IUIAElement> childs = new ArrayList<>();
         
         MyUIAElement (Node node) {
@@ -303,6 +299,7 @@ public class MemoryLeakIssue extends Application {
 
         @Override
         public void SetFocus() {
+            //empty
         }
         
         @Override
@@ -311,7 +308,7 @@ public class MemoryLeakIssue extends Application {
             initialized.set(true);
             rootUIANode.refreshText();
         }
-    };
+    }
     
     interface UiaCore extends StdCallLibrary {
         UiaCore INSTANCE = Native.load("UIAutomationCore", UiaCore.class);
