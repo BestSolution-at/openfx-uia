@@ -67,6 +67,9 @@ import uia.sample.Sample;
 
 // Sample to reproduce issue-40
 // https://gitlab.bestsolution.at/justiz/openfx-uia/-/work_items/40
+//
+// run this sample with " .\gradlew :UIAPlatform.sample:runIssue-MemoryLeakIssue"
+//
 public class MemoryLeakIssue extends Application {
     private final BorderPane root = new BorderPane();
     private final VBox simpleContent = new VBox();
