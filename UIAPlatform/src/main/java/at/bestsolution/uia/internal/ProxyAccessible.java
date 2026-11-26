@@ -207,8 +207,11 @@ public class ProxyAccessible extends Accessible {
     }
 
     public Bounds getPlatformBounds(Bounds bounds) {
-        float[] b = this.getPlatformBounds((float) bounds.getMinX(), (float) bounds.getMinY(), (float) bounds.getWidth(), (float) bounds.getHeight());
-        return new BoundingBox(b[0], b[1], b[2], b[3]);
+        if (bounds != null) {
+            float[] b = this.getPlatformBounds((float) bounds.getMinX(), (float) bounds.getMinY(), (float) bounds.getWidth(), (float) bounds.getHeight());
+            return new BoundingBox(b[0], b[1], b[2], b[3]);
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")
