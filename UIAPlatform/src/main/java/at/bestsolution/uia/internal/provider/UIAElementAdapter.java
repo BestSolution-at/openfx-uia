@@ -260,7 +260,6 @@ public class UIAElementAdapter extends BaseAdapter<IUIAElement> implements Nativ
 
     @Override
     public float[] get_BoundingRectangle() {
-        // TODO jdk17port: got once in VList null from provider.getBounds()
         return Convert.convertBounds(accessible.getPlatformBounds(provider.getBounds()));
     }
 
