@@ -1,5 +1,9 @@
 # OpenFX-UIA Changelog
 
+## Release 2.1.1 (2026-11-23)
+
+Fixed potential NPE
+
 ## Release 2.1.0 (2026-11-23)
 
 Improved memory management
